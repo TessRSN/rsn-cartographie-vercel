@@ -165,7 +165,15 @@ export default async function Home() {
     ...nodes,
     ...datasets.map((dataset) => ({
       id: dataset.id,
-      data: { label: dataset.title, hoverLabel: dataset.title, link: "" },
+      data: {
+        label: dataset.title,
+        hoverLabel: dataset.title,
+        title: dataset.title,
+        description: dataset.description,
+        link: dataset.same_as.map((link) => {
+          return link.uri;
+        }),
+      },
       label: dataset.title,
       fill: "#FFCC4E",
     })),
@@ -177,7 +185,13 @@ export default async function Home() {
     ...nodes,
     ...softapps.map((softapp) => ({
       id: softapp.id,
-      data: { label: softapp.title, hoverLabel: softapp.title, link: "" },
+      data: {
+        label: softapp.title,
+        hoverLabel: softapp.title,
+        link: "",
+        title: softapp.title,
+        description: softapp.description,
+      },
       label: softapp.title,
       fill: "#EE3124",
     })),
