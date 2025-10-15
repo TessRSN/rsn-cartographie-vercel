@@ -83,6 +83,20 @@ export function DetailCard({ node, onClose }: DetailCardProps) {
             )}
           </div>
         </div>
+
+        <div className="space-y-1 pt-6">
+          <div>
+            {node.data.operatingSystem &&
+            node.data.operatingSystem.length > 0 ? (
+              <div>
+                <div className="font-semibold">Operating System</div>
+                <div>{node.data.operatingSystem}</div>
+              </div>
+            ) : (
+              <div></div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
