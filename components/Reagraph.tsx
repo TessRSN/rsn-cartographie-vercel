@@ -82,6 +82,7 @@ export function MyDiagram({ nodes, edges, onContextMenuOpen }: MyDiagramProps) {
       //layoutType="forceDirected3d" // - vision 3d
       layoutType="forceDirected2d"
       edgeArrowPosition="none"
+      draggable
       nodes={nodes}
       edges={edges}
       onNodePointerOver={(node, event) => {

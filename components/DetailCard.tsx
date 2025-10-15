@@ -34,11 +34,20 @@ export function DetailCard({ node, onClose }: DetailCardProps) {
         </svg>
       </button>
       <div className="card-body p-4  w-96 h-full rounded-xl bg-base-200 shadow-sm flex flex-col gap-4">
+        <figure>
+          {node.data.imageSrc ? (
+            <img
+              src={node.data.imageSrc}
+              alt={node.label}
+              width={200}
+              height={200}
+            />
+          ) : (
+            <div className="w-96  flex items-center justify-center"></div>
+          )}
+        </figure>
+
         <div className="text-2xl">{node.data.title}</div>
-        <div className="space-y-1">
-          <div>Type</div>
-          <div>{JSON.stringify(node.data.type)}</div>
-        </div>
 
         <div className="space-y-1">
           <div>Description</div>

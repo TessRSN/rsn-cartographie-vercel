@@ -12,9 +12,11 @@ export default async function Home() {
       "title",
       "alternate_name",
       "sub_organization",
+      "parent_organization",
       "additional_type",
       "description",
       "significant_link",
+      "metatag",
     ])
     //.addFilter("status", "1")
     // Add Page Limit.
@@ -38,6 +40,7 @@ export default async function Home() {
       "subject_of",
       "works_for",
       "same_as",
+      "metatag",
     ])
     .addFilter("status", "1")
     .addPageLimit(10000)
@@ -60,6 +63,8 @@ export default async function Home() {
       "member_of",
       "subject_of",
       "works_for",
+      "significant_link",
+      "metatag",
     ])
     .addFilter("status", "1")
     .addPageLimit(10000)
@@ -82,6 +87,9 @@ export default async function Home() {
       "member_of",
       "subject_of",
       "works_for",
+      "significant_link",
+      "metatag",
+      "operating_system",
     ])
     .addFilter("status", "1")
     .addPageLimit(10000)
@@ -95,13 +103,12 @@ export default async function Home() {
     }
   );
 
-  /* for (const org of orgs) {
+  for (const org of orgs) {
     console.log(util.inspect(org, { depth: null }));
     console.log("===================");
     console.log("===================");
     console.log("===================");
   }
-  */
 
   /*
   for (const person of persons) {
@@ -132,10 +139,13 @@ export default async function Home() {
       link: org.significant_link.map((link) => {
         return link.uri;
       }),
+      imageSrc:
+        org.metatag.find(
+          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+        )?.attributes.href || null,
     },
     fill: "#0061AF",
   }));
-
   console.log(orgs.length);
 
   // Conversion des personnes en noeuds du graph
@@ -170,9 +180,13 @@ export default async function Home() {
         hoverLabel: dataset.title,
         title: dataset.title,
         description: dataset.description,
-        link: dataset.same_as.map((link) => {
+        link: dataset.significant_link.map((link) => {
           return link.uri;
         }),
+        imageSrc:
+          dataset.metatag.find(
+            (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+          )?.attributes.href || null,
       },
       label: dataset.title,
       fill: "#FFCC4E",
@@ -191,6 +205,14 @@ export default async function Home() {
         link: "",
         title: softapp.title,
         description: softapp.description,
+        operatingSystem: softapp.operating_system,
+        link: softapp.significant_link.map((link) => {
+          return link.uri;
+        }),
+        imageSrc:
+          softapp.metatag.find(
+            (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+          )?.attributes.href || null,
       },
       label: softapp.title,
       fill: "#EE3124",
@@ -210,6 +232,7 @@ export default async function Home() {
 
   let edges = []
     .concat(createEdges(orgs, "sub_organization", "#0061AF"))
+    .concat(createEdges(orgs, "parent_organization", "#0061AF"))
     .concat(createEdges(persons, "works_for", "#00A759"))
     .concat(createEdges(persons, "member_of", "#00A759"))
     .concat(createEdges(datasets, "author", "#00A759"))
