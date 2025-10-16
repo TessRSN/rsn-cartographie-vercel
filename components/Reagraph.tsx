@@ -76,49 +76,26 @@ interface MyDiagramProps {
 
 export function MyDiagram({ nodes, edges, onContextMenuOpen }: MyDiagramProps) {
   return (
-    <GraphCanvas
-      theme={darkTheme}
-      cameraMode="rotate"
-      //layoutType="forceDirected3d" // - vision 3d
-      layoutType="forceDirected2d"
-      edgeArrowPosition="none"
-      draggable
-      nodes={nodes}
-      edges={edges}
-      onNodePointerOver={(node, event) => {
-        node.label = node.data.hoverLabel;
-      }}
-      onNodePointerOut={(node, event) => {
-        node.label = node.data.label;
-      }}
-      onNodeContextMenu={(data) => {
-        onContextMenuOpen(data);
-      }}
-    />
-  );
-}
-
-interface DetailCardProps {
-  node: GraphNode;
-  onClose: () => void;
-}
-
-function DetailCard({ node, onClose }: DetailCardProps) {
-  console.log(node.data.description);
-  return (
-    <div className="absolute text-base-content">
-      <button
-        className="border border-red-500 size-6 rounded-full bg-red-200 absolute right-10 z-10 top-[-0.5rem]"
-        onClick={onClose}
-      >
-        X
-      </button>
-      <div className="p-4 absolute right-[50px] w-96 h-96 rounded-xl bg-base-200 border-slate-500 shadow-sm">
-        <div className="relative"></div>
-        <div className="text-2xl">{node.data.title}</div>
-        <div>{JSON.stringify(node.data.type)}</div>
-        <div>{JSON.stringify(node.data.description)}</div>
-      </div>
+    <div className="h-[calc(100vh-var(--spacing)*16)] w-full relative">
+      <GraphCanvas
+        theme={darkTheme}
+        cameraMode="rotate"
+        //layoutType="forceDirected3d" // - vision 3d
+        layoutType="forceDirected2d"
+        edgeArrowPosition="none"
+        draggable
+        nodes={nodes}
+        edges={edges}
+        onNodePointerOver={(node, event) => {
+          node.label = node.data.hoverLabel;
+        }}
+        onNodePointerOut={(node, event) => {
+          node.label = node.data.label;
+        }}
+        onNodeContextMenu={(data) => {
+          onContextMenuOpen(data);
+        }}
+      />
     </div>
   );
 }
