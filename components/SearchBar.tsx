@@ -1,0 +1,71 @@
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+
+export function SearchBar() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const query = searchParams.get("q") || "";
+  const [inputValue, setInputValue] = useState(query);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    setInputValue(query);
+  }, [query]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (inputValue) {
+        router.push(`?q=${encodeURIComponent(inputValue)}`);
+      } else {
+        router.push("?");
+      }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [inputValue, router]);
+
+  return (
+    <label className="input">
+      <svg
+        className="h-[1em] opacity-50"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+      >
+        <g
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          strokeWidth="2.5"
+          fill="none"
+          stroke="currentColor"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </g>
+      </svg>
+      <input
+        ref={inputRef}
+        type="search"
+        className="grow"
+        placeholder="Rechercher..."
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+      />
+      <kbd className="kbd kbd-sm">⌘</kbd>
+      <kbd className="kbd kbd-sm">K</kbd>
+    </label>
+  );
+}

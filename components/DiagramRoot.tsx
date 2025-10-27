@@ -16,7 +16,6 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   );
   return (
     <>
-      {" "}
       <div className="absolute z-10 right-12 top-12 max-h-[80vh]">
         {contextMenuData && (
           <DetailCard
