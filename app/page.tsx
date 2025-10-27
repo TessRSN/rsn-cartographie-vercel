@@ -8,6 +8,7 @@ import { GraphEdge, GraphNode } from "reagraph";
 import { API_ENDPOINT } from "./lib/drupal";
 import util from "util";
 import { error } from "console";
+import { Suspense } from "react";
 
 export default async function Home() {
   const a = await fetchDataset();
@@ -167,7 +168,7 @@ export default async function Home() {
                 ? softapp.alternate_name[0]
                 : softapp.title,
             hoverLabel: softapp.title,
-            link: "",
+            link: [],
             title: softapp.title,
             description: softapp.metatag.find(
               (i) => i.attributes.name === "description"
@@ -249,7 +250,9 @@ export default async function Home() {
 
   return (
     <div>
-      <DiagramRoot nodes={nodes} edges={edges}></DiagramRoot>
+      <Suspense fallback={null}>
+        <DiagramRoot nodes={nodes} edges={edges} />
+      </Suspense>
     </div>
   );
 }

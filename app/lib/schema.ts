@@ -141,6 +141,9 @@ const baseGraphNodeSchema = z.object({
   description: DescriptionSchema.nullish(),
   link: z.array(z.string()),
   imageSrc: z.string().nullable(),
+  category: z.array(z.string()).optional(),
+  operatingSystem: z.string().optional(),
+  membre_rsn: z.array(z.string()).optional(),
 });
 
 // Discriminated union schemas for different node types

@@ -56,16 +56,14 @@ export function DetailCard({ node, onClose }: DetailCardProps) {
         <div className="space-y-1 pt-6">
           <div>Catégorie(s)</div>
           <div>
-            {node.data.category && node.data.category.length > 0 ? (
-              node.data.category.map((cat, index) => (
-                <span key={index}>
+            {node.data.category?.length
+              ? node.data.category.map((cat, i) => (
+                <span key={i}>
                   {cat}
-                  {index < node.data.category.length - 1 && ", "}
+                  {i < (node.data!.category?.length ?? 0) - 1 ? ", " : ""}
                 </span>
               ))
-            ) : (
-              <div>Non disponible</div>
-            )}
+              : <span>-</span>}
           </div>
         </div>
 
@@ -93,7 +91,7 @@ export function DetailCard({ node, onClose }: DetailCardProps) {
         <div className="space-y-1 pt-6">
           <div>
             {node.data.operatingSystem &&
-            node.data.operatingSystem.length > 0 ? (
+              node.data.operatingSystem.length > 0 ? (
               <div>
                 <div className="font-semibold">Operating System</div>
                 <div>{node.data.operatingSystem}</div>

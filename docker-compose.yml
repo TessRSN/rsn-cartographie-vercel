@@ -1,0 +1,12 @@
+services:
+  rsn-cartographie:
+    build:
+      #args:
+        #NEXT_PUBLIC_API_URL: "https://prevalis-web1.fmss.usherbrooke.ca/auth-issuer"
+    container_name: rsn-cartographie
+    ports:
+      - "13080:3000"
+    environment:
+      - NODE_ENV=production
+      # - NEXT_PUBLIC_API_URL="https://prevalis-web1.fmss.usherbrooke.ca/rsn/cartographie"
+    restart: unless-stopped
