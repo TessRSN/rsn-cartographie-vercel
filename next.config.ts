@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   assetPrefix: "/rsn/cartographie", // keeps <link>/<script> URLs correct
   env: {
     NEXT_PUBLIC_APP_VERSION: require("./package.json").version,
+    NEXT_PUBLIC_ASSET_PREFIX: "/rsn/cartographie",
   },
 };
 
