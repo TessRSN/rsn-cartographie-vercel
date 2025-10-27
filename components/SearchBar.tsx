@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export function SearchBar() {
-  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const [inputValue, setInputValue] = useState(query);
@@ -29,14 +29,18 @@ export function SearchBar() {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (inputValue) {
-        router.push(`?q=${encodeURIComponent(inputValue)}`);
+        window.history.pushState(
+          {},
+          "",
+          `${pathname}?q=${encodeURIComponent(inputValue)}`
+        );
       } else {
-        router.push("?");
+        window.history.pushState({}, "", pathname);
       }
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [inputValue, router]);
+  }, [inputValue]);
 
   return (
     <label className="input">
