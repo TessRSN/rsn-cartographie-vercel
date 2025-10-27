@@ -1,14 +1,16 @@
 "use client";
+import { MyGraphNode } from "@/app/lib/types";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 const GraphCanvas = dynamic(
   () => import("reagraph").then((mod) => mod.GraphCanvas),
   { ssr: false }
 );
 
-import type { GraphNode, GraphEdge } from "reagraph";
-import { Theme } from "reagraph";
+import type { GraphNode, GraphEdge, GraphCanvasRef } from "reagraph";
+import { Theme, useSelection } from "reagraph";
 
 export const darkTheme: Theme = {
   canvas: {
@@ -69,55 +71,68 @@ export const darkTheme: Theme = {
 };
 
 interface MyDiagramProps {
-  nodes: GraphNode[];
+  nodes: MyGraphNode[];
   edges: GraphEdge[];
   onContextMenuOpen: (data: GraphNode) => void;
 }
 
-export function MyDiagram({ nodes, edges, onContextMenuOpen }: MyDiagramProps) {
-  return (
-    <GraphCanvas
-      theme={darkTheme}
-      cameraMode="rotate"
-      //layoutType="forceDirected3d" // - vision 3d
-      layoutType="forceDirected2d"
-      edgeArrowPosition="none"
-      nodes={nodes}
-      edges={edges}
-      onNodePointerOver={(node, event) => {
-        node.label = node.data.hoverLabel;
-      }}
-      onNodePointerOut={(node, event) => {
-        node.label = node.data.label;
-      }}
-      onNodeContextMenu={(data) => {
-        onContextMenuOpen(data);
-      }}
-    />
-  );
-}
+export function MyDiagram({
+  nodes: initialNodes,
+  edges: initialEdges,
+  onContextMenuOpen,
+}: MyDiagramProps) {
+  const graphRef = useRef<GraphCanvasRef | null>(null);
+  const searchParams = useSearchParams();
+  const query = searchParams.get("q") || "";
+  const [nodes, setNodes] = useState(initialNodes);
+  const [edges, setEdges] = useState(initialEdges);
 
-interface DetailCardProps {
-  node: GraphNode;
-  onClose: () => void;
-}
+  const { selections, setSelections } = useSelection({
+    ref: graphRef,
+    nodes: nodes,
+    edges: edges,
+  });
 
-function DetailCard({ node, onClose }: DetailCardProps) {
-  console.log(node.data.description);
+  useEffect(() => {
+    let filteredNodes =
+      query.length > 0
+        ? initialNodes.filter((node) => {
+            if (!node.data) {
+              return false;
+            }
+
+            return (
+              node.data.title.toLowerCase().includes(query.toLowerCase()) ||
+              node.data.label?.toLowerCase().includes(query.toLowerCase())
+            );
+          })
+        : [];
+    setSelections(filteredNodes?.map((node) => node.id));
+  }, [query]);
+
   return (
-    <div className="absolute text-base-content">
-      <button
-        className="border border-red-500 size-6 rounded-full bg-red-200 absolute right-10 z-10 top-[-0.5rem]"
-        onClick={onClose}
-      >
-        X
-      </button>
-      <div className="p-4 absolute right-[50px] w-96 h-96 rounded-xl bg-base-200 border-slate-500 shadow-sm">
-        <div className="relative"></div>
-        <div className="text-2xl">{node.data.title}</div>
-        <div>{JSON.stringify(node.data.type)}</div>
-        <div>{JSON.stringify(node.data.description)}</div>
-      </div>
+    <div className="h-[calc(100vh-var(--spacing)*16)] w-full relative">
+      <GraphCanvas
+        ref={graphRef}
+        selections={selections}
+        theme={darkTheme}
+        cameraMode="rotate"
+        //layoutType="forceDirected3d" // - vision 3d
+        layoutType="forceDirected2d"
+        edgeArrowPosition="none"
+        draggable
+        nodes={nodes}
+        edges={edges}
+        onNodePointerOver={(node, event) => {
+          node.label = node.data.hoverLabel;
+        }}
+        onNodePointerOut={(node, event) => {
+          node.label = node.data.label;
+        }}
+        onNodeContextMenu={(data) => {
+          onContextMenuOpen(data);
+        }}
+      />
     </div>
   );
 }
