@@ -1,7 +1,12 @@
 import { GraphElementBaseAttributes } from "reagraph";
 import { GraphNodeData } from "./schema";
 
-export interface MyGraphNode extends GraphElementBaseAttributes<GraphNodeData> {
+export type MyGraphElementBaseAttributes<T> = GraphElementBaseAttributes<T> & {
+  data: T;
+};
+
+export interface MyGraphNode<T = GraphNodeData>
+  extends GraphElementBaseAttributes<T> {
   /**
    * ID of the parent node.
    */

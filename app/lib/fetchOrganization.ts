@@ -3,6 +3,7 @@ import { drupal } from "./drupal";
 import { DrupalNode } from "next-drupal";
 import { OrganizationSchema } from "./schema";
 import z from "zod";
+import util from "util";
 
 export async function fetchOrganization() {
   const orgParams = new DrupalJsonApiParams()
@@ -17,19 +18,25 @@ export async function fetchOrganization() {
       "metatag",
       "image",
       "attributes",
+      "field_funder",
+      //"field_organization_geographical",
+      //"field_couverture_geographique",
     ])
     //.addFilter("status", "1")
     // Add Page Limit.
     .addFields("node--person", ["title", "description", "same_as"])
     .addPageLimit(10000)
-    .addInclude(["sub_organization", "logo"])
+    .addInclude(["sub_organization", "logo", "field_funder"])
     .addSort("created", "DESC");
 
   const orgsData = await drupal.getResourceCollection<DrupalNode[]>(
     "node--organization",
     {
       params: orgParams.getQueryObject(),
+      locale: "fr",
+      defaultLocale: "fr",
     }
   );
+  //console.log(util.inspect(orgsData, { depth: null }));
   return OrganizationSchema.array().safeParse(orgsData);
 }
