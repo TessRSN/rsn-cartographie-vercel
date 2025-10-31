@@ -3,7 +3,7 @@
 import { GraphEdge } from "reagraph";
 import { MyDiagram } from "./Reagraph";
 import { DetailCardRoot } from "./DetailCard/DetailCardRoot";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { MyGraphNode } from "@/app/lib/types";
 
 interface DiagramRootProps {
@@ -12,9 +12,7 @@ interface DiagramRootProps {
 }
 
 export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
-  const [contextMenuData, setContextMenuData] = useState<
-    MyGraphNode | undefined
-  >(undefined);
+  const [contextMenuData, setContextMenuData] = useState<MyGraphNode | undefined>(undefined);
 
   return (
     <>
@@ -28,14 +26,14 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
           />
         )}
       </div>
-      <MyDiagram
-        nodes={nodes}
-        edges={edges}
-        onContextMenuOpen={(data) => {
-          console.log(data);
-          setContextMenuData(data);
-        }}
-      />
+
+      <Suspense fallback={null}>
+        <MyDiagram
+          nodes={nodes}
+          edges={edges}
+          onContextMenuOpen={(data) => { setContextMenuData(data); }}
+        />
+      </Suspense>
     </>
   );
 }

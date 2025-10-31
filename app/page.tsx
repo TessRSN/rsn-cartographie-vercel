@@ -18,6 +18,7 @@ import {
   DatasetNode,
   datasetNodeSchema,
 } from "./lib/schema";
+import { Suspense } from "react";
 
 export default async function Home() {
   const [
@@ -295,7 +296,9 @@ export default async function Home() {
 
   return (
     <div>
-      <DiagramRoot nodes={nodes} edges={edges}></DiagramRoot>
+      <Suspense fallback={null}>
+        <DiagramRoot nodes={nodes} edges={edges} />
+      </Suspense>
     </div>
   );
 }
