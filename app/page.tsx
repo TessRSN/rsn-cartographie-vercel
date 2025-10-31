@@ -15,7 +15,8 @@ import {
   personNodeSchema,
   SoftwareApplicationNode,
   softwareApplicationNodeSchema,
-  SoftwareApplicationSchema,
+  DatasetNode,
+  datasetNodeSchema,
 } from "./lib/schema";
 
 export default async function Home() {
@@ -90,6 +91,7 @@ export default async function Home() {
         link: person.same_as.map((link) => {
           return link.uri;
         }),
+        significant_link: person.significant_link,
         field_applied_domain: person.field_applied_domain,
         field_digital_domain: person.field_digital_domain,
         field_person_type: person.field_person_type,
@@ -110,31 +112,49 @@ export default async function Home() {
   }
 
   // Conversion des dataset en noeuds du graph
-  /*if (datasetResults.data) {
-    nodes = nodes.concat(
-      datasetResults.data.map((dataset) => ({
-        id: dataset.id,
-        data: datasetNodeSchema.parse({
-          type: dataset.type,
-          label: dataset.title,
-          hoverLabel: dataset.title,
-          title: dataset.title,
-          description: dataset.description,
-          link: dataset.significant_link.map((link) => {
-            return link.uri;
-          }),
-          imageSrc:
-            dataset.metatag.find(
-              (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
-            )?.attributes.href || null,
-        }),
+  if (datasetResults.data) {
+    const datasetNodes = datasetResults.data.map((dataset) => {
+      let imageSrc = dataset.schema_logo?.image.uri?.url;
+      if (!imageSrc) {
+        imageSrc = dataset.metatag.find(
+          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+        )?.attributes.href;
+      } else {
+        imageSrc = `${API_ENDPOINT}/${imageSrc}`;
+      }
+      const data: DatasetNode = {
+        type: dataset.type,
         label: dataset.title,
+        alternate_name: dataset.alternate_name,
+        hoverLabel: dataset.title,
+        title: dataset.title,
+        description: dataset.description,
+        link: dataset.significant_link.map((link) => {
+          return link.uri;
+        }),
+        imageSrc,
+        field_applied_domain: dataset.field_applied_domain,
+        field_licence: dataset.field_licence,
+        field_modele_acces: dataset.field_modele_acces,
+        author: dataset.author,
+        field_funder: dataset.field_funder,
+      };
+
+      return {
+        id: dataset.id,
+        label:
+          dataset.alternate_name.length > 0
+            ? dataset.alternate_name[0]
+            : dataset.title,
+        data: datasetNodeSchema.parse(data),
         fill: "#FFCC4E",
-      }))
-    );
+      };
+    });
+
+    nodes = nodes.concat(datasetNodes);
   } else {
-    console.log(datasetResults.error);
-  }*/
+    console.log(datasetResults.error.issues);
+  }
 
   //Conversion des Software Application en noeuds du graph
   if (softwareApplicationResults.data) {
@@ -168,6 +188,7 @@ export default async function Home() {
           author: softapp.author,
           field_modele_acces: softapp.field_modele_acces,
           imageSrc,
+          email: softapp.email,
         };
 
         return {

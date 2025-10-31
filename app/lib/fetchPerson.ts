@@ -19,6 +19,7 @@ export async function fetchPerson() {
       "field_digital_domain",
       "field_axe_si_membre_rsn",
       "field_person_type",
+      "significant_link",
     ])
     .addFields("node--organization", [
       "title",

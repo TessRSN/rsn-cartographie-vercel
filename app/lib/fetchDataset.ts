@@ -15,13 +15,27 @@ export async function fetchDataset() {
       "metatag",
       "schema_logo",
       "field_dataset_contributors",
+      "field_applied_domain",
+      "author",
+      "field_funder",
+      "field_licence",
+      "field_modele_acces",
+      "schema_email",
     ])
     .addFields("node--person", ["title", "description", "same_as"])
     .addFields("media--image", ["image"])
+    .addFields("node--organization", ["title"])
     .addFields("file--file", ["uri"])
     .addFilter("status", "1")
     .addPageLimit(10000)
-    .addInclude(["author", "schema_logo.image"])
+    .addInclude([
+      "author",
+      "schema_logo.image",
+      "field_funder",
+      "field_licence",
+      "field_applied_domain",
+      "field_modele_acces",
+    ])
     .addSort("created", "DESC");
 
   const datasetsData = await drupal.getResourceCollection<DrupalNode[]>(

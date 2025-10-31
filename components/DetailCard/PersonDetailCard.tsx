@@ -82,21 +82,23 @@ export function PersonDetailCard({ node, onClose }: PersonDetailCardProps) {
 
       <div className="space-y-1 pt-6">
         <div>Lien(s)</div>
-        <div className="line-clamp-2">
-          {node.data.link && node.data.link.length > 0 ? (
-            node.data.link.map((link) => {
+        <div className="space-y-1">
+          {node.data.significant_link &&
+          node.data.significant_link.length > 0 ? (
+            node.data.significant_link.map((link, index) => {
               return (
                 <a
-                  className="link link-primary link-hover"
-                  href={link}
+                  key={index}
+                  className="link link-primary link-hover block"
+                  href={link.uri}
                   target="_blank"
                 >
-                  {link}
+                  {link.uri}
                 </a>
               );
             })
           ) : (
-            <div>Aucun lien</div>
+            <div></div>
           )}
         </div>
       </div>

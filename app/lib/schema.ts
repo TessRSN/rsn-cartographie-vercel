@@ -143,6 +143,10 @@ const TaxonomySoftwareModeleAccesSchema = z.object({
   name: z.string(),
 });
 
+const EmailSchema = z.object({
+  schema_email: z.string().email(),
+});
+
 const BaseOrganizationSchema = z.object({
   type: z.literal("node--organization"),
   id: z.uuid(),
@@ -187,6 +191,7 @@ const PersonSchema = z.object({
   description: DescriptionSchema.nullable(),
   same_as: LinkSchema.array(),
   links: SelfLinkSchema,
+  significant_link: z.array(LinkSchema).nullish(),
   image: MediaImageSchema.partial().nullish().optional(),
   relationshipNames: z.string().array(),
   field_applied_domain: z
@@ -199,6 +204,7 @@ const PersonSchema = z.object({
     .nullish(),
   field_axe_si_membre_rsn: TaxonomyTermAxeRsnSchema.optional().nullish(),
   field_person_type: TaxonomyTermPersonSchema.optional().nullish(),
+  email: EmailSchema.nullish(),
 });
 
 const DatasetSchema = z.object({
@@ -217,10 +223,16 @@ const DatasetSchema = z.object({
   }),
   schema_logo: MediaImageSchema.nullable(),
   relationshipNames: z.string().array(),
-  field_applied_domain: z.array(TaxonomyTermReferenceSchema).optional(),
-  field_digital_domain: z.array(TaxonomyTermReferenceSchema).optional(),
+  field_applied_domain: z
+    .array(TaxonomyTermHealthResearchCategorySchema)
+    .optional()
+    .nullish(),
   field_dataset_contributors: PersonSchema.partial().array().optional(),
   field_funder: BaseOrganizationSchema.partial().array().optional().nullish(),
+  field_licence: TaxonomySoftwareLicenceSchema.nullish(),
+  author: PersonSchema.partial().array().optional(),
+  field_modele_acces: TaxonomySoftwareModeleAccesSchema.optional().nullable(),
+  email: EmailSchema.nullish(),
 });
 
 const SoftwareApplicationSchema = z.object({
@@ -243,6 +255,7 @@ const SoftwareApplicationSchema = z.object({
   application_category: z.array(TaxonomyApplicationCategorySchema).optional(),
   field_licence: TaxonomySoftwareLicenceSchema.optional().nullable(),
   field_modele_acces: TaxonomySoftwareModeleAccesSchema.optional().nullable(),
+  email: EmailSchema.nullish(),
 });
 
 // Base graph node schema with common fields
@@ -285,10 +298,21 @@ export const personNodeSchema = baseGraphNodeSchema.extend({
     .optional()
     .nullish(),
   field_axe_si_membre_rsn: TaxonomyTermAxeRsnSchema.optional().nullish(),
+  significant_link: z.array(LinkSchema).nullish(),
 });
 
 export const datasetNodeSchema = baseGraphNodeSchema.extend({
   type: z.literal("node--dataset"),
+  alternate_name: z.string().array(),
+  field_licence: TaxonomySoftwareLicenceSchema.nullish(),
+  author: PersonSchema.partial().array().optional(),
+  field_modele_acces: TaxonomySoftwareModeleAccesSchema.optional().nullable(),
+  email: EmailSchema.nullish(),
+  field_applied_domain: z
+    .array(TaxonomyTermHealthResearchCategorySchema)
+    .optional()
+    .nullish(),
+  field_funder: BaseOrganizationSchema.partial().array().optional().nullish(),
 });
 
 export const softwareApplicationNodeSchema = baseGraphNodeSchema.extend({
@@ -299,6 +323,7 @@ export const softwareApplicationNodeSchema = baseGraphNodeSchema.extend({
   field_licence: TaxonomySoftwareLicenceSchema.nullish(),
   author: PersonSchema.partial().array().optional(),
   field_modele_acces: TaxonomySoftwareModeleAccesSchema.optional().nullable(),
+  email: EmailSchema.nullish(),
 });
 
 // Discriminated union for all graph node types

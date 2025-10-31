@@ -21,6 +21,7 @@ export async function fetchSoftwareApplication() {
       "application_category",
       "field_licence",
       "field_modele_acces",
+      "schema_email",
     ])
     .addFields("node--person", ["title", "description", "same_as"])
     .addFields("node--organization", ["title"])
@@ -32,7 +33,6 @@ export async function fetchSoftwareApplication() {
       "author",
       "application_category",
       "schema_logo.image",
-      "author",
       "field_funder",
       "field_licence",
       "field_modele_acces",
