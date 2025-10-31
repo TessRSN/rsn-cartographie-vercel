@@ -12,7 +12,7 @@ interface PersonDetailCardProps {
 export function PersonDetailCard({ node, onClose }: PersonDetailCardProps) {
   return (
     <DetailCard title={node.data.title} onClose={onClose}>
-      <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
+      {/*<Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />*/}
 
       <div className="space-y-1 pt-2">
         <div>Type</div>
@@ -23,7 +23,7 @@ export function PersonDetailCard({ node, onClose }: PersonDetailCardProps) {
         <div>Domaine de santé</div>
         <div className="flex gap-2 flex-wrap">
           {node.data.field_applied_domain?.map((term) => (
-            <div key={term.id} className="badge badge-success">
+            <div key={term.id} className="badge badge-soft badge-success">
               {term.name}
             </div>
           )) || <div className="badge badge-ghost">N/A</div>}
@@ -34,7 +34,7 @@ export function PersonDetailCard({ node, onClose }: PersonDetailCardProps) {
         <div>Méthodes numériques</div>
         <div className="flex gap-2 flex-wrap">
           {node.data.field_digital_domain?.map((term) => (
-            <div key={term.id} className="badge badge-info">
+            <div key={term.id} className="badge badge-soft badge-info">
               {term.name}
             </div>
           )) || <div className="badge badge-ghost">N/A</div>}
@@ -45,7 +45,7 @@ export function PersonDetailCard({ node, onClose }: PersonDetailCardProps) {
         <div>Axe RSN</div>
         <div className="flex gap-2 flex-wrap">
           {node.data.field_axe_si_membre_rsn?.name ? (
-            <div className="badge badge-warning">
+            <div className="badge badge-soft badge-warning">
               {node.data.field_axe_si_membre_rsn.name}
             </div>
           ) : (

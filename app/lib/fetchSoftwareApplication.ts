@@ -31,6 +31,7 @@ export async function fetchSoftwareApplication() {
       "significant_link",
       "metatag",
       "image",
+      "schema_logo",
       "attributes",
       "field_funder",
     ])
@@ -53,6 +54,6 @@ export async function fetchSoftwareApplication() {
     params: softappParams.getQueryObject(),
   });
 
-  // console.log(util.inspect(softwareApplicationData, { depth: null }));
+  console.log(util.inspect(softwareApplicationData, { depth: null }));
   return SoftwareApplicationSchema.array().safeParse(softwareApplicationData);
 }

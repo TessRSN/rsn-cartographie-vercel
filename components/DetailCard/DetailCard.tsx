@@ -13,7 +13,7 @@ export function DetailCard({ title, children, onClose }: DetailCardProps) {
   return (
     <div className="card text-base-content w-full h-full">
       <button
-        className="btn btn-circle btn-soft absolute right-[-0.5rem] z-10 top-[-0.5rem]"
+        className="btn btn-circle btn-soft absolute right-[-0.5rem] z-20 top-[-0.5rem]"
         onClick={onClose}
       >
         <svg
@@ -34,10 +34,10 @@ export function DetailCard({ title, children, onClose }: DetailCardProps) {
       </button>
 
       <div className="card-body p-0 w-96 max-h-[80vh] rounded-xl bg-base-200 shadow-sm flex flex-col gap-4 overflow-y-auto">
-        <div className="text-2xl sticky top-0 bg-base-200 flex justify-center p-4">
+        <div className="text-2xl z-10 sticky top-0 bg-base-200 p-4 pb-0">
           {title}
         </div>
-        <div className="p-4 w-full flex flex-col gap-4 ">{children}</div>
+        <div className="p-4 w-full flex flex-col gap-4 pt-0">{children}</div>
       </div>
     </div>
   );

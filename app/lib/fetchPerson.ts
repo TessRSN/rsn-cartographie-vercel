@@ -56,10 +56,7 @@ export async function fetchPerson() {
       defaultLocale: "fr",
     }
   );
-  console.log(
-    "field_axe_si_membre_rsn:",
-    JSON.stringify(personsData[5]?.field_axe_si_membre_rsn, null, 2)
-  );
+  //console.log("field_axe_si_membre_rsn:", JSON.stringify(personsData[5]?.field_axe_si_membre_rsn, null, 2));
   //console.log(util.inspect(personsData, { depth: null }));
 
   //etape 2 on s'assure que les data sont dans la forme attendu!

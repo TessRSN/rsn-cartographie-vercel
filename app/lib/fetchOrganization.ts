@@ -12,21 +12,31 @@ export async function fetchOrganization() {
       "alternate_name",
       "sub_organization",
       "parent_organization",
-      "additional_type",
+      "schema_organization_type",
       "description",
       "significant_link",
       "metatag",
       "image",
+      "schema_logo",
       "attributes",
       "field_funder",
-      //"field_organization_geographical",
-      //"field_couverture_geographique",
+      "field_organization_geographical",
+      "address",
+      "field_couverture_geographique",
     ])
     //.addFilter("status", "1")
     // Add Page Limit.
+    .addFields("media--image", ["image"])
+    .addFields("file--file", ["uri"])
     .addFields("node--person", ["title", "description", "same_as"])
     .addPageLimit(10000)
-    .addInclude(["sub_organization", "logo", "field_funder"])
+    .addInclude([
+      "sub_organization",
+      "schema_logo.image",
+      "field_funder",
+      "field_organization_geographical",
+      "field_couverture_geographique",
+    ])
     .addSort("created", "DESC");
 
   const orgsData = await drupal.getResourceCollection<DrupalNode[]>(
@@ -37,6 +47,6 @@ export async function fetchOrganization() {
       defaultLocale: "fr",
     }
   );
-  //console.log(util.inspect(orgsData, { depth: null }));
+  //console.log(orgsData);
   return OrganizationSchema.array().safeParse(orgsData);
 }

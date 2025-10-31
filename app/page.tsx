@@ -8,7 +8,14 @@ import { GraphEdge, GraphNode } from "reagraph";
 import { API_ENDPOINT } from "./lib/drupal";
 import util from "util";
 import { error } from "console";
-import { PersonNode, personNodeSchema } from "./lib/schema";
+import {
+  OrganizationNode,
+  organizationNodeSchema,
+  PersonNode,
+  personNodeSchema,
+  SoftwareApplicationNode,
+  SoftwareApplicationSchema,
+} from "./lib/schema";
 
 export default async function Home() {
   const [
@@ -23,72 +30,52 @@ export default async function Home() {
     fetchSoftwareApplication(),
   ]);
 
-  //console.log({ softwareApplicationError });
-  /*for (const org of orgs) {
-    console.log(util.inspect(org, { depth: null }));
-    console.log("===================");
-    console.log("===================");
-    console.log("===================");
-    break;
-  }*/
-
-  /*for (const person of personResults) {
-    console.log(util.inspect(person, { depth: null }));
-    console.log("===================");
-    console.log("===================");
-    console.log("===================");
-  }*/
-
-  /* if (datasets) {
-    for (const dataset of datasets) {
-      console.log(util.inspect(dataset, { depth: null }));
-      console.log("===================");
-      console.log("===================");
-      console.log("===================");
-      break;
-    }
-  }*/
-
-  /*if (softwareApplication) {
-    for (const softapp of softwareApplication) {
-      console.log(util.inspect(softapp, { depth: null }));
-      console.log("===================");
-      console.log("===================");
-      console.log("===================");
-    }
-  }*/
-
   // Conversion des organisations vers des noeuds du graph
   let nodes: GraphNode[] = [];
+
   if (organizationResults.data) {
     //1. extraire la creation des nodes (plus facile a lire)
-    const organizationNodes = organizationResults.data.map((org) => ({
-      id: org.id,
-      label: org.alternate_name.length > 0 ? org.alternate_name[0] : org.title,
-      data: {
+    const organizationNodes = organizationResults.data.map((org) => {
+      // S'assurer que dans Drupal, configuration JSON:API, que logo est bien ecrit schema_logo
+      let imageSrc = org.schema_logo?.image.uri?.url;
+      if (!imageSrc) {
+        imageSrc = org.metatag.find(
+          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+        )?.attributes.href;
+      } else {
+        imageSrc = `${API_ENDPOINT}/${imageSrc}`;
+      }
+      const data: OrganizationNode = {
         type: org.type,
         label:
           org.alternate_name.length > 0 ? org.alternate_name[0] : org.title,
         hoverLabel: org.title,
+        alternate_name: org.alternate_name,
         title: org.title,
-        additional_type: org.additional_type,
-        funder: org.field_funder,
-        geo_location: org.field_organization_geographical,
+        address: org.address,
+        schema_organization_type: org.schema_organization_type,
+        field_funder: org.field_funder,
+        field_organization_geographical: org.field_organization_geographical,
+        field_couverture_geographique: org.field_couverture_geographique,
         description: org.description,
         link: org.significant_link.map((link) => {
           return link.uri;
         }),
-        imageSrc:
-          org.metatag.find(
-            (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
-          )?.attributes.href || null,
-      },
-      fill: "#0061AF",
-    }));
+        imageSrc,
+      };
+
+      return {
+        id: org.id,
+        label:
+          org.alternate_name.length > 0 ? org.alternate_name[0] : org.title,
+        data: organizationNodeSchema.parse(data),
+        fill: "#0061AF",
+      };
+    });
 
     nodes = nodes.concat(organizationNodes);
   } else {
-    console.log(organizationResults.error);
+    console.log(organizationResults.error.issues);
   }
 
   if (personResults.data) {
@@ -150,10 +137,9 @@ export default async function Home() {
 
   //Conversion des Software Application en noeuds du graph
   if (softwareApplicationResults.data) {
-    nodes = nodes.concat(
-      softwareApplicationResults.data.map((softapp) => {
-        //nouvelle methode
-        let imageSrc = softapp.schema_logo?.image.uri.url;
+    const softwareApplicationNodes = softwareApplicationResults.data.map(
+      (softapp) => {
+        let imageSrc = softapp.schema_logo?.image.uri?.url;
         if (!imageSrc) {
           imageSrc = softapp.metatag.find(
             (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
@@ -161,30 +147,36 @@ export default async function Home() {
         } else {
           imageSrc = `${API_ENDPOINT}/${imageSrc}`;
         }
+        const data: SoftwareApplicationNode = {
+          type: softapp.type,
+          label:
+            softapp.alternate_name.length > 0
+              ? softapp.alternate_name[0]
+              : softapp.title,
+          hoverLabel: softapp.title,
+          link: softapp.significant_link.map((link) => {
+            return link.uri;
+          }),
+          title: softapp.title,
+
+          description: softapp.description,
+          //funder: softapp.field_funder,
+          imageSrc,
+        };
+
         return {
           id: softapp.id,
           label:
             softapp.alternate_name.length > 0
               ? softapp.alternate_name[0]
               : softapp.title,
-          data: {
-            type: softapp.type,
-            label:
-              softapp.alternate_name.length > 0
-                ? softapp.alternate_name[0]
-                : softapp.title,
-            hoverLabel: softapp.title,
-            link: "",
-            title: softapp.title,
-
-            description: softapp.description,
-            funder: softapp.field_funder,
-            imageSrc,
-          },
+          data: SoftwareApplicationSchema.parse(data),
           fill: "#EE3124",
         };
-      })
+      }
     );
+
+    nodes = nodes.concat(softwareApplicationNodes);
   } else {
     console.log(softwareApplicationResults.error);
   }

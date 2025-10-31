@@ -6,9 +6,9 @@ export function Logo({
   alt: string;
 }) {
   return (
-    <figure>
+    <figure className="avatar">
       {imageSrc ? (
-        <img src={imageSrc} alt={alt} width={200} height={200} />
+        <img src={imageSrc} alt={alt} className="bg-base-content rounded" />
       ) : (
         <div className="w-96  flex items-center justify-center"></div>
       )}

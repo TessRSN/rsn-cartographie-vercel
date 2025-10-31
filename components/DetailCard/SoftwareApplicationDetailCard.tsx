@@ -14,21 +14,12 @@ export function SoftwareApplicationDetailCard({
   onClose,
 }: SoftwareApplicationDetailCardProps) {
   return (
-    <DetailCard onClose={onClose}>
+    <DetailCard title={node.data.title} onClose={onClose}>
       <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
-
-      <div className="text-2xl">{node.data.title}</div>
 
       <div className="space-y-1">
         <div>Description</div>
         <Description data={node.data} />
-      </div>
-
-      <div className="space-y-1 pt-6">
-        <div>Catégorie(s)</div>
-        <div>
-          <div>Non disponible</div>
-        </div>
       </div>
 
       <div className="space-y-1 pt-6">
@@ -47,7 +38,7 @@ export function SoftwareApplicationDetailCard({
               );
             })
           ) : (
-            <div>Aucun lien</div>
+            <div>N/A</div>
           )}
         </div>
       </div>

@@ -36,24 +36,24 @@ const FileResourceIdObjMetaSchema = z.object({
 
 const FileSchema = z.object({
   type: z.literal("file--file"),
-  id: z.string().uuid(),
-  uri: FileUriSchema,
-  links: SelfLinkSchema,
+  id: z.uuid(),
+  uri: FileUriSchema.nullish(),
+  links: SelfLinkSchema.nullish(),
   resourceIdObjMeta: FileResourceIdObjMetaSchema,
 });
 
 const MediaImageSchema = z.object({
   type: z.literal("media--image"),
-  id: z.string().uuid(),
+  id: z.uuid(),
   links: SelfLinkSchema,
   resourceIdObjMeta: ResourceIdObjMetaSchema,
   image: FileSchema,
-  relationshipNames: z.array(z.string()).optional(),
+  relationshipNames: z.string().array().optional(),
 });
 
 const MediaImageReferenceSchema = z.object({
   type: z.literal("media--image"),
-  id: z.string().uuid(),
+  id: z.uuid(),
   resourceIdObjMeta: ResourceIdObjMetaSchema,
 });
 
@@ -64,15 +64,25 @@ const DescriptionSchema = z.object({
   summary: z.string(),
 });
 
+const AddressSchema = z.object({
+  langcode: z.string().nullable().optional(),
+  country_code: z.string().optional(),
+  administrative_area: z.string().optional(),
+  locality: z.string().optional(),
+  postal_code: z.string().optional(),
+  address_line1: z.string().optional(),
+  address_line2: z.string().optional(),
+});
+
 const TaxonomyTermReferenceSchema = z.object({
   type: z.string(),
-  id: z.string().uuid(),
+  id: z.uuid(),
   resourceIdObjMeta: ResourceIdObjMetaSchema,
 });
 
 const TaxonomyTermPersonSchema = z.object({
   type: z.literal("taxonomy_term--person"),
-  id: z.string().uuid(),
+  id: z.uuid(),
   drupal_internal__tid: z.number(),
   name: z.string(),
 });
@@ -80,7 +90,7 @@ const TaxonomyTermPersonSchema = z.object({
 const TaxonomyTermHealthResearchCategorySchema = z
   .object({
     type: z.literal("taxonomy_term--health_research_category"),
-    id: z.string().uuid(),
+    id: z.uuid(),
     drupal_internal__tid: z.number(),
     name: z.string(),
   })
@@ -89,45 +99,50 @@ const TaxonomyTermHealthResearchCategorySchema = z
 const TaxonomyTermMethodesNumeriquesSchema = z
   .object({
     type: z.literal("taxonomy_term--methodes_numeriques"),
-    id: z.string().uuid(),
+    id: z.uuid(),
     drupal_internal__tid: z.number(),
     name: z.string(),
   })
   .passthrough();
 
-const TaxonomyTermAxeRsnSchema = z
-  .object({
-    type: z.literal("taxonomy_term--axe_rsn"),
-    id: z.string().uuid(),
-    drupal_internal__tid: z.number(),
-    name: z.string(),
-  })
-  .passthrough();
+const TaxonomyTermAxeRsnSchema = z.object({
+  type: z.literal("taxonomy_term--axe_rsn"),
+  id: z.uuid(),
+  drupal_internal__tid: z.number(),
+  name: z.string(),
+});
 
 const TaxonomyTermGeographicalSchema = z.object({
   type: z.literal("taxonomy_term--geographical"),
-  id: z.string().uuid(),
-  resourceIdObjMeta: ResourceIdObjMetaSchema,
+  id: z.uuid(),
+  drupal_internal__tid: z.number(),
+  name: z.string(),
+});
+
+const TaxonomyCouvertureGeographiqueSchema = z.object({
+  type: z.literal("taxonomy_term--couverture_geographique"),
+  id: z.uuid(),
+  drupal_internal__tid: z.number(),
+  name: z.string(),
 });
 
 const BaseOrganizationSchema = z.object({
   type: z.literal("node--organization"),
-  id: z.string().uuid(),
+  id: z.uuid(),
   title: z.string(),
   metatag: z.array(MetatagSchema),
   description: DescriptionSchema.nullable(),
-  alternate_name: z.array(z.string()),
-  additional_type: z.string().catch(""),
+  address: AddressSchema.optional().nullable(),
+  alternate_name: z.string().array(),
+  schema_organization_type: z.string().catch(""),
   significant_link: z.array(LinkSchema),
   links: z.object({
     self: z.object({
       href: z.string(),
     }),
   }),
-  logo: MediaImageSchema.nullish(),
-  relationshipNames: z.array(z.string()),
-  field_applied_domain: z.array(TaxonomyTermReferenceSchema).optional(),
-  field_digital_domain: z.array(TaxonomyTermReferenceSchema).optional(),
+  schema_logo: MediaImageSchema.nullish(),
+  relationshipNames: z.string().array(),
 });
 
 const OrganizationSchema = z.object({
@@ -140,21 +155,21 @@ const OrganizationSchema = z.object({
     .optional()
     .nullish(),
   field_couverture_geographique: z
-    .array(TaxonomyTermGeographicalSchema)
+    .array(TaxonomyCouvertureGeographiqueSchema)
     .optional()
     .nullish(),
 });
 
 const PersonSchema = z.object({
   type: z.literal("node--person"),
-  id: z.string().uuid(),
+  id: z.uuid(),
   title: z.string(),
   metatag: z.array(MetatagSchema),
   description: DescriptionSchema.nullable(),
   same_as: LinkSchema.array(),
   links: SelfLinkSchema,
   image: MediaImageSchema.partial().nullish().optional(),
-  relationshipNames: z.array(z.string()),
+  relationshipNames: z.string().array(),
   field_applied_domain: z
     .array(TaxonomyTermHealthResearchCategorySchema)
     .optional()
@@ -169,10 +184,10 @@ const PersonSchema = z.object({
 
 const DatasetSchema = z.object({
   type: z.literal("node--dataset"),
-  id: z.string().uuid(),
+  id: z.uuid(),
   title: z.string(),
   description: DescriptionSchema.nullish(),
-  alternate_name: z.array(z.string()),
+  alternate_name: z.string().array(),
   significant_link: z.array(LinkSchema),
   metatag: z.array(MetatagSchema),
   member_of: OrganizationSchema.partial().array().optional(),
@@ -182,7 +197,7 @@ const DatasetSchema = z.object({
     }),
   }),
   schema_logo: MediaImageSchema.nullable(),
-  relationshipNames: z.array(z.string()),
+  relationshipNames: z.string().array(),
   field_applied_domain: z.array(TaxonomyTermReferenceSchema).optional(),
   field_digital_domain: z.array(TaxonomyTermReferenceSchema).optional(),
   field_dataset_contributors: PersonSchema.partial().array().optional(),
@@ -196,7 +211,7 @@ const SoftwareApplicationSchema = z.object({
   title: z.string(),
   metatag: z.array(MetatagSchema),
   significant_link: z.array(LinkSchema),
-  alternate_name: z.array(z.string()),
+  alternate_name: z.string().array(),
   links: z.object({
     self: z.object({
       href: z.string(),
@@ -204,7 +219,7 @@ const SoftwareApplicationSchema = z.object({
   }),
   author: PersonSchema.partial().array().optional(),
   schema_logo: MediaImageSchema.nullable(),
-  relationshipNames: z.array(z.string()),
+  relationshipNames: z.string().array(),
   field_applied_domain: z
     .array(TaxonomyTermReferenceSchema)
     .optional()
@@ -224,14 +239,25 @@ const baseGraphNodeSchema = z.object({
   title: z.string(),
   type: z.string(),
   description: DescriptionSchema.nullish(),
-  link: z.array(z.string()),
+  link: z.string().array(),
   imageSrc: z.string().nullable().optional(),
 });
 
 // Discriminated union schemas for different node types
 export const organizationNodeSchema = baseGraphNodeSchema.extend({
   type: z.literal("node--organization"),
-  additional_type: z.string(),
+  schema_organization_type: z.string().nullish(),
+  alternate_name: z.string().array(),
+  address: AddressSchema.optional().nullable(),
+  field_organization_geographical: z
+    .array(TaxonomyTermGeographicalSchema)
+    .optional()
+    .nullish(),
+  field_funder: BaseOrganizationSchema.partial().array().optional().nullish(),
+  field_couverture_geographique: z
+    .array(TaxonomyCouvertureGeographiqueSchema)
+    .optional()
+    .nullish(),
 });
 
 export const personNodeSchema = baseGraphNodeSchema.extend({
@@ -286,3 +312,4 @@ export type SoftwareApplication = z.infer<typeof SoftwareApplicationSchema>;
 export type Organization = z.infer<typeof OrganizationSchema>;
 export type Person = z.infer<typeof PersonSchema>;
 export type Dataset = z.infer<typeof DatasetSchema>;
+export type Address = z.infer<typeof AddressSchema>;
