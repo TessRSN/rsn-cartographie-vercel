@@ -2,7 +2,7 @@
 
 import { GraphEdge } from "reagraph";
 import { MyDiagram } from "./Reagraph";
-import { DetailCard } from "./DetailCard";
+import { DetailCardRoot } from "./DetailCard/DetailCardRoot";
 import { useState } from "react";
 import { MyGraphNode } from "@/app/lib/types";
 
@@ -20,12 +20,12 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
     <>
       <div className="absolute z-10 right-12 top-24 max-h-[80vh]">
         {contextMenuData && (
-          <DetailCard
+          <DetailCardRoot
             node={contextMenuData}
             onClose={() => {
               setContextMenuData(undefined);
             }}
-          ></DetailCard>
+          />
         )}
       </div>
       <MyDiagram

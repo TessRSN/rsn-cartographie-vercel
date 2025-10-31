@@ -7,44 +7,29 @@ import util from "util";
 export async function fetchDataset() {
   // Information Dataset
   const datasetParams = new DrupalJsonApiParams()
-    .addFields("node--dataset", [
+    .addFields("node--data_catalog", [
       "title",
       "description",
       "alternate_name",
       "significant_link",
       "metatag",
       "schema_logo",
-      "parent_organization",
       "field_dataset_contributors",
-      "field_applied_domain",
-      "author",
-      "field_funder",
-      "field_licence",
-      "field_modele_acces",
-      "schema_email",
     ])
     .addFields("node--person", ["title", "description", "same_as"])
     .addFields("media--image", ["image"])
-    .addFields("node--organization", ["title"])
     .addFields("file--file", ["uri"])
     .addFilter("status", "1")
     .addPageLimit(10000)
-    .addInclude([
-      "author",
-      "schema_logo.image",
-      "field_funder",
-      "field_licence",
-      "field_applied_domain",
-      "field_modele_acces",
-    ])
+    .addInclude(["author", "schema_logo.image", "field_dataset_contributors"])
     .addSort("created", "DESC");
 
-  const datasetsData = await drupal.getResourceCollection<DrupalNode[]>(
-    "node--dataset",
+  const dataCatalogData = await drupal.getResourceCollection<DrupalNode[]>(
+    "node--data_catalog",
     {
       params: datasetParams.getQueryObject(),
     }
   );
   //  console.log(util.inspect(datasetsData, { depth: null }));
-  return DatasetSchema.array().safeParse(datasetsData);
+  return DatasetSchema.array().safeParse(dataCatalogData);
 }
