@@ -87,23 +87,19 @@ const TaxonomyTermPersonSchema = z.object({
   name: z.string(),
 });
 
-const TaxonomyTermHealthResearchCategorySchema = z
-  .object({
-    type: z.literal("taxonomy_term--health_research_category"),
-    id: z.uuid(),
-    drupal_internal__tid: z.number(),
-    name: z.string(),
-  })
-  .passthrough();
+const TaxonomyTermHealthResearchCategorySchema = z.object({
+  type: z.literal("taxonomy_term--health_research_category"),
+  id: z.uuid(),
+  drupal_internal__tid: z.number(),
+  name: z.string(),
+});
 
-const TaxonomyTermMethodesNumeriquesSchema = z
-  .object({
-    type: z.literal("taxonomy_term--methodes_numeriques"),
-    id: z.uuid(),
-    drupal_internal__tid: z.number(),
-    name: z.string(),
-  })
-  .passthrough();
+const TaxonomyTermMethodesNumeriquesSchema = z.object({
+  type: z.literal("taxonomy_term--methodes_numeriques"),
+  id: z.uuid(),
+  drupal_internal__tid: z.number(),
+  name: z.string(),
+});
 
 const TaxonomyTermAxeRsnSchema = z.object({
   type: z.literal("taxonomy_term--axe_rsn"),
@@ -126,6 +122,27 @@ const TaxonomyCouvertureGeographiqueSchema = z.object({
   name: z.string(),
 });
 
+const TaxonomyApplicationCategorySchema = z.object({
+  type: z.literal("taxonomy_term--software_type"),
+  id: z.uuid(),
+  drupal_internal__tid: z.number(),
+  name: z.string(),
+});
+
+const TaxonomySoftwareLicenceSchema = z.object({
+  type: z.literal("taxonomy_term--accessibility"),
+  id: z.uuid(),
+  drupal_internal__tid: z.number(),
+  name: z.string(),
+});
+
+const TaxonomySoftwareModeleAccesSchema = z.object({
+  type: z.literal("taxonomy_term--modele_acces"),
+  id: z.uuid(),
+  drupal_internal__tid: z.number(),
+  name: z.string(),
+});
+
 const BaseOrganizationSchema = z.object({
   type: z.literal("node--organization"),
   id: z.uuid(),
@@ -136,11 +153,13 @@ const BaseOrganizationSchema = z.object({
   alternate_name: z.string().array(),
   schema_organization_type: z.string().catch(""),
   significant_link: z.array(LinkSchema),
-  links: z.object({
-    self: z.object({
-      href: z.string(),
-    }),
-  }),
+  links: z
+    .object({
+      self: z.object({
+        href: z.string(),
+      }),
+    })
+    .optional(),
   schema_logo: MediaImageSchema.nullish(),
   relationshipNames: z.string().array(),
 });
@@ -218,18 +237,12 @@ const SoftwareApplicationSchema = z.object({
     }),
   }),
   author: PersonSchema.partial().array().optional(),
-  schema_logo: MediaImageSchema.nullable(),
+  schema_logo: MediaImageSchema.optional().nullable(),
   relationshipNames: z.string().array(),
-  field_applied_domain: z
-    .array(TaxonomyTermReferenceSchema)
-    .optional()
-    .nullish(),
-  field_digital_domain: z
-    .array(TaxonomyTermReferenceSchema)
-    .optional()
-    .nullish(),
-  field_axe_si_membre_rsn: TaxonomyTermAxeRsnSchema.optional().nullish(),
-  field_funder: BaseOrganizationSchema.partial().array().optional().nullish(),
+  field_funder: BaseOrganizationSchema.partial().array().optional(),
+  application_category: z.array(TaxonomyApplicationCategorySchema).optional(),
+  field_licence: TaxonomySoftwareLicenceSchema.optional().nullable(),
+  field_modele_acces: TaxonomySoftwareModeleAccesSchema.optional().nullable(),
 });
 
 // Base graph node schema with common fields
@@ -280,6 +293,12 @@ export const datasetNodeSchema = baseGraphNodeSchema.extend({
 
 export const softwareApplicationNodeSchema = baseGraphNodeSchema.extend({
   type: z.literal("node--software_application"),
+  field_funder: BaseOrganizationSchema.partial().array().optional().nullish(),
+  alternate_name: z.string().array(),
+  application_category: z.array(TaxonomyApplicationCategorySchema).optional(),
+  field_licence: TaxonomySoftwareLicenceSchema.nullish(),
+  author: PersonSchema.partial().array().optional(),
+  field_modele_acces: TaxonomySoftwareModeleAccesSchema.optional().nullable(),
 });
 
 // Discriminated union for all graph node types

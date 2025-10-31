@@ -18,23 +18,12 @@ export async function fetchSoftwareApplication() {
       "operating_system",
       "schema_logo",
       "field_funder",
+      "application_category",
+      "field_licence",
+      "field_modele_acces",
     ])
-    .addFields("taxonomy_term--software_type", ["name", "drupal_internal__tid"])
     .addFields("node--person", ["title", "description", "same_as"])
-    .addFields("node--organization", [
-      "title",
-      "alternate_name",
-      //"sub_organization",
-      //"parent_organization",
-      "additional_type",
-      "description",
-      "significant_link",
-      "metatag",
-      "image",
-      "schema_logo",
-      "attributes",
-      "field_funder",
-    ])
+    .addFields("node--organization", ["title"])
     .addFields("media--image", ["image"])
     .addFields("file--file", ["uri"])
     .addFilter("status", "1")
@@ -45,6 +34,8 @@ export async function fetchSoftwareApplication() {
       "schema_logo.image",
       "author",
       "field_funder",
+      "field_licence",
+      "field_modele_acces",
     ])
     .addSort("created", "DESC");
 
@@ -54,6 +45,8 @@ export async function fetchSoftwareApplication() {
     params: softappParams.getQueryObject(),
   });
 
-  console.log(util.inspect(softwareApplicationData, { depth: null }));
+  console.log(
+    util.inspect(softwareApplicationData.slice(2, 5), { depth: null })
+  );
   return SoftwareApplicationSchema.array().safeParse(softwareApplicationData);
 }

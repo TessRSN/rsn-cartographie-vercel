@@ -14,6 +14,7 @@ import {
   PersonNode,
   personNodeSchema,
   SoftwareApplicationNode,
+  softwareApplicationNodeSchema,
   SoftwareApplicationSchema,
 } from "./lib/schema";
 
@@ -147,8 +148,10 @@ export default async function Home() {
         } else {
           imageSrc = `${API_ENDPOINT}/${imageSrc}`;
         }
+
         const data: SoftwareApplicationNode = {
           type: softapp.type,
+          alternate_name: softapp.alternate_name,
           label:
             softapp.alternate_name.length > 0
               ? softapp.alternate_name[0]
@@ -158,9 +161,12 @@ export default async function Home() {
             return link.uri;
           }),
           title: softapp.title,
-
           description: softapp.description,
-          //funder: softapp.field_funder,
+          field_funder: softapp.field_funder,
+          application_category: softapp.application_category,
+          field_licence: softapp.field_licence,
+          author: softapp.author,
+          field_modele_acces: softapp.field_modele_acces,
           imageSrc,
         };
 
@@ -170,7 +176,7 @@ export default async function Home() {
             softapp.alternate_name.length > 0
               ? softapp.alternate_name[0]
               : softapp.title,
-          data: SoftwareApplicationSchema.parse(data),
+          data: softwareApplicationNodeSchema.parse(data),
           fill: "#EE3124",
         };
       }
