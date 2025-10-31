@@ -62,7 +62,7 @@ export function PersonDetailCard({ node, onClose }: PersonDetailCardProps) {
       </div>
 
       <div className="space-y-1 pt-6">
-        <div>Courriel</div>
+        <div>Contact</div>
         <div className="line-clamp-2">
           {node.data.link && node.data.link.length > 0 ? (
             node.data.link.map((link) => {
