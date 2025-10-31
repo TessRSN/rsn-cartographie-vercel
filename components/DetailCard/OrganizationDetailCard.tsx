@@ -31,7 +31,10 @@ export function OrganizationDetailCard({
           <div> {node.data.alternate_name[0]}</div>
         </div>
       ) : null}
-      <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
+
+      {node.data.imageSrc && (
+        <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
+      )}
 
       {node.data.schema_organization_type &&
       additionalTypeToLabel[node.data.schema_organization_type] ? (

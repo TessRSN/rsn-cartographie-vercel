@@ -14,6 +14,7 @@ export async function fetchDataset() {
       "significant_link",
       "metatag",
       "schema_logo",
+      "parent_organization",
       "field_dataset_contributors",
       "field_applied_domain",
       "author",

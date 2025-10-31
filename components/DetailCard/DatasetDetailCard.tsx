@@ -18,7 +18,10 @@ export function DatasetDetailCard({ node, onClose }: DatasetDetailCardProps) {
           <div> {node.data.alternate_name[0]}</div>
         </div>
       ) : null}
-      <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
+
+      {node.data.imageSrc && (
+        <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
+      )}
 
       <div className="space-y-1 pt-2">
         <div>Domaine de santé</div>

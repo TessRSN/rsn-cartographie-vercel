@@ -91,6 +91,7 @@ export default async function Home() {
         link: person.same_as.map((link) => {
           return link.uri;
         }),
+        member_of: person.member_of,
         significant_link: person.significant_link,
         field_applied_domain: person.field_applied_domain,
         field_digital_domain: person.field_digital_domain,
@@ -133,6 +134,7 @@ export default async function Home() {
           return link.uri;
         }),
         imageSrc,
+        parent_organization: dataset.parent_organization,
         field_applied_domain: dataset.field_applied_domain,
         field_licence: dataset.field_licence,
         field_modele_acces: dataset.field_modele_acces,
@@ -182,6 +184,7 @@ export default async function Home() {
           }),
           title: softapp.title,
           description: softapp.description,
+          parent_organization: softapp.parent_organization,
           field_funder: softapp.field_funder,
           application_category: softapp.application_category,
           field_licence: softapp.field_licence,
@@ -246,9 +249,9 @@ export default async function Home() {
     )
   );
 
-  edges = edges.concat(
+  /*edges = edges.concat(
     createEdges(organizationResults?.data ?? [], "field_funder", "#64748B")
-  );
+  );*/
 
   edges = edges.concat(
     createEdges(
@@ -257,24 +260,26 @@ export default async function Home() {
       "#64748B"
     )
   );
-  /*edges = edges.concat(
-    createEdges(personResults?.data ?? [], "member_of", "#64748B")
-  );*/
-  //edges.concat(createEdges(personResults?.data ?? [], "subject_of", "#64748B"));
   edges = edges.concat(
-    createEdges(
-      datasetResults?.data ?? [],
-      "field_dataset_contributors",
-      "#64748B"
-    )
+    createEdges(personResults?.data ?? [], "member_of", "#64748B")
   );
+
+  edges = edges.concat(
+    createEdges(datasetResults?.data ?? [], "author", "#64748B")
+  );
+
+  edges = edges.concat(
+    createEdges(datasetResults?.data ?? [], "parent_organization", "#64748B")
+  );
+
   edges = edges.concat(
     createEdges(softwareApplicationResults?.data ?? [], "author", "#64748B")
   );
+
   edges = edges.concat(
     createEdges(
       softwareApplicationResults?.data ?? [],
-      "field_funder",
+      "parent_organization",
       "#64748B"
     )
   );

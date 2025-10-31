@@ -11,7 +11,7 @@ export async function fetchPerson() {
     .addFields("node--person", [
       "title",
       "description",
-      //"member_of",
+      "member_of",
       "same_as",
       "image",
       "metatag",
@@ -36,11 +36,13 @@ export async function fetchPerson() {
     ])
     .addFields("media--image", ["image"])
     .addFields("file--file", ["uri"])
+    .addFields("node--organization", ["title"])
     .addInclude([
       "field_person_type",
       "field_applied_domain",
       "field_digital_domain",
       "field_axe_si_membre_rsn",
+      "member_of",
     ])
     .addFilter("status", "1")
     .addPageLimit(10000)

@@ -12,7 +12,9 @@ interface PersonDetailCardProps {
 export function PersonDetailCard({ node, onClose }: PersonDetailCardProps) {
   return (
     <DetailCard title={node.data.title} onClose={onClose}>
-      {/*<Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />*/}
+      {node.data.imageSrc && (
+        <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
+      )}
 
       <div className="space-y-1 pt-2">
         <div>Type</div>

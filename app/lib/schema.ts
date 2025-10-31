@@ -189,6 +189,7 @@ const PersonSchema = z.object({
   title: z.string(),
   metatag: z.array(MetatagSchema),
   description: DescriptionSchema.nullable(),
+  member_of: OrganizationSchema.partial().array().optional(),
   same_as: LinkSchema.array(),
   links: SelfLinkSchema,
   significant_link: z.array(LinkSchema).nullish(),
@@ -221,6 +222,7 @@ const DatasetSchema = z.object({
       href: z.string(),
     }),
   }),
+  parent_organization: BaseOrganizationSchema.partial().array().optional(),
   schema_logo: MediaImageSchema.nullable(),
   relationshipNames: z.string().array(),
   field_applied_domain: z
@@ -248,6 +250,7 @@ const SoftwareApplicationSchema = z.object({
       href: z.string(),
     }),
   }),
+  parent_organization: BaseOrganizationSchema.partial().array().optional(),
   author: PersonSchema.partial().array().optional(),
   schema_logo: MediaImageSchema.optional().nullable(),
   relationshipNames: z.string().array(),
@@ -288,6 +291,7 @@ export const organizationNodeSchema = baseGraphNodeSchema.extend({
 
 export const personNodeSchema = baseGraphNodeSchema.extend({
   type: z.literal("node--person"),
+  member_of: OrganizationSchema.partial().array().optional(),
   field_person_type: TaxonomyTermPersonSchema.optional().nullish(),
   field_applied_domain: z
     .array(TaxonomyTermHealthResearchCategorySchema)
@@ -313,6 +317,7 @@ export const datasetNodeSchema = baseGraphNodeSchema.extend({
     .optional()
     .nullish(),
   field_funder: BaseOrganizationSchema.partial().array().optional().nullish(),
+  parent_organization: BaseOrganizationSchema.partial().array().optional(),
 });
 
 export const softwareApplicationNodeSchema = baseGraphNodeSchema.extend({
@@ -324,6 +329,7 @@ export const softwareApplicationNodeSchema = baseGraphNodeSchema.extend({
   author: PersonSchema.partial().array().optional(),
   field_modele_acces: TaxonomySoftwareModeleAccesSchema.optional().nullable(),
   email: EmailSchema.nullish(),
+  parent_organization: BaseOrganizationSchema.partial().array().optional(),
 });
 
 // Discriminated union for all graph node types

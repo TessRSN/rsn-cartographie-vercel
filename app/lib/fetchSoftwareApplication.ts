@@ -13,6 +13,7 @@ export async function fetchSoftwareApplication() {
       "additional_type",
       "description",
       "author",
+      "parent_organization",
       "significant_link",
       "metatag",
       "operating_system",

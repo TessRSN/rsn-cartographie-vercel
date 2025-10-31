@@ -22,7 +22,9 @@ export function SoftwareApplicationDetailCard({
         </div>
       ) : null}
 
-      <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
+      {node.data.imageSrc && (
+        <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
+      )}
 
       {node.data.application_category &&
       node.data.application_category.length > 0 ? (
