@@ -14,6 +14,9 @@ importers:
       isomorphic-dompurify:
         specifier: ^2.28.0
         version: 2.28.0(postcss@8.5.6)
+      lucide-react:
+        specifier: ^0.553.0
+        version: 0.553.0(react@19.1.0)
       next:
         specifier: 15.5.3
         version: 15.5.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1448,6 +1451,11 @@ packages:
   lru-cache@11.2.2:
     resolution: {integrity: sha512-F9ODfyqML2coTIsQpSkRHnLSZMtkU8Q+mSfcaIyKwy58u+8k5nvAYeiNhsyMARvzNcXJ9QfWVrcPsC9e9rAxtg==}
     engines: {node: 20 || >=22}
+
+  lucide-react@0.553.0:
+    resolution: {integrity: sha512-BRgX5zrWmNy/lkVAe0dXBgd7XQdZ3HTf+Hwe3c9WK6dqgnj9h+hxV+MDncM88xDWlCq27+TKvHGE70ViODNILw==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   maath@0.10.8:
     resolution: {integrity: sha512-tRvbDF0Pgqz+9XUa4jjfgAQ8/aPKmQdWXilFu2tMy4GWj4NOsx99HlULO4IeREfbO3a0sA145DZYyvXPkybm0g==}
@@ -3544,6 +3552,10 @@ snapshots:
   lodash.merge@4.6.2: {}
 
   lru-cache@11.2.2: {}
+
+  lucide-react@0.553.0(react@19.1.0):
+    dependencies:
+      react: 19.1.0
 
   maath@0.10.8(@types/three@0.180.0)(three@0.177.0):
     dependencies:

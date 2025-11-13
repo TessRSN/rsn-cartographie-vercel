@@ -191,7 +191,7 @@ export default async function Home() {
           author: softapp.author,
           field_modele_acces: softapp.field_modele_acces,
           imageSrc,
-          email: softapp.email,
+          schema_email: softapp.schema_email,
         };
 
         return {

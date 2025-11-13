@@ -258,7 +258,7 @@ const SoftwareApplicationSchema = z.object({
   application_category: z.array(TaxonomyApplicationCategorySchema).optional(),
   field_licence: TaxonomySoftwareLicenceSchema.optional().nullable(),
   field_modele_acces: TaxonomySoftwareModeleAccesSchema.optional().nullable(),
-  email: EmailSchema.nullish(),
+  schema_email: z.string().nullish(),
 });
 
 // Base graph node schema with common fields
@@ -328,7 +328,7 @@ export const softwareApplicationNodeSchema = baseGraphNodeSchema.extend({
   field_licence: TaxonomySoftwareLicenceSchema.nullish(),
   author: PersonSchema.partial().array().optional(),
   field_modele_acces: TaxonomySoftwareModeleAccesSchema.optional().nullable(),
-  email: EmailSchema.nullish(),
+  schema_email: z.string().nullish(),
   parent_organization: BaseOrganizationSchema.partial().array().optional(),
 });
 

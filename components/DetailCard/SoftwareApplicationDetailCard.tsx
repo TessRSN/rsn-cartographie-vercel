@@ -83,15 +83,15 @@ export function SoftwareApplicationDetailCard({
         </div>
       ) : null}
 
-      {node.data.email?.schema_email && (
+      {node.data.schema_email && (
         <div className="space-y-1 pt-2">
           <div className="font-medium">Contact</div>
           <div>
             <a
-              href={node.data.email.schema_email[0]}
+              href={`mailto:${node.data.schema_email}`}
               className="text-blue-600 hover:underline"
             >
-              {node.data.email.schema_email[0]}
+              {node.data.schema_email}
             </a>
           </div>
         </div>
