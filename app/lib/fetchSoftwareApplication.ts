@@ -46,8 +46,5 @@ export async function fetchSoftwareApplication() {
     params: softappParams.getQueryObject(),
   });
 
-  console.log(
-    util.inspect(softwareApplicationData.slice(2, 5), { depth: null })
-  );
   return SoftwareApplicationSchema.array().safeParse(softwareApplicationData);
 }

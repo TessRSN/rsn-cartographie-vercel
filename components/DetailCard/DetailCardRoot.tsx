@@ -5,6 +5,7 @@ import { DatasetDetailCard } from "./DatasetDetailCard";
 import { PersonDetailCard } from "./PersonDetailCard";
 import { SoftwareApplicationDetailCard } from "./SoftwareApplicationDetailCard";
 import { type GraphNodeData } from "@/app/lib/schema";
+import { DataCatalogDetailCard } from "./DataCatalogDetailCard";
 
 interface DetailCardRootProps {
   node: MyGraphNode;
@@ -14,6 +15,8 @@ interface DetailCardRootProps {
 export function DetailCardRoot({ node, onClose }: DetailCardRootProps) {
   if (isNodeOfType(node, "node--dataset")) {
     return <DatasetDetailCard node={node} onClose={onClose} />;
+  } else if (isNodeOfType(node, "node--data_catalog")) {
+    return <DataCatalogDetailCard node={node} onClose={onClose} />;
   } else if (isNodeOfType(node, "node--organization")) {
     return <OrganizationDetailCard node={node} onClose={onClose} />;
   } else if (isNodeOfType(node, "node--person")) {

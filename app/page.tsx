@@ -17,7 +17,11 @@ import {
   softwareApplicationNodeSchema,
   DatasetNode,
   datasetNodeSchema,
+  DataCatalogNode,
+  DataCatalogSchema,
+  dataCatalogNodeSchema,
 } from "./lib/schema";
+import { fetchDataCatalog } from "./lib/fetchDataCatalog";
 
 export default async function Home() {
   const [
@@ -25,11 +29,13 @@ export default async function Home() {
     personResults,
     datasetResults,
     softwareApplicationResults,
+    dataCatalogResults,
   ] = await Promise.all([
     fetchOrganization(),
     fetchPerson(),
     fetchDataset(),
     fetchSoftwareApplication(),
+    fetchDataCatalog(),
   ]);
 
   // Conversion des organisations vers des noeuds du graph
@@ -158,6 +164,53 @@ export default async function Home() {
     console.log(datasetResults.error.issues);
   }
 
+  // Conversion des dataCatalog en noeuds du graph
+  if (dataCatalogResults.data) {
+    const dataCatalogNodes = dataCatalogResults.data.map((dataCatalog) => {
+      let imageSrc = dataCatalog.schema_logo?.image.uri?.url;
+      if (!imageSrc) {
+        imageSrc = dataCatalog.metatag.find(
+          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+        )?.attributes.href;
+      } else {
+        imageSrc = `${API_ENDPOINT}/${imageSrc}`;
+      }
+      const data: DataCatalogNode = {
+        type: dataCatalog.type,
+        label: dataCatalog.title,
+        alternate_name: dataCatalog.alternate_name,
+        hoverLabel: dataCatalog.title,
+        title: dataCatalog.title,
+        description: dataCatalog.description,
+        link: dataCatalog.significant_link.map((link) => {
+          return link.uri;
+        }),
+        imageSrc,
+        parent_organization: dataCatalog.parent_organization,
+        field_sub_dataset: dataCatalog.field_sub_dataset,
+        field_applied_domain: dataCatalog.field_applied_domain,
+        field_licence: dataCatalog.field_licence,
+        field_modele_acces: dataCatalog.field_modele_acces,
+        author: dataCatalog.author,
+        field_funder: dataCatalog.field_funder,
+      };
+
+      return {
+        id: dataCatalog.id,
+        label:
+          dataCatalog.alternate_name.length > 0
+            ? dataCatalog.alternate_name[0]
+            : dataCatalog.title,
+        data: dataCatalogNodeSchema.parse(data),
+        fill: "#FFCC4E",
+      };
+    });
+
+    nodes = nodes.concat(dataCatalogNodes);
+  } else {
+    console.log(dataCatalogResults.error.issues);
+  }
+
   //Conversion des Software Application en noeuds du graph
   if (softwareApplicationResults.data) {
     const softwareApplicationNodes = softwareApplicationResults.data.map(
@@ -270,6 +323,22 @@ export default async function Home() {
 
   edges = edges.concat(
     createEdges(datasetResults?.data ?? [], "parent_organization", "#64748B")
+  );
+
+  edges = edges.concat(
+    createEdges(dataCatalogResults?.data ?? [], "author", "#64748B")
+  );
+
+  edges = edges.concat(
+    createEdges(
+      dataCatalogResults?.data ?? [],
+      "parent_organization",
+      "#64748B"
+    )
+  );
+
+  edges = edges.concat(
+    createEdges(dataCatalogResults?.data ?? [], "field_sub_dataset", "#64748B")
   );
 
   edges = edges.concat(
