@@ -93,6 +93,10 @@ export function MyDiagram({
     edges: edges,
   });
 
+  const fitView = () => {
+    graphRef.current?.fitNodesInView();
+  };
+
   useEffect(() => {
     let filteredNodes =
       query.length > 0
@@ -116,7 +120,7 @@ export function MyDiagram({
         ref={graphRef}
         selections={selections}
         theme={darkTheme}
-        cameraMode="rotate"
+        cameraMode="pan"
         //layoutType="forceDirected3d" // - vision 3d
         layoutType="forceDirected2d"
         edgeArrowPosition="none"
@@ -133,6 +137,7 @@ export function MyDiagram({
           onContextMenuOpen(data);
         }}
       />
+      <button onClick={fitView}>Fit View</button>
     </div>
   );
 }

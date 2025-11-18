@@ -26,17 +26,16 @@ export function SoftwareApplicationDetailCard({
         <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
       )}
 
-      {node.data.application_category &&
-      node.data.application_category.length > 0 ? (
-        <div className="space-y-1 pt-2">
-          <div className="font-medium">Type</div>
-          <div className="badge badge-soft badge-primary h-fit">
-            {node.data.application_category.map((term) => (
-              <div key={term.id}>{term.name}</div>
-            ))}
-          </div>
+      <div className="space-y-1 pt-2">
+        <div className="font-medium">Type</div>
+        <div className="flex gap-2 flex-wrap">
+          {node.data.application_category?.map((term) => (
+            <div key={term.id} className="badge badge-soft badge-primary h-fit">
+              {term.name}
+            </div>
+          )) || <div className="badge badge-ghost">N/A</div>}
         </div>
-      ) : null}
+      </div>
 
       <div className="space-y-1">
         <div>Description</div>
