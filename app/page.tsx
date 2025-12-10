@@ -21,7 +21,11 @@ import {
   DataCatalogSchema,
   dataCatalogNodeSchema,
 } from "./lib/schema";
+<<<<<<< HEAD
 import { fetchDataCatalog } from "./lib/fetchDataCatalog";
+=======
+import { Suspense } from "react";
+>>>>>>> release-0.4.0
 
 export default async function Home() {
   const [
@@ -364,7 +368,9 @@ export default async function Home() {
 
   return (
     <div>
-      <DiagramRoot nodes={nodes} edges={edges}></DiagramRoot>
+      <Suspense fallback={null}>
+        <DiagramRoot nodes={nodes} edges={edges} />
+      </Suspense>
     </div>
   );
 }

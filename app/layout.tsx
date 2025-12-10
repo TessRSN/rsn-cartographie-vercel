@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/NavBar";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,19 +17,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "RSN - Cartographie",
   description: "Cartographie dynamique du Réseau de Santé Numérique du Québec",
+  icons: {
+    icon: (process.env.NEXT_PUBLIC_ASSET_PREFIX ?? "") + "/favicon.ico",
+  },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Navbar />
+    <html lang="fr">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} >
+        <Suspense fallback={null}>
+          <Navbar />
+        </Suspense>
         <main>{children}</main>
       </body>
     </html>

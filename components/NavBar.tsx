@@ -1,8 +1,10 @@
 "use client";
-
+import { Suspense } from "react";
 import { SearchBar } from "./SearchBar";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+
+const PREFIX = process.env.NEXT_PUBLIC_ASSET_PREFIX ?? "";
 
 export function Navbar() {
   const [isDark, setIsDark] = useState(false);
@@ -30,31 +32,16 @@ export function Navbar() {
     <nav>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <img src="/L_RSN_FR_RGB_W-400x145.png" width={120} alt="Logo" />
+          <img src={`${PREFIX}/L_RSN_FR_RGB_W-400x145.png`} width={120} />
+
           <div>
-            <SearchBar />
+            <Suspense>
+              <SearchBar />
+            </Suspense>
           </div>
-          <div className="flex items-center space-x-6">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-              aria-label="Toggle theme"
-            >
-              {isDark ? (
-                <Sun className="w-5 h-5 text-yellow-500" />
-              ) : (
-                <Moon className="w-5 h-5 text-slate-700" />
-              )}
-            </button>
-            {/*<a href="#" className="hover:text-slate-300">
-              Accueil
-            </a>
-            <a href="#" className="hover:text-slate-300">
-              A propos
-            </a>
-            <a href="#" className="hover:text-slate-300">
-              Suggestion
-            </a>*/}
+
+          <div className="space-x-6 text-sm text-gray-400 select-none">
+            v{process.env.NEXT_PUBLIC_APP_VERSION}
           </div>
         </div>
       </div>
