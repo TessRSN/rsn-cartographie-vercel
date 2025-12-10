@@ -37,7 +37,9 @@ export function DetailCard({ title, children, onClose }: DetailCardProps) {
         <div className="text-2xl z-10 sticky top-0 bg-base-200 p-4 pb-0">
           {title}
         </div>
-        <div className="p-4 w-full flex flex-col gap-4 pt-0">{children}</div>
+        <div className="p-4 w-full flex flex-col gap-4 pt-0 overflow-y-auto">
+          {children}
+        </div>
       </div>
     </div>
   );

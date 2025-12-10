@@ -1,18 +1,18 @@
 import DOMPurify from "isomorphic-dompurify";
 import { MyGraphNode } from "@/app/lib/types";
-import { SoftwareApplicationNode } from "@/app/lib/schema";
+import { DataCatalogNode } from "@/app/lib/schema";
 import { DetailCard } from "./DetailCard";
 import { Logo } from "./Logo";
 
-interface SoftwareApplicationDetailCardProps {
-  node: MyGraphNode & { data: SoftwareApplicationNode };
+interface DataCatalogDetailCardProps {
+  node: MyGraphNode & { data: DataCatalogNode };
   onClose: () => void;
 }
 
-export function SoftwareApplicationDetailCard({
+export function DataCatalogDetailCard({
   node,
   onClose,
-}: SoftwareApplicationDetailCardProps) {
+}: DataCatalogDetailCardProps) {
   return (
     <DetailCard title={node.data.title} onClose={onClose}>
       {node.data.alternate_name.length > 0 ? (
@@ -27,10 +27,10 @@ export function SoftwareApplicationDetailCard({
       )}
 
       <div className="space-y-1 pt-2">
-        <div className="font-medium">Type</div>
+        <div>Domaine de santé</div>
         <div className="flex gap-2 flex-wrap">
-          {node.data.application_category?.map((term) => (
-            <div key={term.id} className="badge badge-soft badge-primary h-fit">
+          {node.data.field_applied_domain?.map((term) => (
+            <div key={term.id} className="badge badge-soft badge-success">
               {term.name}
             </div>
           )) || <div className="badge badge-ghost">N/A</div>}
@@ -82,20 +82,6 @@ export function SoftwareApplicationDetailCard({
         </div>
       ) : null}
 
-      {node.data.schema_email && (
-        <div className="space-y-1 pt-2">
-          <div className="font-medium">Contact</div>
-          <div>
-            <a
-              href={`mailto:${node.data.schema_email}`}
-              className="text-blue-600 hover:underline"
-            >
-              {node.data.schema_email}
-            </a>
-          </div>
-        </div>
-      )}
-
       <div className="space-y-1 pt-2">
         <div>Lien(s)</div>
         <div className="space-y-1 pt-2">
@@ -112,7 +98,7 @@ export function SoftwareApplicationDetailCard({
               );
             })
           ) : (
-            <div>N/A</div>
+            <div>Aucun lien</div>
           )}
         </div>
       </div>
