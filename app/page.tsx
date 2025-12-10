@@ -317,17 +317,17 @@ export default async function Home() {
     createEdges(personResults?.data ?? [], "member_of", "#64748B")
   );
 
-  edges = edges.concat(
-    createEdges(datasetResults?.data ?? [], "author", "#64748B")
-  );
+  //edges = edges.concat(
+  //  createEdges(datasetResults?.data ?? [], "author", "#64748B")
+  //);
 
   edges = edges.concat(
     createEdges(datasetResults?.data ?? [], "parent_organization", "#64748B")
   );
 
-  edges = edges.concat(
-    createEdges(dataCatalogResults?.data ?? [], "author", "#64748B")
-  );
+  //  edges = edges.concat(
+  //    createEdges(dataCatalogResults?.data ?? [], "author", "#64748B")
+  //  );
 
   edges = edges.concat(
     createEdges(
@@ -341,9 +341,9 @@ export default async function Home() {
     createEdges(dataCatalogResults?.data ?? [], "field_sub_dataset", "#64748B")
   );
 
-  edges = edges.concat(
-    createEdges(softwareApplicationResults?.data ?? [], "author", "#64748B")
-  );
+  //edges = edges.concat(
+  //  createEdges(softwareApplicationResults?.data ?? [], "author", "#64748B")
+  // );
 
   edges = edges.concat(
     createEdges(
