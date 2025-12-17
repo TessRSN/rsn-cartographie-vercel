@@ -91,9 +91,10 @@ export function OrganizationDetailCard({
         <div>Lien(s)</div>
         <div className="line-clamp-2">
           {node.data.link && node.data.link.length > 0 ? (
-            node.data.link.map((link) => {
+            node.data.link.map((link, index) => {
               return (
                 <a
+                  key={index}
                   className="link link-primary link-hover"
                   href={link}
                   target="_blank"
