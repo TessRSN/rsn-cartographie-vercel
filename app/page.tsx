@@ -70,6 +70,12 @@ export default async function Home() {
           return link.uri;
         }),
         imageSrc,
+        tag: [
+          org.alternate_name.length > 0 ? org.alternate_name[0] : org.title,
+          org.title,
+          ...(org.field_couverture_geographique ?? []).map((i) => i.name),
+          ...(org.field_organization_geographical ?? []).map((i) => i.name),
+        ],
       };
 
       return {
@@ -103,6 +109,7 @@ export default async function Home() {
         field_digital_domain: person.field_digital_domain,
         field_person_type: person.field_person_type,
         field_axe_si_membre_rsn: person.field_axe_si_membre_rsn,
+        tag: [person.title],
       };
 
       return {
@@ -146,6 +153,12 @@ export default async function Home() {
         field_modele_acces: dataset.field_modele_acces,
         author: dataset.author,
         field_funder: dataset.field_funder,
+        tag: [
+          dataset.alternate_name.length > 0
+            ? dataset.alternate_name[0]
+            : dataset.title,
+          dataset.title,
+        ],
       };
 
       return {
@@ -193,6 +206,12 @@ export default async function Home() {
         field_modele_acces: dataCatalog.field_modele_acces,
         author: dataCatalog.author,
         field_funder: dataCatalog.field_funder,
+        tag: [
+          dataCatalog.alternate_name.length > 0
+            ? dataCatalog.alternate_name[0]
+            : dataCatalog.title,
+          dataCatalog.title,
+        ],
       };
 
       return {
@@ -245,6 +264,12 @@ export default async function Home() {
           field_modele_acces: softapp.field_modele_acces,
           imageSrc,
           schema_email: softapp.schema_email,
+          tag: [
+            softapp.alternate_name.length > 0
+              ? softapp.alternate_name[0]
+              : softapp.title,
+            softapp.title,
+          ],
         };
 
         return {

@@ -162,16 +162,15 @@ export function MyDiagram({
   };
 
   useEffect(() => {
+    const q = removeAccents(query.toLowerCase());
     let filteredNodes =
       query.length > 0
         ? initialNodes.filter((node) => {
             if (!node.data) {
               return false;
             }
-
-            return (
-              node.data.title.toLowerCase().includes(query.toLowerCase()) ||
-              node.data.label?.toLowerCase().includes(query.toLowerCase())
+            return node.data.tag.some((i) =>
+              removeAccents(i.toLowerCase()).includes(q)
             );
           })
         : [];
@@ -214,4 +213,8 @@ export function MyDiagram({
       <button onClick={fitView}>Fit View</button>
     </div>
   );
+}
+
+function removeAccents(str: string): string {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }

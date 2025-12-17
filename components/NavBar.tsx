@@ -4,6 +4,7 @@ import { SearchBar } from "./SearchBar";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { OnboardingModal } from "./OnboardingModal";
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
@@ -47,6 +48,7 @@ export function Navbar() {
                 <Moon className="w-5 h-5 text-slate-700" />
               )}
             </button>
+            <OnboardingModal />
           </div>
         </div>
       </div>
