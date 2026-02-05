@@ -148,9 +148,9 @@ const EmailSchema = z.object({
 });
 
 const BaseOrganizationSchema = z.object({
-  type: z.enum(["node--organization", "node--gouv_organization"]),
+  type: z.literal("node--organization"),
   id: z.uuid(),
-  title: z.string().optional(),
+  title: z.string(),
   metatag: z.array(MetatagSchema),
   description: DescriptionSchema.nullable(),
   address: AddressSchema.optional().nullable(),
@@ -183,11 +183,35 @@ const OrganizationSchema = z.object({
     .nullish(),
 });
 
+const BaseGouvOrganizationSchema = z.object({
+  type: z.literal("node--government_organization"),
+  id: z.uuid(),
+  title: z.string(),
+  metatag: z.array(MetatagSchema),
+  description: DescriptionSchema.nullable(),
+  address: AddressSchema.optional().nullable(),
+  alternate_name: z.string().array(),
+  schema_organization_type: z.string().catch(""),
+  significant_link: z.array(LinkSchema),
+  links: z
+    .object({
+      self: z.object({
+        href: z.string(),
+      }),
+    })
+    .optional(),
+  schema_logo: MediaImageSchema.nullish(),
+  relationshipNames: z.string().array(),
+});
+
 const GouvOrganizationSchema = z.object({
-  ...BaseOrganizationSchema.shape,
-  sub_organization: BaseOrganizationSchema.partial().array().optional(),
-  parent_organization: BaseOrganizationSchema.partial().array().optional(),
-  field_funder: BaseOrganizationSchema.partial().array().optional().nullish(),
+  ...BaseGouvOrganizationSchema.shape,
+  sub_organization: BaseGouvOrganizationSchema.partial().array().optional(),
+  parent_organization: BaseGouvOrganizationSchema.partial().array().optional(),
+  field_funder: BaseGouvOrganizationSchema.partial()
+    .array()
+    .optional()
+    .nullish(),
   field_organization_geographical: z
     .array(TaxonomyTermGeographicalSchema)
     .optional()

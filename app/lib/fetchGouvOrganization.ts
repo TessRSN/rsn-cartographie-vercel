@@ -43,8 +43,8 @@ export async function fetchGouvOrganization() {
       params: gouvOrgParams.getQueryObject(),
       locale: "fr",
       defaultLocale: "fr",
-    }
+    },
   );
-  // console.log(gouvorgsData);
+  //console.log(gouvOrgsData);
   return GouvOrganizationSchema.array().safeParse(gouvOrgsData);
 }
