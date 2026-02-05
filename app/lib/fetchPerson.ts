@@ -34,9 +34,23 @@ export async function fetchPerson() {
       "attributes",
       "logo",
     ])
+    .addFields("node--government_organization", [
+      "title",
+      "alternate_name",
+      //"sub_organization",
+      //"parent_organization",
+      "additional_type",
+      "description",
+      "significant_link",
+      "metatag",
+      "image",
+      "attributes",
+      "logo",
+    ])
     .addFields("media--image", ["image"])
     .addFields("file--file", ["uri"])
     .addFields("node--organization", ["title"])
+    .addFields("node--government_organization", ["title"])
     .addInclude([
       "field_person_type",
       "field_applied_domain",

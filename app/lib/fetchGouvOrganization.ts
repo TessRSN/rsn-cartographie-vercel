@@ -1,13 +1,13 @@
 import { DrupalJsonApiParams } from "drupal-jsonapi-params";
 import { drupal } from "./drupal";
 import { DrupalNode } from "next-drupal";
-import { OrganizationSchema } from "./schema";
+import { GouvOrganizationSchema } from "./schema";
 import z from "zod";
 import util from "util";
 
-export async function fetchOrganization() {
-  const orgParams = new DrupalJsonApiParams()
-    .addFields("node--organization", [
+export async function fetchGouvOrganization() {
+  const gouvOrgParams = new DrupalJsonApiParams()
+    .addFields("node--government_organization", [
       "title",
       "alternate_name",
       "sub_organization",
@@ -19,7 +19,6 @@ export async function fetchOrganization() {
       "image",
       "schema_logo",
       "attributes",
-      "field_funder",
       "field_organization_geographical",
       "address",
       "field_couverture_geographique",
@@ -33,20 +32,19 @@ export async function fetchOrganization() {
     .addInclude([
       "sub_organization",
       "schema_logo.image",
-      "field_funder",
       "field_organization_geographical",
       "field_couverture_geographique",
     ])
     .addSort("created", "DESC");
 
-  const orgsData = await drupal.getResourceCollection<DrupalNode[]>(
-    "node--organization",
+  const gouvOrgsData = await drupal.getResourceCollection<DrupalNode[]>(
+    "node--government_organization",
     {
-      params: orgParams.getQueryObject(),
+      params: gouvOrgParams.getQueryObject(),
       locale: "fr",
       defaultLocale: "fr",
     }
   );
-  // console.log(orgsData);
-  return OrganizationSchema.array().safeParse(orgsData);
+  // console.log(gouvorgsData);
+  return GouvOrganizationSchema.array().safeParse(gouvOrgsData);
 }

@@ -1,6 +1,7 @@
 import { NextDrupal } from "next-drupal";
 import { DiagramRoot } from "@/components/DiagramRoot";
 import { fetchOrganization } from "./lib/fetchOrganization";
+import { fetchGouvOrganization } from "./lib/fetchGouvOrganization";
 import { fetchPerson } from "./lib/fetchPerson";
 import { fetchDataset } from "./lib/fetchDataset";
 import { fetchSoftwareApplication } from "./lib/fetchSoftwareApplication";
@@ -11,6 +12,8 @@ import { error } from "console";
 import {
   OrganizationNode,
   organizationNodeSchema,
+  GouvOrganizationSchema,
+  GouvOrganizationNode,
   PersonNode,
   personNodeSchema,
   SoftwareApplicationNode,
@@ -20,18 +23,21 @@ import {
   DataCatalogNode,
   DataCatalogSchema,
   dataCatalogNodeSchema,
+  gouvOrganizationNodeSchema,
 } from "./lib/schema";
 import { fetchDataCatalog } from "./lib/fetchDataCatalog";
 
 export default async function Home() {
   const [
     organizationResults,
+    gouvOrganizationResults,
     personResults,
     datasetResults,
     softwareApplicationResults,
     dataCatalogResults,
   ] = await Promise.all([
     fetchOrganization(),
+    fetchGouvOrganization(),
     fetchPerson(),
     fetchDataset(),
     fetchSoftwareApplication(),
@@ -90,6 +96,67 @@ export default async function Home() {
     nodes = nodes.concat(organizationNodes);
   } else {
     console.log(organizationResults.error.issues);
+  }
+
+  if (gouvOrganizationResults.data) {
+    //1. extraire la creation des nodes (plus facile a lire)
+    const gouvOrganizationNodes = gouvOrganizationResults.data.map(
+      (gouvOrg) => {
+        // S'assurer que dans Drupal, configuration JSON:API, que logo est bien ecrit schema_logo
+        let imageSrc = gouvOrg.schema_logo?.image.uri?.url;
+        if (!imageSrc) {
+          imageSrc = gouvOrg.metatag.find(
+            (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+          )?.attributes.href;
+        } else {
+          imageSrc = `${API_ENDPOINT}/${imageSrc}`;
+        }
+        const data: GouvOrganizationNode = {
+          type: gouvOrg.type,
+          label:
+            gouvOrg.alternate_name.length > 0
+              ? gouvOrg.alternate_name[0]
+              : gouvOrg.title,
+          hoverLabel: gouvOrg.title,
+          alternate_name: gouvOrg.alternate_name,
+          title: gouvOrg.title,
+          address: gouvOrg.address,
+          schema_organization_type: gouvOrg.schema_organization_type,
+          field_organization_geographical:
+            gouvOrg.field_organization_geographical,
+          field_couverture_geographique: gouvOrg.field_couverture_geographique,
+          description: gouvOrg.description,
+          link: gouvOrg.significant_link.map((link) => {
+            return link.uri;
+          }),
+          imageSrc,
+          tag: [
+            gouvOrg.alternate_name.length > 0
+              ? gouvOrg.alternate_name[0]
+              : gouvOrg.title,
+            gouvOrg.title,
+            ...(gouvOrg.field_couverture_geographique ?? []).map((i) => i.name),
+            ...(gouvOrg.field_organization_geographical ?? []).map(
+              (i) => i.name
+            ),
+          ],
+        };
+
+        return {
+          id: gouvOrg.id,
+          label:
+            gouvOrg.alternate_name.length > 0
+              ? gouvOrg.alternate_name[0]
+              : gouvOrg.title,
+          data: gouvOrganizationNodeSchema.parse(data),
+          fill: "#0061AF",
+        };
+      }
+    );
+
+    nodes = nodes.concat(gouvOrganizationNodes);
+  } else {
+    console.log(gouvOrganizationResults.error.issues);
   }
 
   if (personResults.data) {
@@ -321,20 +388,24 @@ export default async function Home() {
 
   edges = edges.concat(
     createEdges(
+      gouvOrganizationResults?.data ?? [],
+      "sub_organization",
+      "#64748B"
+    )
+  );
+
+  edges = edges.concat(
+    createEdges(
       organizationResults?.data ?? [],
       "parent_organization",
       "#64748B"
     )
   );
 
-  /*edges = edges.concat(
-    createEdges(organizationResults?.data ?? [], "field_funder", "#64748B")
-  );*/
-
   edges = edges.concat(
     createEdges(
-      organizationResults?.data ?? [],
-      "parent_organization",
+      gouvOrganizationResults?.data ?? [],
+      "sub_organization",
       "#64748B"
     )
   );

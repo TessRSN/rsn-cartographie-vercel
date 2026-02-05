@@ -148,9 +148,9 @@ const EmailSchema = z.object({
 });
 
 const BaseOrganizationSchema = z.object({
-  type: z.literal("node--organization"),
+  type: z.enum(["node--organization", "node--gouv_organization"]),
   id: z.uuid(),
-  title: z.string(),
+  title: z.string().optional(),
   metatag: z.array(MetatagSchema),
   description: DescriptionSchema.nullable(),
   address: AddressSchema.optional().nullable(),
@@ -169,6 +169,21 @@ const BaseOrganizationSchema = z.object({
 });
 
 const OrganizationSchema = z.object({
+  ...BaseOrganizationSchema.shape,
+  sub_organization: z.array(BaseOrganizationSchema.partial()).optional(),
+  parent_organization: BaseOrganizationSchema.partial().array().optional(),
+  field_funder: BaseOrganizationSchema.partial().array().optional().nullish(),
+  field_organization_geographical: z
+    .array(TaxonomyTermGeographicalSchema)
+    .optional()
+    .nullish(),
+  field_couverture_geographique: z
+    .array(TaxonomyCouvertureGeographiqueSchema)
+    .optional()
+    .nullish(),
+});
+
+const GouvOrganizationSchema = z.object({
   ...BaseOrganizationSchema.shape,
   sub_organization: BaseOrganizationSchema.partial().array().optional(),
   parent_organization: BaseOrganizationSchema.partial().array().optional(),
@@ -189,7 +204,7 @@ const PersonSchema = z.object({
   title: z.string(),
   metatag: z.array(MetatagSchema),
   description: DescriptionSchema.nullable(),
-  member_of: OrganizationSchema.partial().array().optional(),
+  member_of: BaseOrganizationSchema.partial().array().optional(),
   same_as: LinkSchema.array(),
   links: SelfLinkSchema,
   significant_link: z.array(LinkSchema).nullish(),
@@ -216,7 +231,7 @@ const DatasetSchema = z.object({
   alternate_name: z.string().array(),
   significant_link: z.array(LinkSchema),
   metatag: z.array(MetatagSchema),
-  member_of: OrganizationSchema.partial().array().optional(),
+  member_of: BaseOrganizationSchema.partial().array().optional(),
   links: z.object({
     self: z.object({
       href: z.string(),
@@ -245,7 +260,7 @@ const DataCatalogSchema = z.object({
   alternate_name: z.string().array(),
   significant_link: z.array(LinkSchema),
   metatag: z.array(MetatagSchema),
-  member_of: OrganizationSchema.partial().array().optional(),
+  member_of: BaseOrganizationSchema.partial().array().optional(),
   links: z.object({
     self: z.object({
       href: z.string(),
@@ -320,9 +335,25 @@ export const organizationNodeSchema = baseGraphNodeSchema.extend({
     .nullish(),
 });
 
+export const gouvOrganizationNodeSchema = baseGraphNodeSchema.extend({
+  type: z.literal("node--government_organization"),
+  schema_organization_type: z.string().nullish(),
+  alternate_name: z.string().array(),
+  address: AddressSchema.optional().nullable(),
+  field_organization_geographical: z
+    .array(TaxonomyTermGeographicalSchema)
+    .optional()
+    .nullish(),
+  field_funder: BaseOrganizationSchema.partial().array().optional().nullish(),
+  field_couverture_geographique: z
+    .array(TaxonomyCouvertureGeographiqueSchema)
+    .optional()
+    .nullish(),
+});
+
 export const personNodeSchema = baseGraphNodeSchema.extend({
   type: z.literal("node--person"),
-  member_of: OrganizationSchema.partial().array().optional(),
+  member_of: BaseOrganizationSchema.partial().array().optional(),
   field_person_type: TaxonomyTermPersonSchema.optional().nullish(),
   field_applied_domain: z
     .array(TaxonomyTermHealthResearchCategorySchema)
@@ -382,6 +413,7 @@ export const softwareApplicationNodeSchema = baseGraphNodeSchema.extend({
 // Discriminated union for all graph node types
 export const graphNodeSchema = z.discriminatedUnion("type", [
   organizationNodeSchema,
+  gouvOrganizationNodeSchema,
   personNodeSchema,
   datasetNodeSchema,
   dataCatalogNodeSchema,
@@ -392,6 +424,7 @@ export const graphNodeSchema = z.discriminatedUnion("type", [
 export {
   SoftwareApplicationSchema,
   OrganizationSchema,
+  GouvOrganizationSchema,
   PersonSchema,
   DatasetSchema,
   DataCatalogSchema,
@@ -399,6 +432,7 @@ export {
 
 // Type exports
 export type OrganizationNode = z.infer<typeof organizationNodeSchema>;
+export type GouvOrganizationNode = z.infer<typeof gouvOrganizationNodeSchema>;
 export type PersonNode = z.infer<typeof personNodeSchema>;
 export type DatasetNode = z.infer<typeof datasetNodeSchema>;
 export type DataCatalogNode = z.infer<typeof dataCatalogNodeSchema>;
@@ -410,6 +444,7 @@ export type GraphNodeData = z.infer<typeof graphNodeSchema>;
 // Type inference
 export type SoftwareApplication = z.infer<typeof SoftwareApplicationSchema>;
 export type Organization = z.infer<typeof OrganizationSchema>;
+export type GouvOrganization = z.infer<typeof GouvOrganizationSchema>;
 export type Person = z.infer<typeof PersonSchema>;
 export type DataCatalog = z.infer<typeof DataCatalogSchema>;
 export type Dataset = z.infer<typeof DatasetSchema>;
