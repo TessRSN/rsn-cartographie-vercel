@@ -54,15 +54,14 @@ export default async function Home() {
       let imageSrc = org.schema_logo?.image.uri?.url;
       if (!imageSrc) {
         imageSrc = org.metatag.find(
-          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src",
         )?.attributes.href;
       } else {
         imageSrc = `${API_ENDPOINT}/${imageSrc}`;
       }
       const data: OrganizationNode = {
         type: org.type,
-        label:
-          org.alternate_name.length > 0 ? org.alternate_name[0] : org.title,
+        label: org.alternate_name?.length ? org.alternate_name[0] : org.title,
         hoverLabel: org.title,
         alternate_name: org.alternate_name,
         title: org.title,
@@ -77,7 +76,7 @@ export default async function Home() {
         }),
         imageSrc,
         tag: [
-          org.alternate_name.length > 0 ? org.alternate_name[0] : org.title,
+          org.alternate_name?.length ? org.alternate_name[0] : org.title,
           org.title,
           ...(org.field_couverture_geographique ?? []).map((i) => i.name),
           ...(org.field_organization_geographical ?? []).map((i) => i.name),
@@ -86,8 +85,7 @@ export default async function Home() {
 
       return {
         id: org.id,
-        label:
-          org.alternate_name.length > 0 ? org.alternate_name[0] : org.title,
+        label: org.alternate_name?.length ? org.alternate_name[0] : org.title,
         data: organizationNodeSchema.parse(data),
         fill: "#0061AF",
       };
@@ -106,17 +104,16 @@ export default async function Home() {
         let imageSrc = gouvOrg.schema_logo?.image.uri?.url;
         if (!imageSrc) {
           imageSrc = gouvOrg.metatag.find(
-            (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+            (tag) => tag.tag === "link" && tag.attributes.rel === "image_src",
           )?.attributes.href;
         } else {
           imageSrc = `${API_ENDPOINT}/${imageSrc}`;
         }
         const data: GouvOrganizationNode = {
           type: gouvOrg.type,
-          label:
-            gouvOrg.alternate_name.length > 0
-              ? gouvOrg.alternate_name[0]
-              : gouvOrg.title,
+          label: gouvOrg.alternate_name?.length
+            ? gouvOrg.alternate_name[0]
+            : gouvOrg.title,
           hoverLabel: gouvOrg.title,
           alternate_name: gouvOrg.alternate_name,
           title: gouvOrg.title,
@@ -131,35 +128,37 @@ export default async function Home() {
           }),
           imageSrc,
           tag: [
-            gouvOrg.alternate_name.length > 0
+            gouvOrg.alternate_name?.length
               ? gouvOrg.alternate_name[0]
               : gouvOrg.title,
             gouvOrg.title,
             ...(gouvOrg.field_couverture_geographique ?? []).map((i) => i.name),
             ...(gouvOrg.field_organization_geographical ?? []).map(
-              (i) => i.name
+              (i) => i.name,
             ),
           ],
         };
 
         return {
           id: gouvOrg.id,
-          label:
-            gouvOrg.alternate_name.length > 0
-              ? gouvOrg.alternate_name[0]
-              : gouvOrg.title,
+          label: gouvOrg.alternate_name?.length
+            ? gouvOrg.alternate_name[0]
+            : gouvOrg.title,
           data: gouvOrganizationNodeSchema.parse(data),
           fill: "#0061AF",
         };
-      }
+      },
     );
 
     nodes = nodes.concat(gouvOrganizationNodes);
-  } else {
-    console.log(gouvOrganizationResults.error.issues);
-  }
+  } //else {
+  //console.log(gouvOrganizationResults.error.issues);
+  //}
 
   if (personResults.data) {
+    // console.log("Person results count:", personResults.data.length);
+    // console.log("Sample person:", personResults.data[0]);
+
     const personNodes = personResults.data.map((person) => {
       const data: PersonNode = {
         type: person.type,
@@ -186,7 +185,7 @@ export default async function Home() {
         fill: "#00A759",
       };
     });
-
+    //console.log("Person nodes created: ", personNodes.length);
     nodes = nodes.concat(personNodes);
   } else {
     console.log(personResults.error);
@@ -198,7 +197,7 @@ export default async function Home() {
       let imageSrc = dataset.schema_logo?.image.uri?.url;
       if (!imageSrc) {
         imageSrc = dataset.metatag.find(
-          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src",
         )?.attributes.href;
       } else {
         imageSrc = `${API_ENDPOINT}/${imageSrc}`;
@@ -221,7 +220,7 @@ export default async function Home() {
         author: dataset.author,
         field_funder: dataset.field_funder,
         tag: [
-          dataset.alternate_name.length > 0
+          dataset.alternate_name?.length
             ? dataset.alternate_name[0]
             : dataset.title,
           dataset.title,
@@ -230,27 +229,29 @@ export default async function Home() {
 
       return {
         id: dataset.id,
-        label:
-          dataset.alternate_name.length > 0
-            ? dataset.alternate_name[0]
-            : dataset.title,
+        label: dataset.alternate_name?.length
+          ? dataset.alternate_name[0]
+          : dataset.title,
         data: datasetNodeSchema.parse(data),
         fill: "#FFCC4E",
       };
     });
 
     nodes = nodes.concat(datasetNodes);
-  } else {
-    console.log(datasetResults.error.issues);
-  }
+  } //else {
+  //console.log(datasetResults.error.issues);
+  // }
 
   // Conversion des dataCatalog en noeuds du graph
   if (dataCatalogResults.data) {
+  //  console.log("DataCatalog results count:", dataCatalogResults.data.length);
+  //  console.log("Sample DataCatalog:", dataCatalogResults.data[0]);
+
     const dataCatalogNodes = dataCatalogResults.data.map((dataCatalog) => {
       let imageSrc = dataCatalog.schema_logo?.image.uri?.url;
       if (!imageSrc) {
         imageSrc = dataCatalog.metatag.find(
-          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src",
         )?.attributes.href;
       } else {
         imageSrc = `${API_ENDPOINT}/${imageSrc}`;
@@ -274,7 +275,7 @@ export default async function Home() {
         author: dataCatalog.author,
         field_funder: dataCatalog.field_funder,
         tag: [
-          dataCatalog.alternate_name.length > 0
+          dataCatalog.alternate_name?.length
             ? dataCatalog.alternate_name[0]
             : dataCatalog.title,
           dataCatalog.title,
@@ -283,15 +284,14 @@ export default async function Home() {
 
       return {
         id: dataCatalog.id,
-        label:
-          dataCatalog.alternate_name.length > 0
-            ? dataCatalog.alternate_name[0]
-            : dataCatalog.title,
+        label: dataCatalog.alternate_name?.length
+          ? dataCatalog.alternate_name[0]
+          : dataCatalog.title,
         data: dataCatalogNodeSchema.parse(data),
         fill: "#FFCC4E",
       };
     });
-
+    //console.log("DataCatalog nodes created:", dataCatalogNodes.length);
     nodes = nodes.concat(dataCatalogNodes);
   } else {
     console.log(dataCatalogResults.error.issues);
@@ -299,12 +299,18 @@ export default async function Home() {
 
   //Conversion des Software Application en noeuds du graph
   if (softwareApplicationResults.data) {
+    //console.log(
+    //  "SoftApp results count:",
+    //  softwareApplicationResults.data.length,
+    //);
+    //console.log("SoftApp DataCatalog:", softwareApplicationResults.data[0]);
+
     const softwareApplicationNodes = softwareApplicationResults.data.map(
       (softapp) => {
         let imageSrc = softapp.schema_logo?.image.uri?.url;
         if (!imageSrc) {
           imageSrc = softapp.metatag.find(
-            (tag) => tag.tag === "link" && tag.attributes.rel === "image_src"
+            (tag) => tag.tag === "link" && tag.attributes.rel === "image_src",
           )?.attributes.href;
         } else {
           imageSrc = `${API_ENDPOINT}/${imageSrc}`;
@@ -313,10 +319,9 @@ export default async function Home() {
         const data: SoftwareApplicationNode = {
           type: softapp.type,
           alternate_name: softapp.alternate_name,
-          label:
-            softapp.alternate_name.length > 0
-              ? softapp.alternate_name[0]
-              : softapp.title,
+          label: softapp.alternate_name?.length
+            ? softapp.alternate_name[0]
+            : softapp.title,
           hoverLabel: softapp.title,
           link: softapp.significant_link.map((link) => {
             return link.uri;
@@ -332,7 +337,7 @@ export default async function Home() {
           imageSrc,
           schema_email: softapp.schema_email,
           tag: [
-            softapp.alternate_name.length > 0
+            softapp.alternate_name?.length
               ? softapp.alternate_name[0]
               : softapp.title,
             softapp.title,
@@ -341,25 +346,42 @@ export default async function Home() {
 
         return {
           id: softapp.id,
-          label:
-            softapp.alternate_name.length > 0
-              ? softapp.alternate_name[0]
-              : softapp.title,
+          label: softapp.alternate_name?.length
+            ? softapp.alternate_name[0]
+            : softapp.title,
           data: softwareApplicationNodeSchema.parse(data),
           fill: "#EE3124",
         };
-      }
+      },
     );
-
+    console.log(
+      "Software Application nodes created: ",
+      softwareApplicationNodes.length,
+    );
     nodes = nodes.concat(softwareApplicationNodes);
   } else {
     console.log(softwareApplicationResults.error);
   }
 
+  console.log("Total nodes:", nodes.length);
+  console.log("Nodes by type:", {
+    organizations: nodes.filter((n) => n.data.type === "node--organization")
+      .length,
+    gouvOrganizations: nodes.filter(
+      (n) => n.data.type === "node--government_organization",
+    ).length,
+    persons: nodes.filter((n) => n.data.type === "node--person").length,
+    datasets: nodes.filter((n) => n.data.type === "node--dataset").length,
+    dataCatalog: nodes.filter((n) => n.data.type === "node--data_catalog")
+      .length,
+    softapp: nodes.filter((n) => n.data.type === "node--software_application")
+      .length,
+  });
+
   const createEdges = <T extends { id: string | number }>(
     items: T[],
     relationKey: keyof T,
-    color: string
+    color: string,
   ) =>
     items.flatMap((item) => {
       const related = item[relationKey];
@@ -383,34 +405,34 @@ export default async function Home() {
   let edges: GraphEdge[] = [];
 
   edges = edges.concat(
-    createEdges(organizationResults?.data ?? [], "sub_organization", "#64748B")
+    createEdges(organizationResults?.data ?? [], "sub_organization", "#64748B"),
   );
 
   edges = edges.concat(
     createEdges(
       gouvOrganizationResults?.data ?? [],
       "sub_organization",
-      "#64748B"
-    )
+      "#64748B",
+    ),
   );
 
   edges = edges.concat(
     createEdges(
       organizationResults?.data ?? [],
       "parent_organization",
-      "#64748B"
-    )
+      "#64748B",
+    ),
   );
 
   edges = edges.concat(
     createEdges(
       gouvOrganizationResults?.data ?? [],
       "sub_organization",
-      "#64748B"
-    )
+      "#64748B",
+    ),
   );
   edges = edges.concat(
-    createEdges(personResults?.data ?? [], "member_of", "#64748B")
+    createEdges(personResults?.data ?? [], "member_of", "#64748B"),
   );
 
   //edges = edges.concat(
@@ -418,7 +440,7 @@ export default async function Home() {
   //);
 
   edges = edges.concat(
-    createEdges(datasetResults?.data ?? [], "parent_organization", "#64748B")
+    createEdges(datasetResults?.data ?? [], "parent_organization", "#64748B"),
   );
 
   //  edges = edges.concat(
@@ -429,12 +451,12 @@ export default async function Home() {
     createEdges(
       dataCatalogResults?.data ?? [],
       "parent_organization",
-      "#64748B"
-    )
+      "#64748B",
+    ),
   );
 
   edges = edges.concat(
-    createEdges(dataCatalogResults?.data ?? [], "field_sub_dataset", "#64748B")
+    createEdges(dataCatalogResults?.data ?? [], "field_sub_dataset", "#64748B"),
   );
 
   //edges = edges.concat(
@@ -445,8 +467,8 @@ export default async function Home() {
     createEdges(
       softwareApplicationResults?.data ?? [],
       "parent_organization",
-      "#64748B"
-    )
+      "#64748B",
+    ),
   );
 
   //deduplicate edges
@@ -454,8 +476,8 @@ export default async function Home() {
     (edge, index, self) =>
       index ===
       self.findIndex(
-        (e) => e.source === edge.source && e.target === edge.target
-      )
+        (e) => e.source === edge.source && e.target === edge.target,
+      ),
   );
 
   return (

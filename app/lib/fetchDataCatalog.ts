@@ -45,8 +45,8 @@ export async function fetchDataCatalog() {
     "node--data_catalog",
     {
       params: dataCatalogParams.getQueryObject(),
-    }
+    },
   );
-  console.log(util.inspect(dataCatalogsData, { depth: null }));
+  //  console.log(util.inspect(dataCatalogsData, { depth: null }));
   return DataCatalogSchema.array().safeParse(dataCatalogsData);
 }

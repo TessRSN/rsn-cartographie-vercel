@@ -1,12 +1,12 @@
 import DOMPurify from "isomorphic-dompurify";
 import { MyGraphNode } from "@/app/lib/types";
-import { OrganizationNode } from "@/app/lib/schema";
+import { GouvOrganizationNode } from "@/app/lib/schema";
 import { DetailCard } from "./DetailCard";
 import { Logo } from "./Logo";
 import { Adresse } from "./Adresse";
 import { title } from "process";
 
-const additionalTypeToLabel: Record<string, string> = {
+/*const additionalTypeToLabel: Record<string, string> = {
   consortium: "Regroupement de recherche",
   college_or_university: "Collège ou université",
   funding_scheme: "Programme de financement",
@@ -14,16 +14,17 @@ const additionalTypeToLabel: Record<string, string> = {
   hospital: "Hôpital",
   autre: "Autre",
 };
+*/
 
-interface OrganizationDetailCardProps {
-  node: MyGraphNode & { data: OrganizationNode };
+interface GouvOrganizationDetailCardProps {
+  node: MyGraphNode & { data: GouvOrganizationNode };
   onClose: () => void;
 }
 
-export function GouvOrganizationDetailCard({
+export function OrganizationDetailCard({
   node,
   onClose,
-}: OrganizationDetailCardProps) {
+}: GouvOrganizationDetailCardProps) {
   return (
     <DetailCard title={node.data.title} onClose={onClose}>
       {node.data.alternate_name?.length ? (

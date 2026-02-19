@@ -22,6 +22,7 @@ export async function fetchPerson() {
       "significant_link",
     ])
     .addFields("node--organization", [
+      "id",
       "title",
       "alternate_name",
       //"sub_organization",
@@ -35,6 +36,7 @@ export async function fetchPerson() {
       "logo",
     ])
     .addFields("node--government_organization", [
+      "id",
       "title",
       "alternate_name",
       //"sub_organization",
@@ -49,8 +51,6 @@ export async function fetchPerson() {
     ])
     .addFields("media--image", ["image"])
     .addFields("file--file", ["uri"])
-    .addFields("node--organization", ["title"])
-    .addFields("node--government_organization", ["title"])
     .addInclude([
       "field_person_type",
       "field_applied_domain",
@@ -71,7 +71,7 @@ export async function fetchPerson() {
       params: personParams.getQueryObject(),
       locale: "fr",
       defaultLocale: "fr",
-    }
+    },
   );
   //console.log("field_axe_si_membre_rsn:", JSON.stringify(personsData[5]?.field_axe_si_membre_rsn, null, 2));
   //console.log(util.inspect(personsData, { depth: null }));
