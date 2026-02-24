@@ -7,14 +7,32 @@ export function Logo({
 }) {
   if (!imageSrc) return null;
   return (
-    <figure className="flex items-center justify-center w-full py-1">
-      <div className="flex items-center justify-center h-20 w-full rounded-lg overflow-hidden dark:bg-white dark:p-2">
-        <img
-          src={imageSrc}
-          alt={alt}
-          className="max-h-16 max-w-full w-auto object-contain"
-        />
-      </div>
-    </figure>
+    <div style={{
+      backgroundColor: "#f1f5f9",
+      borderRadius: "8px",
+      padding: "12px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "100%",
+    }}>
+      <img
+        src={imageSrc}
+        alt={alt}
+        onError={(e) => {
+          // Cache le conteneur entier si l'image ne charge pas
+          const parent = (e.target as HTMLImageElement).parentElement;
+          if (parent) parent.style.display = "none";
+        }}
+        style={{
+          maxHeight: "80px",
+          maxWidth: "100%",
+          width: "auto",
+          height: "auto",
+          objectFit: "contain",
+          display: "block",
+        }}
+      />
+    </div>
   );
 }
