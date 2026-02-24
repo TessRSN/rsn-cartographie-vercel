@@ -151,6 +151,11 @@ export function MyDiagram({
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
 
+  // Synchronise le state interne quand les props changent (filtre de type, filtre d'arêtes)
+  useEffect(() => {
+    setNodes(initialNodes);
+  }, [initialNodes]);
+
   const { selections, setSelections } = useSelection({
     ref: graphRef,
     nodes: nodes,
