@@ -5,13 +5,16 @@ export function Logo({
   imageSrc?: string | null;
   alt: string;
 }) {
+  if (!imageSrc) return null;
   return (
-    <figure className="avatar">
-      {imageSrc ? (
-        <img src={imageSrc} alt={alt} className="bg-base-content rounded" />
-      ) : (
-        <div className="w-96  flex items-center justify-center"></div>
-      )}
+    <figure className="flex items-center justify-center w-full py-1">
+      <div className="flex items-center justify-center h-20 w-full rounded-lg overflow-hidden dark:bg-white dark:p-2">
+        <img
+          src={imageSrc}
+          alt={alt}
+          className="max-h-16 max-w-full w-auto object-contain"
+        />
+      </div>
     </figure>
   );
 }
