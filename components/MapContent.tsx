@@ -86,26 +86,54 @@ function removeAccents(s: string) {
   return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-/** Appelle map.invalidateSize() quand la carte redevient visible (après display:none) */
-function MapInvalidator({ visible }: { visible: boolean }) {
+/**
+ * Surveille la taille du conteneur Leaflet via ResizeObserver et appelle
+ * invalidateSize() automatiquement — gère à la fois le retour d'onglet
+ * et l'ouverture/fermeture du panneau latéral.
+ */
+function MapResizeWatcher() {
   const map = useMap();
   useEffect(() => {
-    if (visible) {
-      const t = setTimeout(() => map.invalidateSize(), 80);
-      return () => clearTimeout(t);
-    }
-  }, [visible, map]);
+    const container = map.getContainer();
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [map]);
   return null;
 }
+
+const ORG_TYPE_LABELS: Record<string, string> = {
+  consortium:              "Regroupement de recherche",
+  college_or_university:   "Collège ou université",
+  funding_scheme:          "Programme de financement",
+  government_organization: "Organisation gouvernementale",
+  hospital:                "Hôpital",
+  autre:                   "Autre",
+};
 
 interface MapContentProps {
   nodes: MyGraphNode[];
   onSelectNode: (node: MyGraphNode) => void;
   selectedNode: MyGraphNode | undefined;
   visible: boolean;
+  fOrgType:    Set<string>;   // Filtres visuels — ne déclenchent PAS le géocodage
+  fCouverture: Set<string>;
+  fAxeRsn:     Set<string>;
+  fDomain:     Set<string>;
 }
 
-export default function MapContent({ nodes, onSelectNode, selectedNode, visible }: MapContentProps) {
+export default function MapContent({
+  nodes,
+  onSelectNode,
+  selectedNode,
+  visible: _visible,
+  fOrgType,
+  fCouverture,
+  fAxeRsn,
+  fDomain,
+}: MapContentProps) {
   const [orgsWithCoords, setOrgsWithCoords] = useState<OrgWithCoords[]>([]);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
@@ -229,14 +257,13 @@ export default function MapContent({ nodes, onSelectNode, selectedNode, visible 
         </div>
       )}
 
-      {/* Carte pleine hauteur */}
       <div className="flex-1" style={{ minHeight: 0 }}>
         <MapContainer
           center={[46.8, -71.2]}
           zoom={7}
           style={{ height: "100%", width: "100%" }}
         >
-          <MapInvalidator visible={visible} />
+          <MapResizeWatcher />
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributeurs'
