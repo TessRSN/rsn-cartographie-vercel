@@ -137,13 +137,13 @@ export function getTheme(mode: string): Theme {
 interface MyDiagramProps {
   nodes: MyGraphNode[];
   edges: GraphEdge[];
-  onContextMenuOpen: (data: GraphNode) => void;
+  onNodeClick: (data: GraphNode) => void;
 }
 
 export function MyDiagram({
   nodes: initialNodes,
   edges: initialEdges,
-  onContextMenuOpen,
+  onNodeClick,
 }: MyDiagramProps) {
   const graphRef = useRef<GraphCanvasRef | null>(null);
   const searchParams = useSearchParams();
@@ -199,15 +199,15 @@ export function MyDiagram({
         edgeArrowPosition="none"
         draggable
         nodes={nodes}
-        edges={edges}
+        edges={initialEdges}
         onNodePointerOver={(node, event) => {
           node.label = node.data.hoverLabel;
         }}
         onNodePointerOut={(node, event) => {
           node.label = node.data.label;
         }}
-        onNodeContextMenu={(data) => {
-          onContextMenuOpen(data);
+        onNodeClick={(node) => {
+          onNodeClick(node);
         }}
       />
       <button onClick={fitView}>Fit View</button>
