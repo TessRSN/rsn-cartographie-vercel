@@ -63,7 +63,6 @@ async function geocode(
   const query = buildAddressQuery(address);
   if (!query) return null;
   if (cache[query]) return cache[query];
-
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
@@ -141,7 +140,7 @@ export default function MapContent({
   const rawQuery = searchParams.get("q") ?? "";
   const query = removeAccents(rawQuery.toLowerCase());
 
-  // Org nodes with a locality address
+  // Tous les nœuds orga avec adresse — NE dépend PAS de typeFilter
   const orgNodes = useMemo(
     () =>
       nodes.filter(
@@ -153,7 +152,7 @@ export default function MapContent({
     [nodes]
   );
 
-  // Related nodes per org ID
+  // Entités liées par org ID — NE dépend PAS de typeFilter
   const relatedByOrgId = useMemo(() => {
     const map = new Map<string, MyGraphNode[]>();
     nodes.forEach((n) => {
@@ -177,7 +176,7 @@ export default function MapContent({
     return map;
   }, [nodes]);
 
-  // Geocoding: show cache immediately, then fetch uncached
+  // Géocodage — se lance une seule fois et ne redémarre PAS quand typeFilter change
   useEffect(() => {
     let cancelled = false;
     async function run() {
@@ -207,7 +206,6 @@ export default function MapContent({
         const node = toGeocode[i];
         const address = (node.data as any)?.address as Address | undefined;
         if (!address) continue;
-
         const coords = await geocode(address, cache);
         if (coords && !cancelled) {
           results.push({ node, ...coords, related: relatedByOrgId.get(node.id) ?? [] });
@@ -218,24 +216,68 @@ export default function MapContent({
       }
       if (!cancelled) setProgress(null);
     }
-
     run();
     return () => { cancelled = true; };
   }, [orgNodes, relatedByOrgId]);
 
-  // Filter by search query (title or related entities)
+  // Filtrage visuel — pas de re-géocodage
   const visibleOrgs = useMemo(() => {
-    if (!query) return orgsWithCoords;
-    return orgsWithCoords.filter(({ node, related }) => {
-      const title = removeAccents((node.data?.title ?? node.label ?? "").toLowerCase());
-      if (title.includes(query)) return true;
-      return related.some((r) =>
-        removeAccents((r.data?.title ?? r.label ?? "").toLowerCase()).includes(query)
-      );
-    });
-  }, [orgsWithCoords, query]);
+    let result = orgsWithCoords;
 
-  // Group related nodes by type for popup
+    // Filtre sous-type d'org.
+    if (fOrgType.size > 0) {
+      result = result.filter(({ node }) => {
+        const d = node.data as GraphNodeData;
+        if (d.type !== "node--organization" && d.type !== "node--government_organization") return false;
+        const lbl = d.schema_organization_type
+          ? (ORG_TYPE_LABELS[d.schema_organization_type] ?? d.schema_organization_type) : "";
+        return fOrgType.has(lbl);
+      });
+    }
+
+    // Filtre couverture géo.
+    if (fCouverture.size > 0) {
+      result = result.filter(({ node }) => {
+        const d = node.data as GraphNodeData;
+        if (d.type !== "node--organization" && d.type !== "node--government_organization") return false;
+        return d.field_couverture_geographique?.some(t => fCouverture.has(t.name));
+      });
+    }
+
+    // Filtre axe RSN : orgs ayant au moins une personne liée avec cet axe
+    if (fAxeRsn.size > 0) {
+      result = result.filter(({ related }) =>
+        related.some(r => {
+          const d = r.data as GraphNodeData;
+          return d.type === "node--person" && d.field_axe_si_membre_rsn && fAxeRsn.has(d.field_axe_si_membre_rsn.name);
+        })
+      );
+    }
+
+    // Filtre domaine de santé : orgs ayant au moins une entité liée avec ce domaine
+    if (fDomain.size > 0) {
+      result = result.filter(({ related }) =>
+        related.some(r => {
+          const d = r.data as GraphNodeData;
+          return "field_applied_domain" in d && d.field_applied_domain?.some(t => fDomain.has(t.name));
+        })
+      );
+    }
+
+    // Filtre recherche textuelle
+    if (query) {
+      result = result.filter(({ node, related }) => {
+        const title = removeAccents((node.data?.title ?? node.label ?? "").toLowerCase());
+        if (title.includes(query)) return true;
+        return related.some(r =>
+          removeAccents((r.data?.title ?? r.label ?? "").toLowerCase()).includes(query)
+        );
+      });
+    }
+
+    return result;
+  }, [orgsWithCoords, fOrgType, fCouverture, fAxeRsn, fDomain, query]);
+
   function groupRelated(related: MyGraphNode[]) {
     const groups: Record<string, MyGraphNode[]> = {};
     related.forEach((n) => {
@@ -248,7 +290,6 @@ export default function MapContent({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Progression géocodage */}
       {progress && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-info/10 border-b border-info/20 text-xs text-info flex-shrink-0">
           <span className="loading loading-spinner loading-xs" />
@@ -271,7 +312,6 @@ export default function MapContent({
 
           {visibleOrgs.map(({ node, lat, lng, related }) => {
             const isSelected = selectedNode?.id === node.id;
-            // Rayon proportionnel au nombre d'entités reliées
             const radius = Math.min(7 + Math.sqrt(related.length) * 2.5, 22);
             const fill = node.fill ?? "#888";
             const groups = groupRelated(related);
@@ -292,15 +332,12 @@ export default function MapContent({
               >
                 <Popup maxWidth={300} autoPan={false}>
                   <div style={{ fontFamily: "system-ui, sans-serif", fontSize: "0.85rem", lineHeight: 1.5 }}>
-                    {/* Titre org */}
                     <div style={{ fontWeight: 700, fontSize: "0.95rem", color: fill, marginBottom: "0.15rem" }}>
                       {node.data?.title ?? node.label}
                     </div>
                     <div style={{ fontSize: "0.72rem", color: "#718096", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                       {TYPE_LABELS[node.data?.type ?? ""] ?? node.data?.type}
                     </div>
-
-                    {/* Entités reliées par type */}
                     {Object.entries(groups).map(([type, items]) => (
                       <div key={type} style={{ marginBottom: "0.4rem" }}>
                         <div style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "#a0aec0", marginBottom: "0.2rem" }}>
@@ -308,8 +345,7 @@ export default function MapContent({
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
                           {items.slice(0, 7).map((r) => (
-                            <div
-                              key={r.id}
+                            <div key={r.id}
                               style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}
                               onClick={() => onSelectNode(r)}
                             >
@@ -318,18 +354,13 @@ export default function MapContent({
                             </div>
                           ))}
                           {items.length > 7 && (
-                            <div style={{ fontSize: "0.72rem", color: "#a0aec0" }}>
-                              +{items.length - 7} autres
-                            </div>
+                            <div style={{ fontSize: "0.72rem", color: "#a0aec0" }}>+{items.length - 7} autres</div>
                           )}
                         </div>
                       </div>
                     ))}
-
                     {related.length === 0 && (
-                      <div style={{ fontSize: "0.78rem", color: "#a0aec0", fontStyle: "italic" }}>
-                        Aucun élément associé
-                      </div>
+                      <div style={{ fontSize: "0.78rem", color: "#a0aec0", fontStyle: "italic" }}>Aucun élément associé</div>
                     )}
                   </div>
                 </Popup>
