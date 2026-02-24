@@ -20,7 +20,7 @@ interface OrganizationDetailCardProps {
   onClose: () => void;
 }
 
-export function GouvOrganizationDetailCard({
+export function OrganizationDetailCard({
   node,
   onClose,
 }: OrganizationDetailCardProps) {
