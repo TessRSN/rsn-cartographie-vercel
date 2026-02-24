@@ -145,7 +145,7 @@ export default async function Home() {
             ? gouvOrg.alternate_name[0]
             : gouvOrg.title,
           data: gouvOrganizationNodeSchema.parse(data),
-          fill: "#0061AF",
+          fill: "#64748b",
         };
       },
     );
@@ -481,7 +481,7 @@ export default async function Home() {
   );
 
   return (
-    <div>
+    <div className="h-full">
       <DiagramRoot nodes={nodes} edges={edges}></DiagramRoot>
     </div>
   );
