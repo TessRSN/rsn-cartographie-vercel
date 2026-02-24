@@ -13,109 +13,83 @@ interface DiagramRootProps {
   edges: GraphEdge[];
 }
 
-// ─── Labels & couleurs ────────────────────────────────────────────────────────
+// ─── Constantes ───────────────────────────────────────────────────────────────
 
 const TYPE_LABELS: Record<string, string> = {
-  "node--organization": "Organisation",
+  "node--organization":            "Organisation",
   "node--government_organization": "Org. gouvernementale",
-  "node--person": "Personne",
-  "node--dataset": "Jeu de données",
-  "node--data_catalog": "Catalogue de données",
-  "node--software_application": "Application",
+  "node--person":                  "Personne",
+  "node--dataset":                 "Jeu de données",
+  "node--data_catalog":            "Catalogue de données",
+  "node--software_application":    "Application",
 };
 
 const NODE_FILL: Record<string, string> = {
-  "node--organization": "#0061AF",
+  "node--organization":            "#0061AF",
   "node--government_organization": "#64748b",
-  "node--person": "#00A759",
-  "node--dataset": "#FFCC4E",
-  "node--data_catalog": "#FFCC4E",
-  "node--software_application": "#EE3124",
+  "node--person":                  "#00A759",
+  "node--dataset":                 "#FFCC4E",
+  "node--data_catalog":            "#FFCC4E",
+  "node--software_application":    "#EE3124",
 };
 
 const ORG_TYPE_LABELS: Record<string, string> = {
-  consortium: "Regroupement de recherche",
-  college_or_university: "Collège ou université",
-  funding_scheme: "Programme de financement",
+  consortium:              "Regroupement de recherche",
+  college_or_university:   "Collège ou université",
+  funding_scheme:          "Programme de financement",
   government_organization: "Organisation gouvernementale",
-  hospital: "Hôpital",
-  autre: "Autre",
+  hospital:                "Hôpital",
+  autre:                   "Autre",
 };
 
-// ─── Options filtre d'arêtes ─────────────────────────────────────────────────
-
 const EDGE_FILTER_OPTIONS = [
-  { types: ["node--organization"], label: "Organisations", fill: "#0061AF" },
-  { types: ["node--government_organization"], label: "Org. gouvernementales", fill: "#64748b" },
-  { types: ["node--person"], label: "Personnes", fill: "#00A759" },
-  { types: ["node--dataset", "node--data_catalog"], label: "Jeux de données", fill: "#FFCC4E" },
-  { types: ["node--software_application"], label: "Applications", fill: "#EE3124" },
+  { types: ["node--organization"],                    label: "Organisations",        fill: "#0061AF" },
+  { types: ["node--government_organization"],         label: "Org. gouvernementales", fill: "#64748b" },
+  { types: ["node--person"],                          label: "Personnes",             fill: "#00A759" },
+  { types: ["node--dataset", "node--data_catalog"],   label: "Jeux de données",       fill: "#FFCC4E" },
+  { types: ["node--software_application"],            label: "Applications",          fill: "#EE3124" },
 ];
 
-// Activés par défaut : tout sauf org. gouvernementales
-const DEFAULT_ENABLED = new Set([
-  "node--organization",
-  "node--person",
-  "node--dataset",
-  "node--data_catalog",
-  "node--software_application",
+const DEFAULT_ENABLED_EDGES = new Set([
+  "node--organization", "node--person",
+  "node--dataset", "node--data_catalog", "node--software_application",
 ]);
 
-// ─── Colonnes tabulaires ──────────────────────────────────────────────────────
+// ─── Colonnes ─────────────────────────────────────────────────────────────────
 
 type ColKey =
-  | "subtype"
-  | "parentOrg"
-  | "localisation"
-  | "couverture"
-  | "axeRsn"
-  | "santeDomain"
-  | "digitalDomain"
-  | "licence"
-  | "acces"
-  | "links";
+  | "subtype" | "parentOrg" | "localisation" | "couverture"
+  | "axeRsn" | "santeDomain" | "digitalDomain" | "licence" | "acces" | "links";
 
 const COL_HEADERS: Record<ColKey, string> = {
-  subtype: "Sous-type / Catégorie",
-  parentOrg: "Appartenance / Org. parente",
-  localisation: "Localisation",
-  couverture: "Couverture géo.",
-  axeRsn: "Axe RSN",
-  santeDomain: "Domaine de santé",
-  digitalDomain: "Méthodes numériques",
-  licence: "Licence",
-  acces: "Modèle d'accès",
-  links: "Liens",
+  subtype: "Sous-type / Catégorie", parentOrg: "Appartenance / Org. parente",
+  localisation: "Localisation", couverture: "Couverture géo.",
+  axeRsn: "Axe RSN", santeDomain: "Domaine de santé",
+  digitalDomain: "Méthodes numériques", licence: "Licence",
+  acces: "Modèle d'accès", links: "Liens",
 };
 
 const COL_MIN_W: Record<ColKey, string> = {
-  subtype: "160px",
-  parentOrg: "180px",
-  localisation: "140px",
-  couverture: "130px",
-  axeRsn: "120px",
-  santeDomain: "180px",
-  digitalDomain: "180px",
-  licence: "120px",
-  acces: "140px",
-  links: "180px",
+  subtype: "160px", parentOrg: "180px", localisation: "140px", couverture: "130px",
+  axeRsn: "130px", santeDomain: "180px", digitalDomain: "180px",
+  licence: "130px", acces: "140px", links: "180px",
 };
 
 const COLS_BY_TYPE: Record<string, ColKey[]> = {
-  all: [
-    "subtype", "parentOrg", "localisation", "couverture",
-    "axeRsn", "santeDomain", "digitalDomain",
-    "licence", "acces", "links",
-  ],
-  "node--organization": ["subtype", "localisation", "couverture", "links"],
-  "node--government_organization": ["subtype", "localisation", "couverture", "links"],
-  "node--person": ["subtype", "parentOrg", "axeRsn", "santeDomain", "digitalDomain", "links"],
-  "node--dataset": ["parentOrg", "santeDomain", "licence", "acces", "links"],
-  "node--data_catalog": ["parentOrg", "santeDomain", "licence", "acces", "links"],
-  "node--software_application": ["subtype", "parentOrg", "santeDomain", "licence", "acces", "links"],
+  all:                             ["subtype","parentOrg","localisation","couverture","axeRsn","santeDomain","digitalDomain","licence","acces","links"],
+  "node--organization":            ["subtype","localisation","couverture","links"],
+  "node--government_organization": ["subtype","localisation","couverture","links"],
+  "node--person":                  ["subtype","parentOrg","axeRsn","santeDomain","digitalDomain","links"],
+  "node--dataset":                 ["parentOrg","santeDomain","licence","acces","links"],
+  "node--data_catalog":            ["parentOrg","santeDomain","licence","acces","links"],
+  "node--software_application":    ["subtype","parentOrg","santeDomain","licence","acces","links"],
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function removeAccents(s: string) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 
 function getTextColor(fill?: string): string {
   if (!fill) return "#000";
@@ -123,105 +97,76 @@ function getTextColor(fill?: string): string {
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness > 150 ? "#1a1a1a" : "#ffffff";
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#1a1a1a" : "#ffffff";
 }
 
-/** Chip de tag avec couleur d'entité — visible en dark ET light mode */
 function EntityChip({ label, fill }: { label: string; fill: string }) {
   return (
-    <span
-      title={label}
-      style={{
-        color: fill,
-        border: `1.5px solid ${fill}`,
-        borderRadius: "5px",
-        padding: "1px 7px",
-        fontSize: "0.68rem",
-        fontWeight: 600,
-        letterSpacing: "0.01em",
-        maxWidth: "170px",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-        display: "inline-block",
-        verticalAlign: "middle",
-        background: "transparent",
-      }}
-    >
-      {label}
-    </span>
+    <span title={label} style={{
+      color: fill, border: `1.5px solid ${fill}`, borderRadius: "5px",
+      padding: "1px 7px", fontSize: "0.68rem", fontWeight: 600,
+      maxWidth: "170px", overflow: "hidden", textOverflow: "ellipsis",
+      whiteSpace: "nowrap", display: "inline-block", verticalAlign: "middle",
+    }}>{label}</span>
   );
 }
 
-/** Chip neutre — outline, visible en dark ET light mode */
 function NeutralChip({ label }: { label: string }) {
   return (
-    <span
-      className="badge badge-outline badge-sm"
-      title={label}
-      style={{
-        maxWidth: "170px",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-        display: "inline-block",
-        verticalAlign: "middle",
-      }}
-    >
-      {label}
-    </span>
+    <span className="badge badge-outline badge-sm" title={label} style={{
+      maxWidth: "170px", overflow: "hidden", textOverflow: "ellipsis",
+      whiteSpace: "nowrap", display: "inline-block", verticalAlign: "middle",
+    }}>{label}</span>
   );
 }
 
 const DASH = <span className="opacity-30">—</span>;
 
-/** Contenu d'une cellule pour une colonne donnée */
-function cellContent(node: MyGraphNode, col: ColKey): React.ReactNode {
+/** Résout un ID de nœud en titre lisible via le lookup */
+function resolveOrgTitle(id: string, title: string | undefined, nodeById: Map<string, MyGraphNode>): string | null {
+  if (title) return title;
+  const found = nodeById.get(id);
+  return found?.data?.title ?? found?.label ?? null;
+}
+
+function cellContent(node: MyGraphNode, col: ColKey, nodeById: Map<string, MyGraphNode>): React.ReactNode {
   const data = node.data as GraphNodeData;
   const fill = node.fill ?? "#888";
 
   switch (col) {
     case "subtype": {
-      if (data.type === "node--organization" || data.type === "node--government_organization") {
-        const v = data.schema_organization_type
+      let v: string | null = null;
+      if (data.type === "node--organization" || data.type === "node--government_organization")
+        v = data.schema_organization_type
           ? (ORG_TYPE_LABELS[data.schema_organization_type] ?? data.schema_organization_type)
           : null;
-        return v ? <EntityChip label={v} fill={fill} /> : DASH;
-      }
-      if (data.type === "node--person") {
-        const v = data.field_person_type?.name ?? null;
-        return v ? <EntityChip label={v} fill={fill} /> : DASH;
-      }
-      if (data.type === "node--software_application") {
-        const v = data.application_category?.map((c) => c.name).join(", ") ?? null;
-        return v ? <EntityChip label={v} fill={fill} /> : DASH;
-      }
-      return DASH;
+      else if (data.type === "node--person")
+        v = data.field_person_type?.name ?? null;
+      else if (data.type === "node--software_application")
+        v = data.application_category?.map(c => c.name).join(", ") ?? null;
+      return v ? <EntityChip label={v} fill={fill} /> : DASH;
     }
 
     case "parentOrg": {
-      let refs: Array<{ id: string; title?: string }> | null = null;
-      if (data.type === "node--person") {
+      let refs: Array<{ id: string; title?: string }> = [];
+      if (data.type === "node--person")
         refs = (data.member_of ?? []) as Array<{ id: string; title?: string }>;
-      } else if (
-        data.type === "node--dataset" ||
-        data.type === "node--data_catalog" ||
-        data.type === "node--software_application"
-      ) {
+      else if (data.type === "node--dataset" || data.type === "node--data_catalog" || data.type === "node--software_application")
         refs = (data.parent_organization ?? []) as Array<{ id: string; title?: string }>;
-      }
-      if (!refs || refs.length === 0) return DASH;
-      const label = refs.map((r) => r.title ?? r.id).filter(Boolean).join(", ");
-      return label ? (
-        <span className="block truncate text-sm" title={label}>{label}</span>
-      ) : DASH;
+
+      const label = refs
+        .filter(r => r.id !== "missing")
+        .map(r => resolveOrgTitle(r.id, r.title, nodeById))
+        .filter(Boolean)
+        .join(", ");
+      return label
+        ? <span className="block truncate text-sm" title={label}>{label}</span>
+        : DASH;
     }
 
     case "localisation": {
       if (data.type === "node--organization" || data.type === "node--government_organization") {
-        const geo = data.field_organization_geographical ?? [];
-        const v = geo.map((t) => t.name).join(", ");
+        const v = (data.field_organization_geographical ?? []).map(t => t.name).join(", ");
         return v ? <NeutralChip label={v} /> : DASH;
       }
       return DASH;
