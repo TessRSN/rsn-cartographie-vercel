@@ -174,7 +174,7 @@ const BaseGouvOrganizationSchema = z.object({
   title: z.string(),
   metatag: z.array(MetatagSchema),
   description: DescriptionSchema.nullable(),
-  address: AddressSchema.optional().nullable(),
+  schema_address: AddressSchema.optional().nullable(),
   alternate_name: z.string().array().optional().nullable(),
   schema_organization_type: z.string().catch(""),
   significant_link: z.array(LinkSchema),

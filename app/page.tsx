@@ -117,7 +117,7 @@ export default async function Home() {
           hoverLabel: gouvOrg.title,
           alternate_name: gouvOrg.alternate_name,
           title: gouvOrg.title,
-          address: gouvOrg.address,
+          address: gouvOrg.schema_address,
           schema_organization_type: gouvOrg.schema_organization_type,
           field_organization_geographical:
             gouvOrg.field_organization_geographical,

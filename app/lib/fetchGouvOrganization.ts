@@ -20,7 +20,7 @@ export async function fetchGouvOrganization() {
       "schema_logo",
       "attributes",
       "field_organization_geographical",
-      "address",
+      "schema_address",
       "field_couverture_geographique",
     ])
     //.addFilter("status", "1")
