@@ -3,7 +3,7 @@ import { MyGraphNode } from "@/app/lib/types";
 import { useTheme } from "next-themes";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 
 const GraphCanvas = dynamic(
   () => import("reagraph").then((mod) => mod.GraphCanvas),
@@ -13,7 +13,20 @@ const GraphCanvas = dynamic(
 import type { GraphNode, GraphEdge, GraphCanvasRef } from "reagraph";
 import { Theme, useSelection } from "reagraph";
 
-export function getTheme(mode: string): Theme {
+// Couleurs plus claires pour le survol — une par type de noeud
+const NODE_HIGHLIGHT: Record<string, string> = {
+  "node--organization":            "#5BADE8", // bleu clair
+  "node--government_organization": "#A0B4C4", // gris-bleu clair
+  "node--person":                  "#4DD98A", // vert clair
+  "node--dataset":                 "#FFE082", // jaune clair
+  "node--data_catalog":            "#FFE082", // jaune clair
+  "node--software_application":    "#F47B6C", // rouge clair
+};
+
+// Couleur de sélection/recherche — orange ambre (non utilisé ailleurs)
+const SEARCH_HIGHLIGHT = "#FF9F1C";
+
+export function getTheme(mode: string, activeFillOverride?: string): Theme {
   if (mode === "dark") {
     return {
       canvas: {
@@ -22,7 +35,7 @@ export function getTheme(mode: string): Theme {
       },
       node: {
         fill: "#7CA0AB",
-        activeFill: "#1DE9AC",
+        activeFill: activeFillOverride ?? SEARCH_HIGHLIGHT,
         opacity: 1,
         selectedOpacity: 1,
         inactiveOpacity: 0.2,
@@ -43,7 +56,7 @@ export function getTheme(mode: string): Theme {
       },
       ring: {
         fill: "#D8E6EA",
-        activeFill: "#1DE9AC",
+        activeFill: SEARCH_HIGHLIGHT,
       },
       edge: {
         fill: "#D8E6EA",
@@ -82,19 +95,19 @@ export function getTheme(mode: string): Theme {
     },
     node: {
       fill: "#4A90A4",
-      activeFill: "#0066CC",
+      activeFill: activeFillOverride ?? SEARCH_HIGHLIGHT,
       opacity: 1,
       selectedOpacity: 1,
       inactiveOpacity: 0.3,
       label: {
         color: "#1A1A1A",
         stroke: "#FFF",
-        activeColor: "#0066CC",
+        activeColor: "#1A1A1A",
       },
       subLabel: {
         color: "#6B9EB0",
         stroke: "#333",
-        activeColor: "#0066CC",
+        activeColor: "#6B9EB0",
       },
     },
     lasso: {
@@ -103,7 +116,7 @@ export function getTheme(mode: string): Theme {
     },
     ring: {
       fill: "#2C5F6F",
-      activeFill: "#0066CC",
+      activeFill: SEARCH_HIGHLIGHT,
     },
     edge: {
       fill: "#334E58",
@@ -149,9 +162,8 @@ export function MyDiagram({
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
 
-  // Synchronise le state interne quand les props changent (filtre de type, filtre d'arêtes)
+  // Synchronise le state interne quand les props changent (filtre de type, filtre d'aretes)
   useEffect(() => {
     setNodes(initialNodes);
   }, [initialNodes]);
@@ -159,32 +171,38 @@ export function MyDiagram({
   const { selections, setSelections } = useSelection({
     ref: graphRef,
     nodes: nodes,
-    edges: edges,
+    edges: initialEdges,
   });
+
+  // Recherche : highlight les noeuds matchés via selections (couleur orange uniforme)
+  useEffect(() => {
+    const q = removeAccents(query.toLowerCase());
+    const filteredNodes =
+      query.length > 0
+        ? initialNodes.filter((node) => {
+            if (!node.data) return false;
+            // Recherche par tags
+            if (node.data.tag.some((i) => removeAccents(i.toLowerCase()).includes(q))) return true;
+            // Recherche par alias
+            const aliases = (node.data as any)?.alternate_name;
+            if (aliases?.some?.((a: string) => removeAccents(a.toLowerCase()).includes(q))) return true;
+            return false;
+          })
+        : [];
+    setSelections(filteredNodes.map((node) => node.id));
+  }, [query, initialNodes]);
 
   const fitView = () => {
     graphRef.current?.fitNodesInView();
   };
 
-  useEffect(() => {
-    const q = removeAccents(query.toLowerCase());
-    let filteredNodes =
-      query.length > 0
-        ? initialNodes.filter((node) => {
-            if (!node.data) {
-              return false;
-            }
-            return node.data.tag.some((i) =>
-              removeAccents(i.toLowerCase()).includes(q)
-            );
-          })
-        : [];
-    setSelections(filteredNodes?.map((node) => node.id));
-  }, [query]);
-
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const graphTheme = getTheme(theme ?? "dark");
+  const [hoverNodeType, setHoverNodeType] = useState<string | null>(null);
+  const { theme } = useTheme();
+  const graphTheme = useMemo(
+    () => getTheme(theme ?? "dark", hoverNodeType ? NODE_HIGHLIGHT[hoverNodeType] : undefined),
+    [theme, hoverNodeType]
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -199,7 +217,6 @@ export function MyDiagram({
         selections={selections}
         theme={graphTheme}
         cameraMode="pan"
-        //layoutType="forceDirected3d" // - vision 3d
         layoutType="forceDirected2d"
         edgeArrowPosition="none"
         draggable
@@ -207,9 +224,11 @@ export function MyDiagram({
         edges={initialEdges}
         onNodePointerOver={(node, event) => {
           node.label = node.data.hoverLabel;
+          setHoverNodeType(node.data?.type ?? null);
         }}
         onNodePointerOut={(node, event) => {
           node.label = node.data.label;
+          setHoverNodeType(null);
         }}
         onNodeClick={(node) => {
           onNodeClick(node);
