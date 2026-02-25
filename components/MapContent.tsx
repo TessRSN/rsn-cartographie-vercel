@@ -6,6 +6,7 @@ import "leaflet/dist/leaflet.css";
 import { useSearchParams } from "next/navigation";
 import { MyGraphNode } from "@/app/lib/types";
 import { GraphNodeData } from "@/app/lib/schema";
+import { GraphEdge } from "reagraph";
 
 const TYPE_LABELS: Record<string, string> = {
   "node--organization": "Organisation",
@@ -114,6 +115,7 @@ const ORG_TYPE_LABELS: Record<string, string> = {
 
 interface MapContentProps {
   nodes: MyGraphNode[];
+  edges: GraphEdge[];
   onSelectNode: (node: MyGraphNode) => void;
   selectedNode: MyGraphNode | undefined;
   visible: boolean;
@@ -125,6 +127,7 @@ interface MapContentProps {
 
 export default function MapContent({
   nodes,
+  edges,
   onSelectNode,
   selectedNode,
   visible: _visible,
@@ -140,41 +143,59 @@ export default function MapContent({
   const rawQuery = searchParams.get("q") ?? "";
   const query = removeAccents(rawQuery.toLowerCase());
 
+  // Lookup rapide id → node
+  const nodeById = useMemo(() => {
+    const m = new Map<string, MyGraphNode>();
+    nodes.forEach(n => m.set(n.id, n));
+    return m;
+  }, [nodes]);
+
+  // Set des IDs d'org (pour filtrer les edges pertinents)
+  const orgTypeSet = useMemo(() => new Set(["node--organization", "node--government_organization"]), []);
+
   // Tous les nœuds orga avec adresse — NE dépend PAS de typeFilter
   const orgNodes = useMemo(
     () =>
-      nodes.filter(
-        (n) =>
-          (n.data?.type === "node--organization" ||
-            n.data?.type === "node--government_organization") &&
-          (n.data as any)?.address?.locality
-      ),
-    [nodes]
+      nodes.filter((n) => {
+        if (!orgTypeSet.has(n.data?.type ?? "")) return false;
+        const addr = (n.data as any)?.address;
+        // Accepter toute adresse avec au moins une info géocodable
+        return addr && (addr.locality || addr.address_line1 || addr.administrative_area);
+      }),
+    [nodes, orgTypeSet]
   );
 
-  // Entités liées par org ID — NE dépend PAS de typeFilter
+  // Entités liées par org ID — construit à partir des EDGES du graphe
+  // Ceci est plus robuste que le parsing de member_of/parent_organization
+  // car les edges sont déjà vérifiés et visibles dans la vue graphe.
   const relatedByOrgId = useMemo(() => {
     const map = new Map<string, MyGraphNode[]>();
-    nodes.forEach((n) => {
-      const data = n.data as GraphNodeData;
-      let orgIds: string[] = [];
-      if (data.type === "node--person" && data.member_of) {
-        orgIds = data.member_of.map((o) => o.id);
-      } else if (
-        (data.type === "node--dataset" ||
-          data.type === "node--data_catalog" ||
-          data.type === "node--software_application") &&
-        data.parent_organization
-      ) {
-        orgIds = data.parent_organization.map((o) => o.id);
+    const orgIds = new Set(orgNodes.map(n => n.id));
+
+    edges.forEach(edge => {
+      const sourceType = nodeById.get(edge.source)?.data?.type ?? "";
+      const targetType = nodeById.get(edge.target)?.data?.type ?? "";
+
+      // Cas 1 : source est une org, target est une entité non-org → target est liée à source
+      if (orgIds.has(edge.source) && !orgTypeSet.has(targetType)) {
+        const relNode = nodeById.get(edge.target);
+        if (relNode) {
+          if (!map.has(edge.source)) map.set(edge.source, []);
+          map.get(edge.source)!.push(relNode);
+        }
       }
-      orgIds.forEach((id) => {
-        if (!map.has(id)) map.set(id, []);
-        map.get(id)!.push(n);
-      });
+      // Cas 2 : target est une org, source est une entité non-org → source est liée à target
+      if (orgIds.has(edge.target) && !orgTypeSet.has(sourceType)) {
+        const relNode = nodeById.get(edge.source);
+        if (relNode) {
+          if (!map.has(edge.target)) map.set(edge.target, []);
+          map.get(edge.target)!.push(relNode);
+        }
+      }
     });
+
     return map;
-  }, [nodes]);
+  }, [edges, orgNodes, nodeById, orgTypeSet]);
 
   // Géocodage — se lance une seule fois et ne redémarre PAS quand typeFilter change
   useEffect(() => {
@@ -264,23 +285,37 @@ export default function MapContent({
       );
     }
 
-    // Filtre recherche textuelle
+    // Filtre recherche textuelle (titre, alias, entités liées)
     if (query) {
       result = result.filter(({ node, related }) => {
         const title = removeAccents((node.data?.title ?? node.label ?? "").toLowerCase());
         if (title.includes(query)) return true;
-        return related.some(r =>
-          removeAccents((r.data?.title ?? r.label ?? "").toLowerCase()).includes(query)
-        );
+        // Recherche par alias de l'org
+        const aliases = (node.data as any)?.alternate_name as string[] | undefined;
+        if (aliases?.some(a => removeAccents(a.toLowerCase()).includes(query))) return true;
+        // Recherche dans les entités liées (titre + alias)
+        return related.some(r => {
+          if (removeAccents((r.data?.title ?? r.label ?? "").toLowerCase()).includes(query)) return true;
+          const rAliases = (r.data as any)?.alternate_name as string[] | undefined;
+          return rAliases?.some(a => removeAccents(a.toLowerCase()).includes(query)) ?? false;
+        });
       });
     }
 
     return result;
   }, [orgsWithCoords, fOrgType, fCouverture, fAxeRsn, fDomain, query]);
 
-  function groupRelated(related: MyGraphNode[]) {
+  function groupRelated(related: MyGraphNode[], searchQuery?: string) {
+    // Si une recherche est active, ne garder que les entités correspondantes
+    const filtered = searchQuery
+      ? related.filter(r => {
+          if (removeAccents((r.data?.title ?? r.label ?? "").toLowerCase()).includes(searchQuery)) return true;
+          const aliases = (r.data as any)?.alternate_name as string[] | undefined;
+          return aliases?.some(a => removeAccents(a.toLowerCase()).includes(searchQuery)) ?? false;
+        })
+      : related;
     const groups: Record<string, MyGraphNode[]> = {};
-    related.forEach((n) => {
+    filtered.forEach((n) => {
       const type = n.data?.type ?? "unknown";
       if (!groups[type]) groups[type] = [];
       groups[type].push(n);
@@ -313,8 +348,9 @@ export default function MapContent({
           {visibleOrgs.map(({ node, lat, lng, related }) => {
             const isSelected = selectedNode?.id === node.id;
             const radius = Math.min(7 + Math.sqrt(related.length) * 2.5, 22);
-            const fill = node.fill ?? "#888";
-            const groups = groupRelated(related);
+            // Couleur uniforme pour toutes les orgs sur la carte (bleu RSN)
+            const fill = "#0061AF";
+            const groups = groupRelated(related, query || undefined);
 
             return (
               <CircleMarker

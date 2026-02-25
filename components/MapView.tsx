@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { MyGraphNode } from "@/app/lib/types";
+import { GraphEdge } from "reagraph";
 
 const MapContent = dynamic(() => import("./MapContent"), {
   ssr: false,
@@ -15,6 +16,7 @@ const MapContent = dynamic(() => import("./MapContent"), {
 
 interface MapViewProps {
   nodes: MyGraphNode[];
+  edges: GraphEdge[];
   onSelectNode: (node: MyGraphNode) => void;
   selectedNode: MyGraphNode | undefined;
   visible: boolean;
@@ -24,11 +26,12 @@ interface MapViewProps {
   fDomain:     Set<string>;
 }
 
-export function MapView({ nodes, onSelectNode, selectedNode, visible, fOrgType, fCouverture, fAxeRsn, fDomain }: MapViewProps) {
+export function MapView({ nodes, edges, onSelectNode, selectedNode, visible, fOrgType, fCouverture, fAxeRsn, fDomain }: MapViewProps) {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       <MapContent
         nodes={nodes}
+        edges={edges}
         onSelectNode={onSelectNode}
         selectedNode={selectedNode}
         visible={visible}

@@ -603,6 +603,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
             visuellement dans MapContent. */}
         <MapView
           nodes={nodes}
+          edges={edges}
           onSelectNode={node => setSelectedNode(node)}
           selectedNode={selectedNode}
           visible={activeTab === "map"}
