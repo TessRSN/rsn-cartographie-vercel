@@ -59,11 +59,11 @@ const DEFAULT_ENABLED_EDGES = new Set([
 // ─── Colonnes ─────────────────────────────────────────────────────────────────
 
 type ColKey =
-  | "subtype" | "parentOrg" | "localisation" | "couverture"
+  | "alias" | "subtype" | "parentOrg" | "localisation" | "couverture"
   | "axeRsn" | "santeDomain" | "digitalDomain" | "licence" | "acces" | "links";
 
 const COL_HEADERS: Record<ColKey, string> = {
-  subtype: "Sous-type / Catégorie", parentOrg: "Appartenance / Org. parente",
+  alias: "Alias", subtype: "Sous-type / Catégorie", parentOrg: "Appartenance / Org. parente",
   localisation: "Localisation", couverture: "Couverture géo.",
   axeRsn: "Axe RSN", santeDomain: "Domaine de santé",
   digitalDomain: "Méthodes numériques", licence: "Licence",
@@ -71,19 +71,19 @@ const COL_HEADERS: Record<ColKey, string> = {
 };
 
 const COL_MIN_W: Record<ColKey, string> = {
-  subtype: "160px", parentOrg: "180px", localisation: "140px", couverture: "130px",
+  alias: "140px", subtype: "160px", parentOrg: "180px", localisation: "140px", couverture: "130px",
   axeRsn: "130px", santeDomain: "180px", digitalDomain: "180px",
   licence: "130px", acces: "140px", links: "180px",
 };
 
 const COLS_BY_TYPE: Record<string, ColKey[]> = {
-  all:                             ["subtype","parentOrg","localisation","couverture","axeRsn","santeDomain","digitalDomain","licence","acces","links"],
-  "node--organization":            ["subtype","localisation","couverture","links"],
-  "node--government_organization": ["subtype","localisation","couverture","links"],
+  all:                             ["alias","subtype","parentOrg","localisation","couverture","axeRsn","santeDomain","digitalDomain","licence","acces","links"],
+  "node--organization":            ["alias","subtype","localisation","couverture","links"],
+  "node--government_organization": ["alias","subtype","localisation","couverture","links"],
   "node--person":                  ["subtype","parentOrg","axeRsn","santeDomain","digitalDomain","links"],
-  "node--dataset":                 ["parentOrg","santeDomain","licence","acces","links"],
-  "node--data_catalog":            ["parentOrg","santeDomain","licence","acces","links"],
-  "node--software_application":    ["subtype","parentOrg","santeDomain","licence","acces","links"],
+  "node--dataset":                 ["alias","parentOrg","santeDomain","licence","acces","links"],
+  "node--data_catalog":            ["alias","parentOrg","santeDomain","licence","acces","links"],
+  "node--software_application":    ["alias","subtype","parentOrg","santeDomain","licence","acces","links"],
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -135,6 +135,16 @@ function cellContent(node: MyGraphNode, col: ColKey, nodeById: Map<string, MyGra
   const fill = node.fill ?? "#888";
 
   switch (col) {
+    case "alias": {
+      const aliases = "alternate_name" in data ? (data.alternate_name ?? []) : [];
+      if (!aliases || aliases.length === 0) return DASH;
+      return (
+        <span className="block truncate text-sm opacity-70" title={aliases.join(", ")}>
+          {aliases.join(", ")}
+        </span>
+      );
+    }
+
     case "subtype": {
       let v: string | null = null;
       if (data.type === "node--organization" || data.type === "node--government_organization")
@@ -413,10 +423,15 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   const tableNodes = useMemo(() => {
     if (!searchQuery.trim()) return advancedFilteredNodes;
     const q = removeAccents(searchQuery.toLowerCase().trim());
-    return advancedFilteredNodes.filter(n =>
-      n.data?.tag.some(t => removeAccents(t.toLowerCase()).includes(q)) ||
-      removeAccents((n.data?.title ?? n.label ?? "").toLowerCase()).includes(q)
-    );
+    return advancedFilteredNodes.filter(n => {
+      if (n.data?.tag.some(t => removeAccents(t.toLowerCase()).includes(q))) return true;
+      if (removeAccents((n.data?.title ?? n.label ?? "").toLowerCase()).includes(q)) return true;
+      // Recherche par alias
+      const d = n.data as GraphNodeData;
+      const aliases = "alternate_name" in d ? (d.alternate_name ?? []) : [];
+      if (aliases.some(a => removeAccents(a.toLowerCase()).includes(q))) return true;
+      return false;
+    });
   }, [advancedFilteredNodes, searchQuery]);
 
   const visibleCols: ColKey[] = COLS_BY_TYPE[typeFilter] ?? COLS_BY_TYPE.all;
