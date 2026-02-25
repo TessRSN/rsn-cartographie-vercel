@@ -66,23 +66,38 @@ export function SearchBar() {
       </svg>
       <input
         ref={inputRef}
-        type="search"
+        type="text"
         className="bg-transparent border-none outline-none text-sm flex-1 min-w-0"
         style={{ color: "#e2e8f0" }}
         placeholder="Rechercher…"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
       />
-      <div className="flex items-center gap-0.5 flex-shrink-0" style={{ opacity: 0.35 }}>
-        <kbd
-          className="text-[10px] font-mono px-1 py-0.5 rounded"
-          style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "#e2e8f0" }}
-        >⌘</kbd>
-        <kbd
-          className="text-[10px] font-mono px-1 py-0.5 rounded"
-          style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "#e2e8f0" }}
-        >K</kbd>
-      </div>
+      {inputValue && (
+        <button
+          onClick={() => setInputValue("")}
+          className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded-full transition-opacity"
+          style={{ backgroundColor: "rgba(255,255,255,0.25)", color: "#fff" }}
+          aria-label="Effacer la recherche"
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      )}
+      {!inputValue && (
+        <div className="flex items-center gap-0.5 flex-shrink-0" style={{ opacity: 0.35 }}>
+          <kbd
+            className="text-[10px] font-mono px-1 py-0.5 rounded"
+            style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "#e2e8f0" }}
+          >⌘</kbd>
+          <kbd
+            className="text-[10px] font-mono px-1 py-0.5 rounded"
+            style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "#e2e8f0" }}
+          >K</kbd>
+        </div>
+      )}
     </div>
   );
 }
