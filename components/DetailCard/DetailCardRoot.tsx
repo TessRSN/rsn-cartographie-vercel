@@ -19,6 +19,9 @@ export function DetailCardRoot({ node, onClose }: DetailCardRootProps) {
     return <DataCatalogDetailCard node={node} onClose={onClose} />;
   } else if (isNodeOfType(node, "node--organization")) {
     return <OrganizationDetailCard node={node} onClose={onClose} />;
+  } else if (isNodeOfType(node, "node--government_organization")) {
+    // Gov orgs share the same schema/fields as regular orgs
+    return <OrganizationDetailCard node={node as any} onClose={onClose} />;
   } else if (isNodeOfType(node, "node--person")) {
     return <PersonDetailCard node={node} onClose={onClose} />;
   } else if (isNodeOfType(node, "node--software_application")) {
