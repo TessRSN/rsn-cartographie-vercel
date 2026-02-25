@@ -16,7 +16,7 @@ import { Theme, useSelection } from "reagraph";
 // Couleurs plus claires pour le survol — une par type de noeud
 const NODE_HIGHLIGHT: Record<string, string> = {
   "node--organization":            "#5BADE8", // bleu clair
-  "node--government_organization": "#A0B4C4", // gris-bleu clair
+  "node--government_organization": "#B8B8B8", // gris clair
   "node--person":                  "#4DD98A", // vert clair
   "node--dataset":                 "#FFE082", // jaune clair
   "node--data_catalog":            "#FFE082", // jaune clair
@@ -24,14 +24,14 @@ const NODE_HIGHLIGHT: Record<string, string> = {
 };
 
 // Couleur de sélection/recherche — orange ambre (non utilisé ailleurs)
-const SEARCH_HIGHLIGHT = "#FF9F1C";
+const SEARCH_HIGHLIGHT = "#A855F7";
 
 export function getTheme(mode: string, activeFillOverride?: string): Theme {
   if (mode === "dark") {
     return {
       canvas: {
-        background: "#000",
-        fog: "#fff",
+        background: "#141e30",   // navy profond — raccord avec base-100 dark
+        fog: "#c9d4e0",
       },
       node: {
         fill: "#7CA0AB",
@@ -40,48 +40,48 @@ export function getTheme(mode: string, activeFillOverride?: string): Theme {
         selectedOpacity: 1,
         inactiveOpacity: 0.2,
         label: {
-          color: "#FFF",
-          stroke: "#000",
-          activeColor: "#1DE9AC",
+          color: "#c9d4e0",       // gris bleuté clair (pas blanc pur)
+          stroke: "#141e30",
+          activeColor: "#63b3ed",
         },
         subLabel: {
-          color: "#2A6475",
-          stroke: "#eee",
-          activeColor: "#1DE9AC",
+          color: "#5a7a8a",
+          stroke: "#1c2940",
+          activeColor: "#63b3ed",
         },
       },
       lasso: {
-        border: "1px solid #55aaff",
-        background: "rgba(75, 160, 255, 0.1)",
+        border: "1px solid #63b3ed",
+        background: "rgba(99, 179, 237, 0.1)",
       },
       ring: {
-        fill: "#D8E6EA",
+        fill: "#2a3a52",
         activeFill: SEARCH_HIGHLIGHT,
       },
       edge: {
-        fill: "#D8E6EA",
-        activeFill: "#1DE9AC",
+        fill: "#3a5068",          // bleu-gris moyen (pas blanc)
+        activeFill: "#63b3ed",
         opacity: 1,
         selectedOpacity: 1,
         inactiveOpacity: 0.1,
         label: {
-          stroke: "#fff",
-          color: "#2A6475",
-          activeColor: "#1DE9AC",
+          stroke: "#1c2940",
+          color: "#5a7a8a",
+          activeColor: "#63b3ed",
         },
       },
       arrow: {
-        fill: "#D8E6EA",
-        activeFill: "#1DE9AC",
+        fill: "#3a5068",
+        activeFill: "#63b3ed",
       },
       cluster: {
-        stroke: "#D8E6EA",
+        stroke: "#3a5068",
         opacity: 1,
         selectedOpacity: 1,
         inactiveOpacity: 0.1,
         label: {
-          stroke: "#fff",
-          color: "#2A6475",
+          stroke: "#1c2940",
+          color: "#5a7a8a",
         },
       },
     };
@@ -90,8 +90,8 @@ export function getTheme(mode: string, activeFillOverride?: string): Theme {
   // Light theme
   return {
     canvas: {
-      background: "#FAFAFA",
-      fog: "#000",
+      background: "#f5f7fa",     // gris bleuté doux — raccord avec base-100 light
+      fog: "#2d3a4a",
     },
     node: {
       fill: "#4A90A4",
@@ -100,48 +100,48 @@ export function getTheme(mode: string, activeFillOverride?: string): Theme {
       selectedOpacity: 1,
       inactiveOpacity: 0.3,
       label: {
-        color: "#1A1A1A",
-        stroke: "#FFF",
-        activeColor: "#1A1A1A",
+        color: "#2d3a4a",         // bleu-gris foncé (pas noir pur)
+        stroke: "#f5f7fa",
+        activeColor: "#1a365d",
       },
       subLabel: {
         color: "#6B9EB0",
-        stroke: "#333",
-        activeColor: "#6B9EB0",
+        stroke: "#e8ecf1",
+        activeColor: "#2b6cb0",
       },
     },
     lasso: {
-      border: "1px solid #0066CC",
-      background: "rgba(0, 102, 204, 0.1)",
+      border: "1px solid #2b6cb0",
+      background: "rgba(43, 108, 176, 0.1)",
     },
     ring: {
-      fill: "#2C5F6F",
+      fill: "#8fa8b8",
       activeFill: SEARCH_HIGHLIGHT,
     },
     edge: {
-      fill: "#334E58",
-      activeFill: "#0066CC",
+      fill: "#8fa8b8",            // bleu-gris moyen (pas noir)
+      activeFill: "#2b6cb0",
       opacity: 1,
       selectedOpacity: 1,
-      inactiveOpacity: 0.2,
+      inactiveOpacity: 0.15,
       label: {
-        stroke: "#000",
-        color: "#5A8695",
-        activeColor: "#0066CC",
+        stroke: "#f5f7fa",
+        color: "#6B9EB0",
+        activeColor: "#2b6cb0",
       },
     },
     arrow: {
-      fill: "#334E58",
-      activeFill: "#0066CC",
+      fill: "#8fa8b8",
+      activeFill: "#2b6cb0",
     },
     cluster: {
-      stroke: "#334E58",
+      stroke: "#8fa8b8",
       opacity: 1,
       selectedOpacity: 1,
-      inactiveOpacity: 0.2,
+      inactiveOpacity: 0.15,
       label: {
-        stroke: "#000",
-        color: "#5A8695",
+        stroke: "#f5f7fa",
+        color: "#6B9EB0",
       },
     },
   };

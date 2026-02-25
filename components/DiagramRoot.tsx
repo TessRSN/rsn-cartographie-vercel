@@ -27,7 +27,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const NODE_FILL: Record<string, string> = {
   "node--organization":            "#0061AF",
-  "node--government_organization": "#64748b",
+  "node--government_organization": "#8C8C8C",
   "node--person":                  "#00A759",
   "node--dataset":                 "#FFCC4E",
   "node--data_catalog":            "#FFCC4E",
@@ -45,7 +45,7 @@ const ORG_TYPE_LABELS: Record<string, string> = {
 
 const EDGE_FILTER_OPTIONS = [
   { types: ["node--organization"],                    label: "Organisations",        fill: "#0061AF" },
-  { types: ["node--government_organization"],         label: "Org. gouvernementales", fill: "#64748b" },
+  { types: ["node--government_organization"],         label: "Org. gouvernementales", fill: "#8C8C8C" },
   { types: ["node--person"],                          label: "Personnes",             fill: "#00A759" },
   { types: ["node--dataset", "node--data_catalog"],   label: "Jeux de données",       fill: "#FFCC4E" },
   { types: ["node--software_application"],            label: "Applications",          fill: "#EE3124" },

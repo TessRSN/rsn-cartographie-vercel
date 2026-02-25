@@ -145,7 +145,7 @@ export default async function Home() {
             ? gouvOrg.alternate_name[0]
             : gouvOrg.title,
           data: gouvOrganizationNodeSchema.parse(data),
-          fill: "#64748b",
+          fill: "#8C8C8C",
         };
       },
     );
