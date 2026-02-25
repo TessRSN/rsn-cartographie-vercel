@@ -4,3 +4,23 @@
     light --default,
     dark --prefersdark;
 }
+
+/* ── Thème light adouci : bleu-gris harmonieux avec la bannière ─────────── */
+[data-theme="light"] {
+  --color-base-100: #f5f7fa;       /* fond principal — gris bleuté doux */
+  --color-base-200: #e8ecf1;       /* fond secondaire — légèrement plus soutenu */
+  --color-base-300: #d0d8e0;       /* bordures — gris bleuté moyen */
+  --color-base-content: #2d3a4a;   /* texte principal — bleu-gris foncé (pas noir) */
+  --color-primary: #2b6cb0;        /* actions, onglets actifs */
+  --color-primary-content: #ffffff;
+}
+
+/* ── Thème dark adouci : fond navy, texte gris clair ────────────────────── */
+[data-theme="dark"] {
+  --color-base-100: #141e30;       /* fond principal — navy profond (pas noir) */
+  --color-base-200: #1c2940;       /* fond secondaire */
+  --color-base-300: #2a3a52;       /* bordures — bleu-gris */
+  --color-base-content: #c9d4e0;   /* texte principal — gris bleuté clair (pas blanc) */
+  --color-primary: #63b3ed;        /* actions, onglets actifs */
+  --color-primary-content: #0f1724;
+}
