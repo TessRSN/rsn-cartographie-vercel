@@ -27,17 +27,34 @@ type OrgWithCoords = {
 interface Address {
   address_line1?: string;
   locality?: string;
+  administrative_area?: string;
   postal_code?: string;
   country_code?: string;
 }
 
-function buildAddressQuery(address: Address): string | null {
-  const parts = [
-    address.address_line1,
-    address.locality,
-    address.country_code === "CA" ? "Canada" : address.country_code,
-  ].filter(Boolean);
-  return parts.length > 0 ? parts.join(", ") : null;
+/** Construit plusieurs requêtes de géocodage du plus précis au plus large */
+function buildAddressQueries(address: Address): string[] {
+  const country = address.country_code === "CA" ? "Canada" : address.country_code;
+  const queries: string[] = [];
+
+  // 1. Adresse complète : rue, ville, province, pays
+  const full = [address.address_line1, address.locality, address.administrative_area, country].filter(Boolean);
+  if (full.length > 1) queries.push(full.join(", "));
+
+  // 2. Sans la rue : ville, province, pays
+  const noStreet = [address.locality, address.administrative_area, country].filter(Boolean);
+  if (noStreet.length > 1 && noStreet.join(", ") !== full.join(", "))
+    queries.push(noStreet.join(", "));
+
+  // 3. Ville + pays seulement
+  if (address.locality && country)
+    queries.push(`${address.locality}, ${country}`);
+
+  // 4. Code postal + pays
+  if (address.postal_code && country)
+    queries.push(`${address.postal_code}, ${country}`);
+
+  return queries;
 }
 
 const CACHE_KEY = "rsn_geocode_cache";
@@ -61,23 +78,33 @@ async function geocode(
   address: Address,
   cache: Record<string, { lat: number; lng: number }>
 ): Promise<{ lat: number; lng: number } | null> {
-  const query = buildAddressQuery(address);
-  if (!query) return null;
-  if (cache[query]) return cache[query];
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
-      { headers: { "User-Agent": "RSN-Cartographie/1.0" } }
-    );
-    const data = await res.json();
-    if (data[0]) {
-      const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-      cache[query] = coords;
-      saveCache(cache);
-      return coords;
+  const queries = buildAddressQueries(address);
+  if (queries.length === 0) return null;
+
+  // Vérifier le cache pour chaque variante
+  for (const q of queries) {
+    if (cache[q]) return cache[q];
+  }
+
+  // Essayer chaque requête du plus précis au plus large
+  for (const q of queries) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
+        { headers: { "User-Agent": "RSN-Cartographie/1.0" } }
+      );
+      const data = await res.json();
+      if (data[0]) {
+        const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+        cache[q] = coords;
+        saveCache(cache);
+        return coords;
+      }
+    } catch (e) {
+      console.error("Géocodage échoué pour:", q, e);
     }
-  } catch (e) {
-    console.error("Géocodage échoué pour:", query, e);
+    // Respecter le rate limit de Nominatim entre chaque tentative
+    await new Promise((r) => setTimeout(r, 1100));
   }
   return null;
 }
@@ -160,7 +187,8 @@ export default function MapContent({
         if (!orgTypeSet.has(n.data?.type ?? "")) return false;
         const addr = (n.data as any)?.address;
         // Accepter toute adresse avec au moins une info géocodable
-        return addr && (addr.locality || addr.address_line1 || addr.administrative_area);
+        if (!addr) return false;
+        return !!(addr.locality || addr.address_line1 || addr.administrative_area || addr.postal_code);
       }),
     [nodes, orgTypeSet]
   );
@@ -208,10 +236,12 @@ export default function MapContent({
       for (const node of orgNodes) {
         const address = (node.data as any)?.address as Address | undefined;
         if (!address) continue;
-        const q = buildAddressQuery(address);
-        if (q && cache[q]) {
-          cached.push({ node, ...cache[q], related: relatedByOrgId.get(node.id) ?? [] });
-        } else {
+        const queries = buildAddressQueries(address);
+        // Chercher dans le cache pour n'importe quelle variante
+        const cachedQ = queries.find(q => cache[q]);
+        if (cachedQ) {
+          cached.push({ node, ...cache[cachedQ], related: relatedByOrgId.get(node.id) ?? [] });
+        } else if (queries.length > 0) {
           toGeocode.push(node);
         }
       }
