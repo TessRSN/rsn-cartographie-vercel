@@ -292,7 +292,7 @@ function TypeFilterBar({ nodes, typeFilter, onChange }: {
   nodes: MyGraphNode[]; typeFilter: string; onChange: (t: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300 bg-base-50 flex-shrink-0 flex-wrap">
+    <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300 bg-base-200/50 flex-shrink-0 flex-wrap">
       <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider">Type</span>
       <button className={`btn btn-xs ${typeFilter === "all" ? "btn-primary" : "btn-ghost"}`}
         onClick={() => onChange("all")}>Tous ({nodes.length})</button>
@@ -482,14 +482,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   return (
     <div className="flex flex-col h-full" onClick={closeDropdowns}>
 
-      {/* ── Titre principal ───────────────────────────────────────────────────── */}
-      <div className="px-4 py-3 bg-base-100 border-b border-base-300 flex-shrink-0">
-        <h1 className="text-lg font-bold text-base-content tracking-tight">
-          Cartographie des plateformes du Réseau en santé numérique
-        </h1>
-      </div>
-
-      {/* ── Onglets + stats ──────────────────────────────────────────────────── */}
+      {/* ── Onglets + stats compactes ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 bg-base-100 border-b border-base-300 flex-shrink-0">
         <div className="tabs tabs-border">
           {(["graph", "table", "map"] as const).map(tab => (
@@ -501,17 +494,18 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-4 text-sm text-base-content/70 py-2">
+        <div className="flex items-center gap-3 text-xs text-base-content/60 py-2">
           {[
-            { count: counts.orgs,     fill: "#0061AF", label: "organisations" },
-            { count: counts.gouvOrgs, fill: "#64748b", label: "org. gouv." },
-            { count: counts.persons,  fill: "#00A759", label: "personnes" },
-            { count: counts.datasets, fill: "#FFCC4E", label: "jeux de données" },
-            { count: counts.apps,     fill: "#EE3124", label: "applications" },
+            { count: counts.orgs,     fill: "#0061AF", label: "org." },
+            { count: counts.gouvOrgs, fill: "#8C8C8C", label: "gouv." },
+            { count: counts.persons,  fill: "#00A759", label: "pers." },
+            { count: counts.datasets, fill: "#FFCC4E", label: "données" },
+            { count: counts.apps,     fill: "#EE3124", label: "apps" },
           ].map(({ count, fill, label }) => (
-            <span key={label} className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: fill }} />
-              <span><strong className="text-base-content">{count}</strong> {label}</span>
+            <span key={label} className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: fill }} />
+              <span className="text-base-content font-medium">{count}</span>
+              <span>{label}</span>
             </span>
           ))}
         </div>
@@ -524,7 +518,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
 
       {/* ── Barre de filtres carte ───────────────────────────────────────────── */}
       {activeTab === "map" && (
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300 bg-base-50 flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300 bg-base-200/50 flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
           <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider">Filtrer</span>
           <FilterDropdown label="Sous-type d'org." options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="map-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
           <FilterDropdown label="Couverture géo."  options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="map-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
@@ -541,7 +535,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
 
       {/* ── Bannière filtres avancés — graph ─────────────────────────────── */}
       {activeTab === "graph" && (
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300 bg-base-50 flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300 bg-base-200/50 flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
           <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1">Filtrer</span>
           <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="graph-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
           <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="graph-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
@@ -635,7 +629,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
           <div className="flex-1 flex flex-col overflow-hidden">
 
             {/* Filtres avancés tableau */}
-            <div className="flex items-center gap-2 p-3 border-b border-base-300 bg-base-50 flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-2 p-3 border-b border-base-300 bg-base-200/50 flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
               <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1">Filtrer</span>
               <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="table-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
               <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="table-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
