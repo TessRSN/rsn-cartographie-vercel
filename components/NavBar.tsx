@@ -15,25 +15,57 @@ export function Navbar() {
 
   if (!mounted) return null;
 
+  const isDark = theme === "dark";
+
   return (
-    <nav className="sticky top-0 z-50 bg-base-100">
-      <div className="flex px-4 justify-between items-center h-16">
-        {theme === "dark" ? (
-          <img src="/SVG_RSN/L_RSN_FR_RGB_W.svg" width={120} alt="Logo" />
-        ) : (
-          <img src="/SVG_RSN/L_RSN_FR_RGB_K.svg" width={120} alt="Logo" />
-        )}
+    <nav
+      className="sticky top-0 z-50 flex-shrink-0"
+      style={{
+        background: isDark
+          ? "linear-gradient(135deg, #0f1724 0%, #1a365d 100%)"
+          : "linear-gradient(135deg, #1a365d 0%, #2b6cb0 60%, #3182ce 100%)",
+      }}
+    >
+      <div className="flex items-center gap-4 px-5 py-3">
+        {/* Logo */}
+        <img
+          src="/SVG_RSN/L_RSN_FR_RGB_W.svg"
+          width={110}
+          alt="Logo RSN"
+          className="flex-shrink-0"
+        />
 
-        <SearchBar />
+        {/* Separator */}
+        <div
+          className="w-px h-8 flex-shrink-0"
+          style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+        />
 
-        <div className="flex items-center gap-2">
+        {/* Title + Search */}
+        <div className="flex flex-col flex-1 min-w-0 gap-0.5">
+          <h1
+            className="text-sm font-semibold tracking-tight leading-tight truncate"
+            style={{ color: "#e2e8f0" }}
+          >
+            Cartographie des plateformes du Réseau en santé numérique
+          </h1>
+          <div className="max-w-md">
+            <SearchBar />
+          </div>
+        </div>
+
+        {/* Theme toggle + Onboarding */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-base-300 hover:border-base-content/40 text-base-content/60 hover:text-base-content transition-all"
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+            className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.1)",
+              color: "#e2e8f0",
+            }}
             aria-label="Toggle theme"
           >
-            {theme === "dark" ? (
-              /* Sun */
+            {isDark ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="5"/>
                 <line x1="12" y1="1" x2="12" y2="3"/>
@@ -46,7 +78,6 @@ export function Navbar() {
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
               </svg>
             ) : (
-              /* Moon */
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
               </svg>

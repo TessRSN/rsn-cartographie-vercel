@@ -43,33 +43,46 @@ export function SearchBar() {
   }, [inputValue]);
 
   return (
-    <label className="input">
+    <div
+      className="flex items-center gap-2 rounded-lg px-3 py-1.5 transition-all"
+      style={{
+        backgroundColor: "rgba(255,255,255,0.08)",
+        border: "1px solid rgba(255,255,255,0.12)",
+      }}
+    >
       <svg
-        className="h-[1em] opacity-50"
+        className="w-3.5 h-3.5 flex-shrink-0"
+        style={{ color: "rgba(255,255,255,0.4)" }}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
-        <g
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          strokeWidth="2.5"
-          fill="none"
-          stroke="currentColor"
-        >
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="m21 21-4.3-4.3"></path>
-        </g>
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
       </svg>
       <input
         ref={inputRef}
         type="search"
-        className="grow"
-        placeholder="Rechercher..."
+        className="bg-transparent border-none outline-none text-sm flex-1 min-w-0"
+        style={{ color: "#e2e8f0" }}
+        placeholder="Rechercher…"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
       />
-      <kbd className="kbd kbd-sm">⌘</kbd>
-      <kbd className="kbd kbd-sm">K</kbd>
-    </label>
+      <div className="flex items-center gap-0.5 flex-shrink-0" style={{ opacity: 0.35 }}>
+        <kbd
+          className="text-[10px] font-mono px-1 py-0.5 rounded"
+          style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "#e2e8f0" }}
+        >⌘</kbd>
+        <kbd
+          className="text-[10px] font-mono px-1 py-0.5 rounded"
+          style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "#e2e8f0" }}
+        >K</kbd>
+      </div>
+    </div>
   );
 }
