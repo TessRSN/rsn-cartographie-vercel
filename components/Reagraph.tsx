@@ -211,7 +211,7 @@ export function MyDiagram({
   if (!mounted) return null;
 
   return (
-    <div className="h-[calc(100vh-var(--spacing)*16)] w-full relative">
+    <div className="h-full w-full relative">
       <GraphCanvas
         ref={graphRef}
         selections={selections}
@@ -234,7 +234,15 @@ export function MyDiagram({
           onNodeClick(node);
         }}
       />
-      <button onClick={fitView}>Fit View</button>
+      <button
+        onClick={fitView}
+        className="absolute bottom-4 right-4 btn btn-sm btn-ghost border border-base-300 opacity-70 hover:opacity-100"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+        </svg>
+        Recentrer
+      </button>
     </div>
   );
 }

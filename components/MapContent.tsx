@@ -389,10 +389,10 @@ export default function MapContent({
                 radius={radius}
                 pathOptions={{
                   fillColor: fill,
-                  color: isSelected ? "#fff" : fill,
-                  weight: isSelected ? 3 : 1.5,
+                  color: isSelected ? "#003D6B" : "#003D6B",
+                  weight: isSelected ? 3 : 1,
                   opacity: 1,
-                  fillOpacity: isSelected ? 1 : 0.75,
+                  fillOpacity: isSelected ? 1 : 0.8,
                 }}
                 eventHandlers={{ click: () => onSelectNode(node) }}
               >
