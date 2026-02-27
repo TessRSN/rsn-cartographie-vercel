@@ -2,7 +2,6 @@ import { DrupalJsonApiParams } from "drupal-jsonapi-params";
 import { drupal } from "./drupal";
 import { DrupalNode } from "next-drupal";
 import { DatasetSchema } from "./schema";
-import util from "util";
 
 export async function fetchDataset() {
   // Information Dataset
@@ -45,6 +44,5 @@ export async function fetchDataset() {
       params: datasetParams.getQueryObject(),
     }
   );
-  //  console.log(util.inspect(datasetsData, { depth: null }));
   return DatasetSchema.array().safeParse(datasetsData);
 }

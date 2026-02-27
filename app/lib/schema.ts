@@ -1,4 +1,17 @@
+/**
+ * Zod validation schemas for all Drupal JSON:API entity types and
+ * their corresponding graph-node representations.
+ *
+ * Two schema categories:
+ * - PascalCase (e.g., OrganizationSchema): Drupal API response shapes,
+ *   used in the fetch*.ts files.
+ * - camelCase (e.g., organizationNodeSchema): frontend graph node shapes,
+ *   used by DiagramRoot and DetailCards. These form a discriminated union
+ *   on the `type` field via GraphNodeData.
+ */
 import { z } from "zod";
+
+// ─── Shared building blocks ──────────────────────────────────────────────────
 
 const MetatagSchema = z.object({
   tag: z.string(),

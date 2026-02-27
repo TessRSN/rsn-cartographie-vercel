@@ -1,9 +1,7 @@
 import { DrupalJsonApiParams } from "drupal-jsonapi-params";
 import { drupal } from "./drupal";
 import { DrupalNode } from "next-drupal";
-import { OrganizationSchema, SoftwareApplicationSchema } from "./schema";
-import z from "zod";
-import util from "util";
+import { SoftwareApplicationSchema } from "./schema";
 
 export async function fetchSoftwareApplication() {
   const softappParams = new DrupalJsonApiParams()

@@ -1,5 +1,3 @@
-import DOMPurify from "isomorphic-dompurify";
-import { MyGraphNode } from "@/app/lib/types";
 import type { ReactNode } from "react";
 
 interface DetailCardProps {

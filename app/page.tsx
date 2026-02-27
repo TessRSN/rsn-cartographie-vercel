@@ -1,4 +1,10 @@
-import { NextDrupal } from "next-drupal";
+/**
+ * Home page — Server Component.
+ *
+ * Fetches all entity types from the Drupal JSON:API backend in parallel,
+ * converts them into reagraph-compatible GraphNode/GraphEdge structures,
+ * deduplicates edges, and passes everything to the client-side DiagramRoot.
+ */
 import { DiagramRoot } from "@/components/DiagramRoot";
 import { fetchOrganization } from "./lib/fetchOrganization";
 import { fetchGouvOrganization } from "./lib/fetchGouvOrganization";
@@ -7,12 +13,9 @@ import { fetchDataset } from "./lib/fetchDataset";
 import { fetchSoftwareApplication } from "./lib/fetchSoftwareApplication";
 import { GraphEdge, GraphNode } from "reagraph";
 import { API_ENDPOINT } from "./lib/drupal";
-import util from "util";
-import { error } from "console";
 import {
   OrganizationNode,
   organizationNodeSchema,
-  GouvOrganizationSchema,
   GouvOrganizationNode,
   PersonNode,
   personNodeSchema,
@@ -21,7 +24,6 @@ import {
   DatasetNode,
   datasetNodeSchema,
   DataCatalogNode,
-  DataCatalogSchema,
   dataCatalogNodeSchema,
   gouvOrganizationNodeSchema,
 } from "./lib/schema";
@@ -93,7 +95,7 @@ export default async function Home() {
 
     nodes = nodes.concat(organizationNodes);
   } else {
-    console.log(organizationResults.error.issues);
+    console.error(organizationResults.error.issues);
   }
 
   if (gouvOrganizationResults.data) {
@@ -151,14 +153,9 @@ export default async function Home() {
     );
 
     nodes = nodes.concat(gouvOrganizationNodes);
-  } //else {
-  //console.log(gouvOrganizationResults.error.issues);
-  //}
+  }
 
   if (personResults.data) {
-    // console.log("Person results count:", personResults.data.length);
-    // console.log("Sample person:", personResults.data[0]);
-
     const personNodes = personResults.data.map((person) => {
       const data: PersonNode = {
         type: person.type,
@@ -185,10 +182,9 @@ export default async function Home() {
         fill: "#00A759",
       };
     });
-    //console.log("Person nodes created: ", personNodes.length);
     nodes = nodes.concat(personNodes);
   } else {
-    console.log(personResults.error);
+    console.error(personResults.error);
   }
 
   // Conversion des dataset en noeuds du graph
@@ -238,15 +234,10 @@ export default async function Home() {
     });
 
     nodes = nodes.concat(datasetNodes);
-  } //else {
-  //console.log(datasetResults.error.issues);
-  // }
+  }
 
   // Conversion des dataCatalog en noeuds du graph
   if (dataCatalogResults.data) {
-  //  console.log("DataCatalog results count:", dataCatalogResults.data.length);
-  //  console.log("Sample DataCatalog:", dataCatalogResults.data[0]);
-
     const dataCatalogNodes = dataCatalogResults.data.map((dataCatalog) => {
       let imageSrc = dataCatalog.schema_logo?.image.uri?.url;
       if (!imageSrc) {
@@ -291,20 +282,13 @@ export default async function Home() {
         fill: "#FFCC4E",
       };
     });
-    //console.log("DataCatalog nodes created:", dataCatalogNodes.length);
     nodes = nodes.concat(dataCatalogNodes);
   } else {
-    console.log(dataCatalogResults.error.issues);
+    console.error(dataCatalogResults.error.issues);
   }
 
-  //Conversion des Software Application en noeuds du graph
+  // Conversion des Software Application en noeuds du graph
   if (softwareApplicationResults.data) {
-    //console.log(
-    //  "SoftApp results count:",
-    //  softwareApplicationResults.data.length,
-    //);
-    //console.log("SoftApp DataCatalog:", softwareApplicationResults.data[0]);
-
     const softwareApplicationNodes = softwareApplicationResults.data.map(
       (softapp) => {
         let imageSrc = softapp.schema_logo?.image.uri?.url;
@@ -354,30 +338,15 @@ export default async function Home() {
         };
       },
     );
-    console.log(
-      "Software Application nodes created: ",
-      softwareApplicationNodes.length,
-    );
     nodes = nodes.concat(softwareApplicationNodes);
   } else {
-    console.log(softwareApplicationResults.error);
+    console.error(softwareApplicationResults.error);
   }
 
-  console.log("Total nodes:", nodes.length);
-  console.log("Nodes by type:", {
-    organizations: nodes.filter((n) => n.data.type === "node--organization")
-      .length,
-    gouvOrganizations: nodes.filter(
-      (n) => n.data.type === "node--government_organization",
-    ).length,
-    persons: nodes.filter((n) => n.data.type === "node--person").length,
-    datasets: nodes.filter((n) => n.data.type === "node--dataset").length,
-    dataCatalog: nodes.filter((n) => n.data.type === "node--data_catalog")
-      .length,
-    softapp: nodes.filter((n) => n.data.type === "node--software_application")
-      .length,
-  });
-
+  /**
+   * Creates graph edges from a list of entities by extracting a given
+   * relationship field. Handles both single-object and array relationships.
+   */
   const createEdges = <T extends { id: string | number }>(
     items: T[],
     relationKey: keyof T,
@@ -435,17 +404,9 @@ export default async function Home() {
     createEdges(personResults?.data ?? [], "member_of", "#64748B"),
   );
 
-  //edges = edges.concat(
-  //  createEdges(datasetResults?.data ?? [], "author", "#64748B")
-  //);
-
   edges = edges.concat(
     createEdges(datasetResults?.data ?? [], "parent_organization", "#64748B"),
   );
-
-  //  edges = edges.concat(
-  //    createEdges(dataCatalogResults?.data ?? [], "author", "#64748B")
-  //  );
 
   edges = edges.concat(
     createEdges(
@@ -459,10 +420,6 @@ export default async function Home() {
     createEdges(dataCatalogResults?.data ?? [], "field_sub_dataset", "#64748B"),
   );
 
-  //edges = edges.concat(
-  //  createEdges(softwareApplicationResults?.data ?? [], "author", "#64748B")
-  // );
-
   edges = edges.concat(
     createEdges(
       softwareApplicationResults?.data ?? [],
@@ -471,7 +428,9 @@ export default async function Home() {
     ),
   );
 
-  //deduplicate edges
+  // Deduplicate edges: keep only the first occurrence of each (source, target) pair.
+  // Multiple relationship fields can create redundant edges
+  // (e.g., parent_organization and sub_organization both link the same two nodes).
   edges = edges.filter(
     (edge, index, self) =>
       index ===

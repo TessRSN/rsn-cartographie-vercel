@@ -1,5 +1,13 @@
+/**
+ * Reagraph wrapper — renders the 2D force-directed graph using GraphCanvas.
+ *
+ * Handles theme synchronization (light/dark), search highlighting via
+ * the selection API, and per-type hover color changes.
+ * Dynamically imported (no SSR) because reagraph requires canvas/WebGL.
+ */
 "use client";
 import { MyGraphNode } from "@/app/lib/types";
+import { removeAccents } from "@/app/lib/utils";
 import { useTheme } from "next-themes";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
@@ -26,6 +34,10 @@ const NODE_HIGHLIGHT: Record<string, string> = {
 // Couleur de sélection/recherche — orange ambre (non utilisé ailleurs)
 const SEARCH_HIGHLIGHT = "#A855F7";
 
+/**
+ * Builds a reagraph Theme for the given color mode, harmonized with the DaisyUI palette.
+ * @param activeFillOverride - Optional override for the node active/hover fill (type-specific highlight).
+ */
 export function getTheme(mode: string, activeFillOverride?: string): Theme {
   if (mode === "dark") {
     return {
@@ -245,8 +257,4 @@ export function MyDiagram({
       </button>
     </div>
   );
-}
-
-function removeAccents(str: string): string {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }

@@ -1,19 +1,10 @@
 import DOMPurify from "isomorphic-dompurify";
 import { MyGraphNode } from "@/app/lib/types";
 import { OrganizationNode } from "@/app/lib/schema";
+import { ORG_TYPE_LABELS } from "@/app/lib/constants";
 import { DetailCard } from "./DetailCard";
 import { Logo } from "./Logo";
 import { Adresse } from "./Adresse";
-import { title } from "process";
-
-const additionalTypeToLabel: Record<string, string> = {
-  consortium: "Regroupement de recherche",
-  college_or_university: "Collège ou université",
-  funding_scheme: "Programme de financement",
-  government_organization: "Organisation gouvernementale",
-  hospital: "Hôpital",
-  autre: "Autre",
-};
 
 interface OrganizationDetailCardProps {
   node: MyGraphNode & { data: OrganizationNode };
@@ -38,11 +29,11 @@ export function OrganizationDetailCard({
       )}
 
       {node.data.schema_organization_type &&
-      additionalTypeToLabel[node.data.schema_organization_type] ? (
+      ORG_TYPE_LABELS[node.data.schema_organization_type] ? (
         <div className="space-y-1 pt-2">
           <div className="font-medium">Type</div>
           <div className="badge badge-soft badge-secondary">
-            {additionalTypeToLabel[node.data.schema_organization_type]}
+            {ORG_TYPE_LABELS[node.data.schema_organization_type]}
           </div>
         </div>
       ) : null}
@@ -83,7 +74,7 @@ export function OrganizationDetailCard({
         <div className="space-y-1 pt-2">
           <div className="font-medium">Subventionné par</div>
           {node.data.field_funder.map((term) => (
-            <div key={term.id}>{term.title}</div>
+            <div key={term.id}>{"title" in term ? term.title : term.id}</div>
           ))}
         </div>
       ) : null}

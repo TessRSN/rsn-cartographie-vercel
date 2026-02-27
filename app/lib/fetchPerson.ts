@@ -2,11 +2,8 @@ import { DrupalJsonApiParams } from "drupal-jsonapi-params";
 import { drupal } from "./drupal";
 import { DrupalNode } from "next-drupal";
 import { PersonSchema } from "./schema";
-import z from "zod";
-import util from "util";
 
 export async function fetchPerson() {
-  //etape 1, on demande les datas a drupal
   const personParams = new DrupalJsonApiParams()
     .addFields("node--person", [
       "title",
@@ -60,9 +57,6 @@ export async function fetchPerson() {
     ])
     .addFilter("status", "1")
     .addPageLimit(10000)
-    .addInclude([
-      /*"member_of"*/
-    ])
     .addSort("created", "DESC");
 
   const personsData = await drupal.getResourceCollection<DrupalNode[]>(
@@ -73,9 +67,6 @@ export async function fetchPerson() {
       defaultLocale: "fr",
     },
   );
-  //console.log("field_axe_si_membre_rsn:", JSON.stringify(personsData[5]?.field_axe_si_membre_rsn, null, 2));
-  //console.log(util.inspect(personsData, { depth: null }));
-
-  //etape 2 on s'assure que les data sont dans la forme attendu!
+  // Validate that the data matches the expected schema
   return PersonSchema.array().safeParse(personsData);
 }

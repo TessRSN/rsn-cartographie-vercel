@@ -2,8 +2,6 @@ import { DrupalJsonApiParams } from "drupal-jsonapi-params";
 import { drupal } from "./drupal";
 import { DrupalNode } from "next-drupal";
 import { GouvOrganizationSchema } from "./schema";
-import z from "zod";
-import util from "util";
 
 export async function fetchGouvOrganization() {
   const gouvOrgParams = new DrupalJsonApiParams()
@@ -45,6 +43,5 @@ export async function fetchGouvOrganization() {
       defaultLocale: "fr",
     },
   );
-  //console.log(gouvOrgsData);
   return GouvOrganizationSchema.array().safeParse(gouvOrgsData);
 }

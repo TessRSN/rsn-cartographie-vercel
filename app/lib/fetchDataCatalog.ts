@@ -1,8 +1,7 @@
 import { DrupalJsonApiParams } from "drupal-jsonapi-params";
 import { drupal } from "./drupal";
 import { DrupalNode } from "next-drupal";
-import { DataCatalogSchema, DatasetSchema } from "./schema";
-import util from "util";
+import { DataCatalogSchema } from "./schema";
 
 export async function fetchDataCatalog() {
   // Information Dataset
@@ -47,6 +46,5 @@ export async function fetchDataCatalog() {
       params: dataCatalogParams.getQueryObject(),
     },
   );
-  //  console.log(util.inspect(dataCatalogsData, { depth: null }));
   return DataCatalogSchema.array().safeParse(dataCatalogsData);
 }

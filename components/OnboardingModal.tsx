@@ -44,7 +44,6 @@ const onboardingSteps = [
 export function OnboardingModal() {
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  console.log({ open });
   useEffect(() => {
     // Check if user has already seen the onboarding
     const seen = localStorage.getItem("hasSeenOnboarding");

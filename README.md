@@ -97,6 +97,9 @@ app/
     ├── drupal.ts               # Client NextDrupal + API_ENDPOINT
     ├── schema.ts               # Schémas Zod pour toutes les entités
     ├── types.ts                # Types partagés (MyGraphNode)
+    ├── constants.ts            # Constantes partagées (TYPE_LABELS, NODE_FILL, ORG_TYPE_LABELS)
+    ├── utils.ts                # Utilitaires partagés (removeAccents)
+    ├── cn.ts                   # Utilitaire CSS (clsx + twMerge)
     ├── fetchOrganization.ts    # Fetch organisations
     ├── fetchGouvOrganization.ts # Fetch org. gouvernementales
     ├── fetchPerson.ts          # Fetch personnes
@@ -113,9 +116,15 @@ components/
 ├── SearchBar.tsx       # Barre de recherche (⌘K)
 ├── OnboardingModal.tsx # Modal d'aide au premier lancement
 └── DetailCard/
-    ├── DetailCardRoot.tsx          # Dispatch vers le bon type de carte
-    ├── OrganizationDetailCard.tsx  # Détail organisation
-    └── PersonDetailCard.tsx        # Détail personne
+    ├── DetailCardRoot.tsx                # Dispatch vers le bon type de carte
+    ├── DetailCard.tsx                    # Conteneur partagé (layout, bouton fermer)
+    ├── OrganizationDetailCard.tsx        # Détail organisation
+    ├── PersonDetailCard.tsx              # Détail personne
+    ├── DataCatalogDetailCard.tsx         # Détail catalogue de données
+    ├── DatasetDetailCard.tsx             # Détail jeu de données
+    ├── SoftwareApplicationDetailCard.tsx # Détail application
+    ├── Logo.tsx                          # Composant logo réutilisable
+    └── Adresse.tsx                       # Composant adresse formatée
 ```
 
 ## Types de nœuds
@@ -150,7 +159,7 @@ Carte OpenStreetMap (react-leaflet) avec géocodage automatique des adresses d'o
 1. Créer le schéma Zod dans `app/lib/schema.ts`
 2. Créer la fonction fetch dans `app/lib/fetch<Type>.ts`
 3. Ajouter la conversion nodes/edges dans `app/page.tsx`
-4. Ajouter l'entrée dans les constantes de `DiagramRoot.tsx` (`TYPE_LABELS`, `NODE_FILL`, `EDGE_FILTER_OPTIONS`)
+4. Ajouter l'entrée dans `app/lib/constants.ts` (`TYPE_LABELS`, `NODE_FILL`) et dans `DiagramRoot.tsx` (`EDGE_FILTER_OPTIONS`)
 5. Créer une DetailCard si nécessaire
 
 ### Modifier le point d'entrée Drupal
@@ -160,3 +169,30 @@ Carte OpenStreetMap (react-leaflet) avec géocodage automatique des adresses d'o
 ### Champs d'adresse
 
 Les organisations classiques utilisent le champ `address` dans Drupal. Les organisations gouvernementales utilisent `schema_address`. Cette différence est gérée dans `fetchGouvOrganization.ts` et `page.tsx`.
+
+## Dépannage
+
+| Symptôme | Cause probable | Solution |
+|----------|---------------|----------|
+| La carte met du temps à charger | Le géocodage Nominatim impose un délai de ~1 s entre chaque requête (politique d'utilisation). Les résultats sont ensuite mis en cache dans `sessionStorage`. | Patienter lors du premier chargement ; les visites suivantes utilisent le cache. |
+| Le graphe ne s'affiche pas | reagraph nécessite WebGL. Certains navigateurs/environnements le désactivent. | Vérifier que WebGL est activé dans les paramètres du navigateur. |
+| Erreur `DOMPurify` côté serveur | `isomorphic-dompurify` est utilisé dans les DetailCards qui sont des Client Components. Si importé dans un Server Component, il échoue. | S'assurer que les composants utilisant DOMPurify ont la directive `"use client"`. |
+
+## Navigateurs supportés
+
+L'application requiert un navigateur moderne supportant **ES2020** et **WebGL** :
+
+- Chrome / Edge >= 90
+- Firefox >= 90
+- Safari >= 15
+
+## Déploiement
+
+L'application est un projet Next.js standard. Pour déployer en production :
+
+```bash
+pnpm build
+pnpm start
+```
+
+Aucun fichier `.env` n'est requis. Les données sont récupérées depuis Drupal au moment du build/rendu serveur. Pour rafraîchir les données après une modification dans Drupal, relancer `pnpm build`.

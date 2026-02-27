@@ -1,4 +1,3 @@
-import DOMPurify from "isomorphic-dompurify";
 import { MyGraphNode } from "@/app/lib/types";
 import { OrganizationDetailCard } from "./OrganizationDetailCard";
 import { DatasetDetailCard } from "./DatasetDetailCard";

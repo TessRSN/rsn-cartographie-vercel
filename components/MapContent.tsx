@@ -1,3 +1,15 @@
+/**
+ * MapContent — Leaflet map view with automatic geocoding.
+ *
+ * Geocodes organization addresses via the Nominatim API using a multi-query
+ * fallback strategy (full address -> city+province -> city+country -> postal code).
+ * Results are cached in sessionStorage to avoid redundant API calls.
+ * Nominatim rate-limits to 1 request/second; we enforce a 1.1s delay between calls.
+ *
+ * Receives ALL nodes from DiagramRoot (not just filtered ones) so that
+ * geocoding runs only once. Visual filters (fOrgType, fCouverture, etc.)
+ * are applied post-geocoding in the `visibleOrgs` memo.
+ */
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -7,15 +19,8 @@ import { useSearchParams } from "next/navigation";
 import { MyGraphNode } from "@/app/lib/types";
 import { GraphNodeData } from "@/app/lib/schema";
 import { GraphEdge } from "reagraph";
-
-const TYPE_LABELS: Record<string, string> = {
-  "node--organization": "Organisation",
-  "node--government_organization": "Org. gouvernementale",
-  "node--person": "Personne",
-  "node--dataset": "Jeu de données",
-  "node--data_catalog": "Catalogue de données",
-  "node--software_application": "Application",
-};
+import { TYPE_LABELS, ORG_TYPE_LABELS } from "@/app/lib/constants";
+import { removeAccents } from "@/app/lib/utils";
 
 type OrgWithCoords = {
   node: MyGraphNode;
@@ -109,10 +114,6 @@ async function geocode(
   return null;
 }
 
-function removeAccents(s: string) {
-  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
 /**
  * Surveille la taille du conteneur Leaflet via ResizeObserver et appelle
  * invalidateSize() automatiquement — gère à la fois le retour d'onglet
@@ -130,15 +131,6 @@ function MapResizeWatcher() {
   }, [map]);
   return null;
 }
-
-const ORG_TYPE_LABELS: Record<string, string> = {
-  consortium:              "Regroupement de recherche",
-  college_or_university:   "Collège ou université",
-  funding_scheme:          "Programme de financement",
-  government_organization: "Organisation gouvernementale",
-  hospital:                "Hôpital",
-  autre:                   "Autre",
-};
 
 interface MapContentProps {
   nodes: MyGraphNode[];

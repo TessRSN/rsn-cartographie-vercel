@@ -12,7 +12,7 @@ interface DatasetDetailCardProps {
 export function DatasetDetailCard({ node, onClose }: DatasetDetailCardProps) {
   return (
     <DetailCard title={node.data.title} onClose={onClose}>
-      {node.data.alternate_name.length > 0 ? (
+      {node.data.alternate_name && node.data.alternate_name.length > 0 ? (
         <div>
           <div className="font-medium">Alias</div>
           <div> {node.data.alternate_name[0]}</div>
@@ -65,7 +65,7 @@ export function DatasetDetailCard({ node, onClose }: DatasetDetailCardProps) {
         <div className="space-y-1 pt-2">
           <div className="font-medium">Personne responsable</div>
           {node.data.author.map((term) => (
-            <div key={term.id}>{term.title}</div>
+            <div key={term.id}>{"title" in term ? term.title : term.id}</div>
           ))}
         </div>
       ) : null}
@@ -74,7 +74,7 @@ export function DatasetDetailCard({ node, onClose }: DatasetDetailCardProps) {
         <div className="space-y-1 pt-2">
           <div className="font-medium">Subventionné par</div>
           {node.data.field_funder.map((term) => (
-            <div key={term.id}>{term.title}</div>
+            <div key={term.id}>{"title" in term ? term.title : term.id}</div>
           ))}
         </div>
       ) : null}

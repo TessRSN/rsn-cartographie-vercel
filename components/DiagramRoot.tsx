@@ -1,3 +1,13 @@
+/**
+ * DiagramRoot — Main client-side orchestrator for the three visualization views.
+ *
+ * Manages shared state across the graph, table, and map tabs:
+ * - Type filtering (show only certain node types)
+ * - Advanced faceted filters (geographic coverage, RSN axis, health domain, etc.)
+ * - Edge visibility toggles for the graph view
+ * - Text search filtering for the table view
+ * - Node selection (detail card) shared across all views
+ */
 "use client";
 
 import { GraphEdge } from "reagraph";
@@ -8,40 +18,13 @@ import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { MyGraphNode } from "@/app/lib/types";
 import { GraphNodeData } from "@/app/lib/schema";
+import { TYPE_LABELS, NODE_FILL, ORG_TYPE_LABELS } from "@/app/lib/constants";
+import { removeAccents } from "@/app/lib/utils";
 
 interface DiagramRootProps {
   nodes: MyGraphNode[];
   edges: GraphEdge[];
 }
-
-// ─── Constantes ───────────────────────────────────────────────────────────────
-
-const TYPE_LABELS: Record<string, string> = {
-  "node--organization":            "Organisation",
-  "node--government_organization": "Org. gouvernementale",
-  "node--person":                  "Personne",
-  "node--dataset":                 "Jeu de données",
-  "node--data_catalog":            "Catalogue de données",
-  "node--software_application":    "Application",
-};
-
-const NODE_FILL: Record<string, string> = {
-  "node--organization":            "#0061AF",
-  "node--government_organization": "#8C8C8C",
-  "node--person":                  "#00A759",
-  "node--dataset":                 "#FFCC4E",
-  "node--data_catalog":            "#FFCC4E",
-  "node--software_application":    "#EE3124",
-};
-
-const ORG_TYPE_LABELS: Record<string, string> = {
-  consortium:              "Regroupement de recherche",
-  college_or_university:   "Collège ou université",
-  funding_scheme:          "Programme de financement",
-  government_organization: "Organisation gouvernementale",
-  hospital:                "Hôpital",
-  autre:                   "Autre",
-};
 
 const EDGE_FILTER_OPTIONS = [
   { types: ["node--organization"],                    label: "Organisations",        fill: "#0061AF" },
@@ -88,10 +71,6 @@ const COLS_BY_TYPE: Record<string, ColKey[]> = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function removeAccents(s: string) {
-  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
 function getTextColor(fill?: string): string {
   if (!fill) return "#000";
   const hex = fill.replace("#", "");
@@ -130,6 +109,7 @@ function resolveOrgTitle(id: string, title: string | undefined, nodeById: Map<st
   return found?.data?.title ?? found?.label ?? null;
 }
 
+/** Resolves the display content for a single table cell based on the column key and node type. */
 function cellContent(node: MyGraphNode, col: ColKey, nodeById: Map<string, MyGraphNode>): React.ReactNode {
   const data = node.data as GraphNodeData;
   const fill = node.fill ?? "#888";
@@ -382,6 +362,10 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
     [nodes, typeFilter]);
 
   // ── Filtres avancés (shared graph + table) ────────────────────────────────
+  // Apply faceted filters sequentially. Each active filter narrows the result set.
+  // Filters are type-aware: e.g., couverture only applies to organizations,
+  // axeRsn only to persons. Nodes that don't match the filter's target type
+  // are excluded when that filter is active.
   const advancedFilteredNodes = useMemo(() => {
     let r = typeFilteredNodes;
     if (fCouverture.size > 0) r = r.filter(n => {

@@ -2,8 +2,6 @@ import { DrupalJsonApiParams } from "drupal-jsonapi-params";
 import { drupal } from "./drupal";
 import { DrupalNode } from "next-drupal";
 import { OrganizationSchema } from "./schema";
-import z from "zod";
-import util from "util";
 
 export async function fetchOrganization() {
   const orgParams = new DrupalJsonApiParams()
@@ -47,6 +45,5 @@ export async function fetchOrganization() {
       defaultLocale: "fr",
     }
   );
-  // console.log(orgsData);
   return OrganizationSchema.array().safeParse(orgsData);
 }
