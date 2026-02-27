@@ -23,6 +23,14 @@
 # misc
 .DS_Store
 *.pem
+_tmp_*
+
+# IDE
+.vscode/
+
+# Notion (fichiers locaux)
+notion-*.csv
+guide-notion-rsn.js
 
 # debug
 npm-debug.log*
