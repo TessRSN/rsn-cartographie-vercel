@@ -54,6 +54,7 @@ export async function fetchPerson() {
       "field_digital_domain",
       "field_axe_si_membre_rsn",
       "member_of",
+      "image.image",
     ])
     .addFilter("status", "1")
     .addPageLimit(10000)

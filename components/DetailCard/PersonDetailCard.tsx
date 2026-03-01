@@ -13,7 +13,7 @@ export function PersonDetailCard({ node, onClose }: PersonDetailCardProps) {
   return (
     <DetailCard title={node.data.title} onClose={onClose}>
       {node.data.imageSrc && (
-        <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} />
+        <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} variant="photo" />
       )}
 
       <div className="space-y-1 pt-2">

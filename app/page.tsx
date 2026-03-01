@@ -157,6 +157,16 @@ export default async function Home() {
 
   if (personResults.data) {
     const personNodes = personResults.data.map((person) => {
+      // Extraire l'image (même pattern que les orgs avec schema_logo)
+      let personImageSrc = person.image?.image?.uri?.url;
+      if (!personImageSrc) {
+        personImageSrc = person.metatag.find(
+          (tag) => tag.tag === "link" && tag.attributes.rel === "image_src",
+        )?.attributes.href;
+      } else {
+        personImageSrc = `${API_ENDPOINT}/${personImageSrc}`;
+      }
+
       const data: PersonNode = {
         type: person.type,
         label: person.title,
@@ -172,6 +182,7 @@ export default async function Home() {
         field_digital_domain: person.field_digital_domain,
         field_person_type: person.field_person_type,
         field_axe_si_membre_rsn: person.field_axe_si_membre_rsn,
+        imageSrc: personImageSrc,
         tag: [person.title],
       };
 
