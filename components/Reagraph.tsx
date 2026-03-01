@@ -21,17 +21,7 @@ const GraphCanvas = dynamic(
 import type { GraphNode, GraphEdge, GraphCanvasRef } from "reagraph";
 import { Theme, useSelection } from "reagraph";
 
-// Couleurs plus claires pour le survol — une par type de noeud
-const NODE_HIGHLIGHT: Record<string, string> = {
-  "node--organization":            "#5BADE8", // bleu clair
-  "node--government_organization": "#B8B8B8", // gris clair
-  "node--person":                  "#4DD98A", // vert clair
-  "node--dataset":                 "#FFE082", // jaune clair
-  "node--data_catalog":            "#FFE082", // jaune clair
-  "node--software_application":    "#F47B6C", // rouge clair
-};
-
-// Couleur de sélection/recherche — orange ambre (non utilisé ailleurs)
+// Couleur de sélection/recherche — violet
 const SEARCH_HIGHLIGHT = "#A855F7";
 
 /**
@@ -201,7 +191,13 @@ export function MyDiagram({
             return false;
           })
         : [];
-    setSelections(filteredNodes.map((node) => node.id));
+    const ids = filteredNodes.map((node) => node.id);
+    setSelections(ids);
+
+    // Centrer le graphe sur les nœuds trouvés (avec animation)
+    if (ids.length > 0) {
+      graphRef.current?.fitNodesInView(ids, { animated: true });
+    }
   }, [query, initialNodes]);
 
   const fitView = () => {
@@ -209,11 +205,10 @@ export function MyDiagram({
   };
 
   const [mounted, setMounted] = useState(false);
-  const [hoverNodeType, setHoverNodeType] = useState<string | null>(null);
   const { theme } = useTheme();
   const graphTheme = useMemo(
-    () => getTheme(theme ?? "dark", hoverNodeType ? NODE_HIGHLIGHT[hoverNodeType] : undefined),
-    [theme, hoverNodeType]
+    () => getTheme(theme ?? "dark"),
+    [theme]
   );
 
   useEffect(() => {
@@ -230,17 +225,16 @@ export function MyDiagram({
         theme={graphTheme}
         cameraMode="pan"
         layoutType="forceDirected2d"
+        labelType="nodes"
         edgeArrowPosition="none"
         draggable
         nodes={nodes}
         edges={initialEdges}
-        onNodePointerOver={(node, event) => {
+        onNodePointerOver={(node) => {
           node.label = node.data.hoverLabel;
-          setHoverNodeType(node.data?.type ?? null);
         }}
-        onNodePointerOut={(node, event) => {
+        onNodePointerOut={(node) => {
           node.label = node.data.label;
-          setHoverNodeType(null);
         }}
         onNodeClick={(node) => {
           onNodeClick(node);
@@ -248,7 +242,7 @@ export function MyDiagram({
       />
       <button
         onClick={fitView}
-        className="absolute bottom-4 right-4 btn btn-sm btn-ghost border border-base-300 opacity-70 hover:opacity-100"
+        className="absolute bottom-4 left-4 btn btn-sm btn-ghost border border-base-300 opacity-70 hover:opacity-100"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
