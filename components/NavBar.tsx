@@ -26,7 +26,7 @@ export function Navbar() {
           : "linear-gradient(135deg, #1a365d 0%, #2b6cb0 60%, #3182ce 100%)",
       }}
     >
-      <div className="flex items-center gap-4 px-5 py-3">
+      <div className="flex items-center gap-5 px-5 py-4">
         {/* Logo */}
         <img
           src="/SVG_RSN/L_RSN_FR_RGB_W.svg"
@@ -42,9 +42,9 @@ export function Navbar() {
         />
 
         {/* Title + Search */}
-        <div className="flex flex-col flex-1 min-w-0 gap-0.5">
+        <div className="flex flex-col flex-1 min-w-0 gap-1.5">
           <h1
-            className="text-sm font-semibold tracking-tight leading-tight truncate"
+            className="text-base font-semibold tracking-tight leading-tight truncate"
             style={{ color: "#e2e8f0" }}
           >
             Cartographie des plateformes du Réseau en santé numérique

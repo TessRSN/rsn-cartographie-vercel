@@ -11,13 +11,13 @@ export function DetailCard({ title, children, onClose }: DetailCardProps) {
   return (
     <div className="card text-base-content w-full h-full">
       <button
-        className="btn btn-circle btn-soft absolute right-[-0.5rem] z-20 top-[-0.5rem]"
+        className="absolute right-2 top-2 z-20 p-1 opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
         onClick={onClose}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -25,7 +25,6 @@ export function DetailCard({ title, children, onClose }: DetailCardProps) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
           <path d="M18 6l-12 12" />
           <path d="M6 6l12 12" />
         </svg>
@@ -35,7 +34,7 @@ export function DetailCard({ title, children, onClose }: DetailCardProps) {
         <div className="text-2xl z-10 sticky top-0 bg-base-200 p-4 pb-0">
           {title}
         </div>
-        <div className="p-4 w-full flex flex-col gap-4 pt-0 overflow-y-auto">
+        <div className="p-4 w-full flex flex-col gap-4 pt-0 pb-8 overflow-y-auto">
           {children}
         </div>
       </div>
