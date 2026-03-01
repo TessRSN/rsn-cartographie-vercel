@@ -20,13 +20,16 @@ interface MapViewProps {
   onSelectNode: (node: MyGraphNode) => void;
   selectedNode: MyGraphNode | undefined;
   visible: boolean;
-  fOrgType:    Set<string>;
-  fCouverture: Set<string>;
-  fAxeRsn:     Set<string>;
-  fDomain:     Set<string>;
+  fOrgType:          Set<string>;
+  fCouverture:       Set<string>;
+  fAxeRsn:           Set<string>;
+  fDomain:           Set<string>;
+  fDigital:          Set<string>;
+  fPersonType:       Set<string>;
+  fMapEntityTypes:   Set<string>;
 }
 
-export function MapView({ nodes, edges, onSelectNode, selectedNode, visible, fOrgType, fCouverture, fAxeRsn, fDomain }: MapViewProps) {
+export function MapView({ nodes, edges, onSelectNode, selectedNode, visible, fOrgType, fCouverture, fAxeRsn, fDomain, fDigital, fPersonType, fMapEntityTypes }: MapViewProps) {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       <MapContent
@@ -39,6 +42,9 @@ export function MapView({ nodes, edges, onSelectNode, selectedNode, visible, fOr
         fCouverture={fCouverture}
         fAxeRsn={fAxeRsn}
         fDomain={fDomain}
+        fDigital={fDigital}
+        fPersonType={fPersonType}
+        fMapEntityTypes={fMapEntityTypes}
       />
     </div>
   );

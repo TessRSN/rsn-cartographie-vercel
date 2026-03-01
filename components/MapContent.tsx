@@ -12,8 +12,9 @@
  */
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { divIcon, latLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSearchParams } from "next/navigation";
 import { MyGraphNode } from "@/app/lib/types";
@@ -127,8 +128,51 @@ function MapResizeWatcher() {
       map.invalidateSize();
     });
     observer.observe(container);
-    return () => observer.disconnect();
+    // Force invalidateSize après un court délai pour gérer display:none → flex
+    const timer = setTimeout(() => map.invalidateSize(), 100);
+    return () => { observer.disconnect(); clearTimeout(timer); };
   }, [map]);
+  return null;
+}
+
+/**
+ * Force invalidateSize() quand le composant devient visible (onglet switché).
+ * Résout le problème de Leaflet qui ne redimensionne pas correctement
+ * quand le conteneur passe de display:none à display:flex.
+ */
+function VisibilityHandler({ visible }: { visible: boolean }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!visible) return;
+    // Le conteneur a toujours des dimensions (visibility:hidden, pas display:none).
+    // On invalide pour compenser le léger changement de taille au switch d'onglet.
+    const raf = requestAnimationFrame(() => map.invalidateSize());
+    const t1 = setTimeout(() => map.invalidateSize(), 150);
+    const t2 = setTimeout(() => map.invalidateSize(), 400);
+    return () => { cancelAnimationFrame(raf); clearTimeout(t1); clearTimeout(t2); };
+  }, [visible, map]);
+  return null;
+}
+
+/**
+ * Centre la carte sur les résultats lorsque la recherche change.
+ */
+function MapSearchCenterer({ visibleOrgs, query }: { visibleOrgs: OrgWithCoords[]; query: string }) {
+  const map = useMap();
+  const prevQuery = useRef(query);
+
+  useEffect(() => {
+    if (query && query !== prevQuery.current && visibleOrgs.length > 0) {
+      if (visibleOrgs.length === 1) {
+        map.flyTo([visibleOrgs[0].lat, visibleOrgs[0].lng], 13, { animate: true });
+      } else {
+        const bounds = latLngBounds(visibleOrgs.map(o => [o.lat, o.lng]));
+        map.flyToBounds(bounds, { padding: [50, 50], animate: true });
+      }
+    }
+    prevQuery.current = query;
+  }, [query, visibleOrgs, map]);
+
   return null;
 }
 
@@ -138,10 +182,13 @@ interface MapContentProps {
   onSelectNode: (node: MyGraphNode) => void;
   selectedNode: MyGraphNode | undefined;
   visible: boolean;
-  fOrgType:    Set<string>;   // Filtres visuels — ne déclenchent PAS le géocodage
-  fCouverture: Set<string>;
-  fAxeRsn:     Set<string>;
-  fDomain:     Set<string>;
+  fOrgType:          Set<string>;
+  fCouverture:       Set<string>;
+  fAxeRsn:           Set<string>;
+  fDomain:           Set<string>;
+  fDigital:          Set<string>;
+  fPersonType:       Set<string>;
+  fMapEntityTypes:   Set<string>;   // Filtre types d'entités (vide = tout montrer)
 }
 
 export default function MapContent({
@@ -149,11 +196,14 @@ export default function MapContent({
   edges,
   onSelectNode,
   selectedNode,
-  visible: _visible,
-  fOrgType,
-  fCouverture,
+  visible,
+  fOrgType: _fOrgType,
+  fCouverture: _fCouverture,
   fAxeRsn,
   fDomain,
+  fDigital,
+  fPersonType,
+  fMapEntityTypes,
 }: MapContentProps) {
   const [orgsWithCoords, setOrgsWithCoords] = useState<OrgWithCoords[]>([]);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -267,24 +317,51 @@ export default function MapContent({
   const visibleOrgs = useMemo(() => {
     let result = orgsWithCoords;
 
-    // Filtre sous-type d'org.
-    if (fOrgType.size > 0) {
-      result = result.filter(({ node }) => {
-        const d = node.data as GraphNodeData;
-        if (d.type !== "node--organization" && d.type !== "node--government_organization") return false;
-        const lbl = d.schema_organization_type
-          ? (ORG_TYPE_LABELS[d.schema_organization_type] ?? d.schema_organization_type) : "";
-        return fOrgType.has(lbl);
-      });
-    }
+    // Filtre types d'entités (multichoix) — vide = tout montrer
+    if (fMapEntityTypes.size > 0) {
+      // Construire un reverse lookup label → type key
+      const labelToType: Record<string, string> = {};
+      Object.entries(TYPE_LABELS).forEach(([k, v]) => { labelToType[v] = k; });
 
-    // Filtre couverture géo.
-    if (fCouverture.size > 0) {
-      result = result.filter(({ node }) => {
-        const d = node.data as GraphNodeData;
-        if (d.type !== "node--organization" && d.type !== "node--government_organization") return false;
-        return d.field_couverture_geographique?.some(t => fCouverture.has(t.name));
+      const selectedTypes = new Set<string>();
+      fMapEntityTypes.forEach(label => {
+        const t = labelToType[label];
+        if (t) selectedTypes.add(t);
       });
+
+      // Types d'orgs sélectionnés (ceux qui apparaissent comme marqueurs)
+      const orgTypesSelected = new Set<string>();
+      if (selectedTypes.has("node--organization")) orgTypesSelected.add("node--organization");
+      if (selectedTypes.has("node--government_organization")) orgTypesSelected.add("node--government_organization");
+
+      // Types non-orgs sélectionnés (filtrage par entités liées)
+      const relatedTypesSelected = new Set<string>();
+      selectedTypes.forEach(t => {
+        if (t !== "node--organization" && t !== "node--government_organization") relatedTypesSelected.add(t);
+      });
+
+      result = result.filter(({ node, related }) => {
+        const orgType = node.data?.type ?? "";
+        // Si des types d'orgs sont sélectionnés, l'org doit être de ce type
+        if (orgTypesSelected.size > 0 && !orgTypesSelected.has(orgType)) {
+          // Sauf s'il n'y a AUCUN type d'org sélectionné et seulement des types liés
+          if (relatedTypesSelected.size === 0) return false;
+          // Si les deux sont sélectionnés, on exclut les orgs du mauvais type
+          return false;
+        }
+        // Si des types d'entités liées sont sélectionnés, l'org doit en avoir au moins un
+        if (relatedTypesSelected.size > 0) {
+          return related.some(r => relatedTypesSelected.has(r.data?.type ?? ""));
+        }
+        return true;
+      });
+
+      // Si SEULS des types non-org sont sélectionnés (ex: Personne), montrer toutes les orgs ayant ce type lié
+      if (orgTypesSelected.size === 0 && relatedTypesSelected.size > 0) {
+        result = orgsWithCoords.filter(({ related }) =>
+          related.some(r => relatedTypesSelected.has(r.data?.type ?? ""))
+        );
+      }
     }
 
     // Filtre axe RSN : orgs ayant au moins une personne liée avec cet axe
@@ -307,6 +384,26 @@ export default function MapContent({
       );
     }
 
+    // Filtre méthodes numériques : orgs ayant au moins une personne liée avec cette méthode
+    if (fDigital.size > 0) {
+      result = result.filter(({ related }) =>
+        related.some(r => {
+          const d = r.data as GraphNodeData;
+          return d.type === "node--person" && d.field_digital_domain?.some(t => fDigital.has(t.name));
+        })
+      );
+    }
+
+    // Filtre type de personne : orgs ayant au moins une personne liée de ce type
+    if (fPersonType.size > 0) {
+      result = result.filter(({ related }) =>
+        related.some(r => {
+          const d = r.data as GraphNodeData;
+          return d.type === "node--person" && d.field_person_type && fPersonType.has(d.field_person_type.name);
+        })
+      );
+    }
+
     // Filtre recherche textuelle (titre, alias, entités liées)
     if (query) {
       result = result.filter(({ node, related }) => {
@@ -325,7 +422,7 @@ export default function MapContent({
     }
 
     return result;
-  }, [orgsWithCoords, fOrgType, fCouverture, fAxeRsn, fDomain, query]);
+  }, [orgsWithCoords, fMapEntityTypes, fAxeRsn, fDomain, fDigital, fPersonType, query]);
 
   function groupRelated(related: MyGraphNode[], searchQuery?: string) {
     // Si une recherche est active, ne garder que les entités correspondantes
@@ -362,35 +459,41 @@ export default function MapContent({
           style={{ height: "100%", width: "100%" }}
         >
           <MapResizeWatcher />
+          <VisibilityHandler visible={visible} />
+          <MapSearchCenterer visibleOrgs={visibleOrgs} query={query} />
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributeurs'
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://carto.com/">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
           />
 
           {visibleOrgs.map(({ node, lat, lng, related }) => {
             const isSelected = selectedNode?.id === node.id;
-            const radius = Math.min(7 + Math.sqrt(related.length) * 2.5, 22);
-            // Couleur uniforme pour toutes les orgs sur la carte (bleu RSN)
-            const fill = "#0061AF";
+            const size = Math.min(14 + Math.sqrt(related.length) * 5, 44);
             const groups = groupRelated(related, query || undefined);
 
+            const icon = divIcon({
+              className: "",
+              html: `<div style="
+                width: ${size}px; height: ${size}px;
+                background: rgba(168, 85, 247, ${isSelected ? "0.7" : "0.4"});
+                border-radius: 50%;
+                cursor: pointer;
+              "></div>`,
+              iconSize: [size, size],
+              iconAnchor: [size / 2, size / 2],
+              popupAnchor: [0, -size / 2],
+            });
+
             return (
-              <CircleMarker
+              <Marker
                 key={node.id}
-                center={[lat, lng]}
-                radius={radius}
-                pathOptions={{
-                  fillColor: fill,
-                  color: isSelected ? "#003D6B" : "#003D6B",
-                  weight: isSelected ? 3 : 1,
-                  opacity: 1,
-                  fillOpacity: isSelected ? 1 : 0.8,
-                }}
+                position={[lat, lng]}
+                icon={icon}
                 eventHandlers={{ click: () => onSelectNode(node) }}
               >
                 <Popup maxWidth={300} autoPan={false}>
                   <div style={{ fontFamily: "system-ui, sans-serif", fontSize: "0.85rem", lineHeight: 1.5 }}>
-                    <div style={{ fontWeight: 700, fontSize: "0.95rem", color: fill, marginBottom: "0.15rem" }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0061AF", marginBottom: "0.15rem" }}>
                       {node.data?.title ?? node.label}
                     </div>
                     <div style={{ fontSize: "0.72rem", color: "#718096", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
@@ -422,7 +525,7 @@ export default function MapContent({
                     )}
                   </div>
                 </Popup>
-              </CircleMarker>
+              </Marker>
             );
           })}
         </MapContainer>

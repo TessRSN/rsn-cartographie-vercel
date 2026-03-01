@@ -1,7 +1,7 @@
 /**
- * DiagramRoot — Main client-side orchestrator for the three visualization views.
+ * DiagramRoot — Main client-side orchestrator for the four visualization views.
  *
- * Manages shared state across the graph, table, and map tabs:
+ * Manages shared state across the cards, graph, table, and map tabs:
  * - Type filtering (show only certain node types)
  * - Advanced faceted filters (geographic coverage, RSN axis, health domain, etc.)
  * - Edge visibility toggles for the graph view
@@ -14,6 +14,7 @@ import { GraphEdge } from "reagraph";
 import { MyDiagram } from "./Reagraph";
 import { DetailCardRoot } from "./DetailCard/DetailCardRoot";
 import { MapView } from "./MapView";
+import { CardGridView } from "./CardGridView";
 import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { MyGraphNode } from "@/app/lib/types";
@@ -304,17 +305,21 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   const searchQuery = searchParams.get("q") ?? "";
 
   const [selectedNode, setSelectedNode] = useState<MyGraphNode | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState<"graph" | "table" | "map">("graph");
+  const [activeTab, setActiveTab] = useState<"graph" | "cards" | "table" | "map">("graph");
   const [typeFilter, setTypeFilter] = useState<string>("all");
 
   // Filtres avancés — partagés entre graphe et tableau
-  const [fCouverture, setFCouverture] = useState<Set<string>>(new Set());
-  const [fOrgType,    setFOrgType]    = useState<Set<string>>(new Set());
-  const [fAxeRsn,     setFAxeRsn]     = useState<Set<string>>(new Set());
-  const [fDomain,     setFDomain]     = useState<Set<string>>(new Set());
-  const [fDigital,    setFDigital]    = useState<Set<string>>(new Set());
-  const [fLicence,    setFLicence]    = useState<Set<string>>(new Set());
-  const [fAcces,      setFAcces]      = useState<Set<string>>(new Set());
+  const [fCouverture,  setFCouverture]  = useState<Set<string>>(new Set());
+  const [fOrgType,     setFOrgType]     = useState<Set<string>>(new Set());
+  const [fAxeRsn,      setFAxeRsn]      = useState<Set<string>>(new Set());
+  const [fDomain,      setFDomain]      = useState<Set<string>>(new Set());
+  const [fDigital,     setFDigital]     = useState<Set<string>>(new Set());
+  const [fLicence,     setFLicence]     = useState<Set<string>>(new Set());
+  const [fAcces,       setFAcces]       = useState<Set<string>>(new Set());
+  const [fPersonType,  setFPersonType]  = useState<Set<string>>(new Set());
+
+  // Filtre types d'entités pour la géomap (vide = tout montrer)
+  const [fMapEntityTypes, setFMapEntityTypes] = useState<Set<string>>(new Set());
 
   // Filtre arêtes graphe
   const [enabledEdgeTypes, setEnabledEdgeTypes] = useState<Set<string>>(DEFAULT_ENABLED_EDGES);
@@ -334,7 +339,8 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   const filterOptions = useMemo(() => {
     const couverture = new Set<string>(), orgType = new Set<string>(),
           axeRsn = new Set<string>(), domain = new Set<string>(),
-          digital = new Set<string>(), licence = new Set<string>(), acces = new Set<string>();
+          digital = new Set<string>(), licence = new Set<string>(), acces = new Set<string>(),
+          personType = new Set<string>();
     nodes.forEach(n => {
       const d = n.data as GraphNodeData;
       if (d.type === "node--organization" || d.type === "node--government_organization") {
@@ -344,6 +350,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
       if (d.type === "node--person") {
         if (d.field_axe_si_membre_rsn) axeRsn.add(d.field_axe_si_membre_rsn.name);
         d.field_digital_domain?.forEach(t => digital.add(t.name));
+        if (d.field_person_type) personType.add(d.field_person_type.name);
       }
       if ("field_applied_domain" in d) d.field_applied_domain?.forEach(t => domain.add(t.name));
       if ("field_licence" in d && d.field_licence) licence.add(d.field_licence.name);
@@ -353,6 +360,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
       couverture: [...couverture].sort(), orgType: [...orgType].sort(),
       axeRsn: [...axeRsn].sort(), domain: [...domain].sort(),
       digital: [...digital].sort(), licence: [...licence].sort(), acces: [...acces].sort(),
+      personType: [...personType].sort(),
     };
   }, [nodes]);
 
@@ -400,17 +408,42 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
       const d = n.data as GraphNodeData;
       return "field_modele_acces" in d && d.field_modele_acces && fAcces.has(d.field_modele_acces.name);
     });
+    if (fPersonType.size > 0) r = r.filter(n => {
+      const d = n.data as GraphNodeData;
+      return d.type === "node--person" && d.field_person_type && fPersonType.has(d.field_person_type.name);
+    });
     return r;
-  }, [typeFilteredNodes, fCouverture, fOrgType, fAxeRsn, fDomain, fDigital, fLicence, fAcces]);
+  }, [typeFilteredNodes, fCouverture, fOrgType, fAxeRsn, fDomain, fDigital, fLicence, fAcces, fPersonType]);
 
-  // ── Tableau : recherche textuelle sur les nœuds avancés filtrés ───────────
+  // ── Tableau : recherche textuelle sur les nœuds avancés filtrés + tri A→Z ──
   const tableNodes = useMemo(() => {
+    let result = advancedFilteredNodes;
+    if (searchQuery.trim()) {
+      const q = removeAccents(searchQuery.toLowerCase().trim());
+      result = result.filter(n => {
+        if (n.data?.tag.some(t => removeAccents(t.toLowerCase()).includes(q))) return true;
+        if (removeAccents((n.data?.title ?? n.label ?? "").toLowerCase()).includes(q)) return true;
+        // Recherche par alias
+        const d = n.data as GraphNodeData;
+        const aliases = "alternate_name" in d ? (d.alternate_name ?? []) : [];
+        if (aliases.some(a => removeAccents(a.toLowerCase()).includes(q))) return true;
+        return false;
+      });
+    }
+    return [...result].sort((a, b) => {
+      const titleA = (a.data?.title ?? a.label ?? "").toLowerCase();
+      const titleB = (b.data?.title ?? b.label ?? "").toLowerCase();
+      return titleA.localeCompare(titleB, "fr");
+    });
+  }, [advancedFilteredNodes, searchQuery]);
+
+  // ── Cartes : même recherche textuelle que le tableau ─────────────────────
+  const cardNodes = useMemo(() => {
     if (!searchQuery.trim()) return advancedFilteredNodes;
     const q = removeAccents(searchQuery.toLowerCase().trim());
     return advancedFilteredNodes.filter(n => {
       if (n.data?.tag.some(t => removeAccents(t.toLowerCase()).includes(q))) return true;
       if (removeAccents((n.data?.title ?? n.label ?? "").toLowerCase()).includes(q)) return true;
-      // Recherche par alias
       const d = n.data as GraphNodeData;
       const aliases = "alternate_name" in d ? (d.alternate_name ?? []) : [];
       if (aliases.some(a => removeAccents(a.toLowerCase()).includes(q))) return true;
@@ -453,28 +486,30 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   };
 
   const hiddenEdgeCount = EDGE_FILTER_OPTIONS.filter(opt => !opt.types.every(t => enabledEdgeTypes.has(t))).length;
-  const advFilterCount  = fCouverture.size + fOrgType.size + fAxeRsn.size + fDomain.size + fDigital.size + fLicence.size + fAcces.size;
+  const advFilterCount  = fCouverture.size + fOrgType.size + fAxeRsn.size + fDomain.size + fDigital.size + fLicence.size + fAcces.size + fPersonType.size;
 
   const clearAdv = () => {
     setFCouverture(new Set()); setFOrgType(new Set()); setFAxeRsn(new Set());
     setFDomain(new Set()); setFDigital(new Set()); setFLicence(new Set()); setFAcces(new Set());
+    setFPersonType(new Set());
   };
 
   // Ferme tous les dropdowns flottants sur click extérieur
   const closeDropdowns = () => { setEdgeDropdownOpen(false); setOpenFilterKey(null); };
 
   return (
-    <div className="flex flex-col h-full" onClick={closeDropdowns}>
+    <div className="flex flex-col h-full relative" onClick={closeDropdowns}>
 
       {/* ── Onglets + stats compactes ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 bg-base-100 border-b border-base-300 flex-shrink-0">
         <div className="tabs tabs-border">
-          {(["graph", "table", "map"] as const).map(tab => (
+          {(["graph", "cards", "table", "map"] as const).map(tab => (
             <button key={tab} className={`tab gap-1.5 ${activeTab === tab ? "tab-active" : ""}`} onClick={() => setActiveTab(tab)}>
+              {tab === "cards" && <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="9" rx="1"/><rect x="3" y="15" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/></svg>}
               {tab === "graph" && <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="16.5"/></svg>}
               {tab === "table" && <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>}
               {tab === "map" && <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
-              {tab === "graph" ? "Vue en graphe" : tab === "table" ? "Vue tabulaire" : "Vue géographique"}
+              {tab === "cards" ? "Cartes" : tab === "graph" ? "Graphe" : tab === "table" ? "Tableau" : "Carte"}
             </button>
           ))}
         </div>
@@ -500,25 +535,8 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
         <TypeFilterBar nodes={nodes} typeFilter={typeFilter} onChange={setTypeFilter} />
       )}
 
-      {/* ── Barre de filtres carte ───────────────────────────────────────────── */}
-      {activeTab === "map" && (
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300 bg-base-200/50 flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
-          <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider">Filtrer</span>
-          <FilterDropdown label="Sous-type d'org." options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="map-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-          <FilterDropdown label="Couverture géo."  options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="map-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-          <FilterDropdown label="Axe RSN"          options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="map-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-          <FilterDropdown label="Domaine de santé" options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    filterKey="map-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-          {(fOrgType.size + fCouverture.size + fAxeRsn.size + fDomain.size) > 0 && (
-            <button className="btn btn-xs btn-ghost text-error ml-1"
-              onClick={() => { setFOrgType(new Set()); setFCouverture(new Set()); setFAxeRsn(new Set()); setFDomain(new Set()); }}>
-              ✕ Effacer
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* ── Bannière filtres avancés — graph ─────────────────────────────── */}
-      {activeTab === "graph" && (
+      {/* ── Bannière filtres avancés — graph & cartes ──────────────────── */}
+      {(activeTab === "graph" || activeTab === "cards") && (
         <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300 bg-base-200/50 flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
           <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1">Filtrer</span>
           <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="graph-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
@@ -528,12 +546,20 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
           <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   filterKey="graph-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
           <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   filterKey="graph-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
           <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     filterKey="graph-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+          <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} filterKey="graph-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
           <span className="ml-auto text-xs text-base-content/50">
             {advancedFilteredNodes.length} nœud{advancedFilteredNodes.length !== 1 ? "s" : ""}
           </span>
           {advFilterCount > 0 && (
             <button className="btn btn-xs btn-ghost text-error" onClick={clearAdv}>✕ Effacer</button>
           )}
+        </div>
+      )}
+
+      {/* ── Vue cartes ──────────────────────────────────────────────────────── */}
+      {activeTab === "cards" && (
+        <div className="flex-1 overflow-auto">
+          <CardGridView nodes={cardNodes} nodeById={nodeById} />
         </div>
       )}
 
@@ -572,7 +598,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
           </div>
 
           {/* Panneau détail */}
-          <div className="absolute z-10 right-12 top-4 max-h-[80vh]">
+          <div className="absolute z-10 right-12 top-4 bottom-4 overflow-y-auto">
             {selectedNode && <DetailCardRoot node={selectedNode} onClose={() => setSelectedNode(undefined)} />}
           </div>
 
@@ -585,31 +611,50 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
       )}
 
       {/* ── Vue géographique — toujours montée ──────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden" style={{ display: activeTab === "map" ? "flex" : "none" }}>
+      {/* Toujours monté, visibility:hidden au lieu de display:none pour que
+           Leaflet ait toujours des dimensions valides (résout les bugs de tiles grises). */}
+      <div className={activeTab === "map"
+        ? "flex flex-col flex-1 overflow-hidden"
+        : "flex flex-col overflow-hidden absolute inset-0 invisible pointer-events-none"
+      }>
+        {/* Bannière filtres géomap */}
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300 bg-base-200/50 flex-shrink-0 flex-wrap relative z-[401]" onClick={e => e.stopPropagation()}>
+          <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1">Filtrer</span>
+          <FilterDropdown label="Entités"             options={Object.entries(TYPE_LABELS).filter(([k]) => k !== "node--dataset" && k !== "node--data_catalog").map(([, v]) => v)} selected={fMapEntityTypes} onChange={setFMapEntityTypes} filterKey="map-entityTypes" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+          <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}      selected={fAxeRsn}      onChange={setFAxeRsn}     filterKey="map-axeRsn"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+          <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}      selected={fDomain}      onChange={setFDomain}     filterKey="map-domain"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+          <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}     selected={fDigital}     onChange={setFDigital}    filterKey="map-digital"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+          <FilterDropdown label="Type de personne"    options={filterOptions.personType}  selected={fPersonType}  onChange={setFPersonType} filterKey="map-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+          {(fMapEntityTypes.size + fAxeRsn.size + fDomain.size + fDigital.size + fPersonType.size) > 0 && (
+            <button className="btn btn-xs btn-ghost text-error" onClick={() => { setFMapEntityTypes(new Set()); setFAxeRsn(new Set()); setFDomain(new Set()); setFDigital(new Set()); setFPersonType(new Set()); }}>✕ Effacer</button>
+          )}
+        </div>
         {/* Tous les nodes passés à MapView pour ne pas relancer le géocodage.
-            Les filtres (fOrgType, fCouverture, fAxeRsn, fDomain) sont appliqués
-            visuellement dans MapContent. */}
-        <MapView
-          nodes={nodes}
-          edges={edges}
-          onSelectNode={node => setSelectedNode(node)}
-          selectedNode={selectedNode}
-          visible={activeTab === "map"}
-          fOrgType={fOrgType}
-          fCouverture={fCouverture}
-          fAxeRsn={fAxeRsn}
-          fDomain={fDomain}
-        />
-        {selectedNode && (
-          <div className="w-[400px] border-l border-base-300 overflow-y-auto bg-base-100 p-4 flex-shrink-0">
-            <DetailCardRoot node={selectedNode} onClose={() => setSelectedNode(undefined)} />
+            Les filtres sont appliqués visuellement dans MapContent. */}
+        <div className="relative flex flex-1 overflow-hidden">
+          <MapView
+            nodes={nodes}
+            edges={edges}
+            onSelectNode={node => setSelectedNode(node)}
+            selectedNode={selectedNode}
+            visible={activeTab === "map"}
+            fOrgType={fOrgType}
+            fCouverture={fCouverture}
+            fAxeRsn={fAxeRsn}
+            fDomain={fDomain}
+            fDigital={fDigital}
+            fPersonType={fPersonType}
+            fMapEntityTypes={fMapEntityTypes}
+          />
+          <div className="absolute z-[1000] right-4 top-4 bottom-4 overflow-y-auto">
+            {selectedNode && <DetailCardRoot node={selectedNode} onClose={() => setSelectedNode(undefined)} />}
           </div>
-        )}
+        </div>
       </div>
 
       {/* ── Vue tabulaire ────────────────────────────────────────────────────── */}
       {activeTab === "table" && (
-        <div className="flex flex-1 overflow-hidden">
+        <div className="relative flex flex-1 overflow-hidden">
           <div className="flex-1 flex flex-col overflow-hidden">
 
             {/* Filtres avancés tableau */}
@@ -622,6 +667,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
               <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   filterKey="table-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
               <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   filterKey="table-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
               <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     filterKey="table-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} filterKey="table-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
               <span className="ml-auto text-xs text-base-content/50">
                 {tableNodes.length} résultat{tableNodes.length !== 1 ? "s" : ""}
                 {searchQuery && <span className="ml-1 text-primary">· « {searchQuery} »</span>}
@@ -676,11 +722,9 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
             </div>
           </div>
 
-          {selectedNode && (
-            <div className="w-[420px] border-l border-base-300 overflow-y-auto bg-base-100 p-4 flex-shrink-0">
-              <DetailCardRoot node={selectedNode} onClose={() => setSelectedNode(undefined)} />
-            </div>
-          )}
+          <div className="absolute z-10 right-4 top-4 bottom-4 overflow-y-auto">
+            {selectedNode && <DetailCardRoot node={selectedNode} onClose={() => setSelectedNode(undefined)} />}
+          </div>
         </div>
       )}
     </div>
