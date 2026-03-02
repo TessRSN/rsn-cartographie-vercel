@@ -188,7 +188,6 @@ interface MapContentProps {
   fDomain:           Set<string>;
   fDigital:          Set<string>;
   fPersonType:       Set<string>;
-  fMapEntityTypes:   Set<string>;   // Filtre types d'entités (vide = tout montrer)
 }
 
 export default function MapContent({
@@ -203,7 +202,6 @@ export default function MapContent({
   fDomain,
   fDigital,
   fPersonType,
-  fMapEntityTypes,
 }: MapContentProps) {
   const [orgsWithCoords, setOrgsWithCoords] = useState<OrgWithCoords[]>([]);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -317,53 +315,6 @@ export default function MapContent({
   const visibleOrgs = useMemo(() => {
     let result = orgsWithCoords;
 
-    // Filtre types d'entités (multichoix) — vide = tout montrer
-    if (fMapEntityTypes.size > 0) {
-      // Construire un reverse lookup label → type key
-      const labelToType: Record<string, string> = {};
-      Object.entries(TYPE_LABELS).forEach(([k, v]) => { labelToType[v] = k; });
-
-      const selectedTypes = new Set<string>();
-      fMapEntityTypes.forEach(label => {
-        const t = labelToType[label];
-        if (t) selectedTypes.add(t);
-      });
-
-      // Types d'orgs sélectionnés (ceux qui apparaissent comme marqueurs)
-      const orgTypesSelected = new Set<string>();
-      if (selectedTypes.has("node--organization")) orgTypesSelected.add("node--organization");
-      if (selectedTypes.has("node--government_organization")) orgTypesSelected.add("node--government_organization");
-
-      // Types non-orgs sélectionnés (filtrage par entités liées)
-      const relatedTypesSelected = new Set<string>();
-      selectedTypes.forEach(t => {
-        if (t !== "node--organization" && t !== "node--government_organization") relatedTypesSelected.add(t);
-      });
-
-      result = result.filter(({ node, related }) => {
-        const orgType = node.data?.type ?? "";
-        // Si des types d'orgs sont sélectionnés, l'org doit être de ce type
-        if (orgTypesSelected.size > 0 && !orgTypesSelected.has(orgType)) {
-          // Sauf s'il n'y a AUCUN type d'org sélectionné et seulement des types liés
-          if (relatedTypesSelected.size === 0) return false;
-          // Si les deux sont sélectionnés, on exclut les orgs du mauvais type
-          return false;
-        }
-        // Si des types d'entités liées sont sélectionnés, l'org doit en avoir au moins un
-        if (relatedTypesSelected.size > 0) {
-          return related.some(r => relatedTypesSelected.has(r.data?.type ?? ""));
-        }
-        return true;
-      });
-
-      // Si SEULS des types non-org sont sélectionnés (ex: Personne), montrer toutes les orgs ayant ce type lié
-      if (orgTypesSelected.size === 0 && relatedTypesSelected.size > 0) {
-        result = orgsWithCoords.filter(({ related }) =>
-          related.some(r => relatedTypesSelected.has(r.data?.type ?? ""))
-        );
-      }
-    }
-
     // Filtre axe RSN : orgs ayant au moins une personne liée avec cet axe
     if (fAxeRsn.size > 0) {
       result = result.filter(({ related }) =>
@@ -422,7 +373,7 @@ export default function MapContent({
     }
 
     return result;
-  }, [orgsWithCoords, fMapEntityTypes, fAxeRsn, fDomain, fDigital, fPersonType, query]);
+  }, [orgsWithCoords, fAxeRsn, fDomain, fDigital, fPersonType, query]);
 
   function groupRelated(related: MyGraphNode[], searchQuery?: string) {
     // Si une recherche est active, ne garder que les entités correspondantes
@@ -469,26 +420,8 @@ export default function MapContent({
           {visibleOrgs.map(({ node, lat, lng, related }) => {
             const isSelected = selectedNode?.id === node.id;
 
-            // Filtrer les entités liées selon le filtre "Entités" actif
-            // pour ne montrer que les types sélectionnés dans le popup.
-            let popupRelated = related;
-            if (fMapEntityTypes.size > 0) {
-              const labelToType: Record<string, string> = {};
-              Object.entries(TYPE_LABELS).forEach(([k, v]) => { labelToType[v] = k; });
-              const selectedNonOrgTypes = new Set<string>();
-              fMapEntityTypes.forEach(label => {
-                const t = labelToType[label];
-                if (t && t !== "node--organization" && t !== "node--government_organization") {
-                  selectedNonOrgTypes.add(t);
-                }
-              });
-              if (selectedNonOrgTypes.size > 0) {
-                popupRelated = related.filter(r => selectedNonOrgTypes.has(r.data?.type ?? ""));
-              }
-            }
-
-            const size = Math.min(14 + Math.sqrt(popupRelated.length) * 5, 44);
-            const groups = groupRelated(popupRelated, query || undefined);
+            const size = Math.min(14 + Math.sqrt(related.length) * 5, 44);
+            const groups = groupRelated(related, query || undefined);
 
             const icon = divIcon({
               className: "",
@@ -539,7 +472,7 @@ export default function MapContent({
                         </div>
                       </div>
                     ))}
-                    {popupRelated.length === 0 && (
+                    {related.length === 0 && (
                       <div style={{ fontSize: "0.78rem", color: "#a0aec0", fontStyle: "italic" }}>Aucun élément associé</div>
                     )}
                   </div>
