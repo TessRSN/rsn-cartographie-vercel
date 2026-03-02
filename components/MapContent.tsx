@@ -36,6 +36,8 @@ interface Address {
   administrative_area?: string;
   postal_code?: string;
   country_code?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 /** Construit plusieurs requêtes de géocodage du plus précis au plus large */
@@ -226,9 +228,9 @@ export default function MapContent({
       nodes.filter((n) => {
         if (!orgTypeSet.has(n.data?.type ?? "")) return false;
         const addr = (n.data as any)?.address;
-        // Accepter toute adresse avec au moins une info géocodable
         if (!addr) return false;
-        return !!(addr.locality || addr.address_line1 || addr.administrative_area || addr.postal_code);
+        // Accepter si on a des coordonnées directes OU une info géocodable
+        return !!(addr.latitude && addr.longitude) || !!(addr.locality || addr.address_line1 || addr.administrative_area || addr.postal_code);
       }),
     [nodes, orgTypeSet]
   );
@@ -276,6 +278,13 @@ export default function MapContent({
       for (const node of orgNodes) {
         const address = (node.data as any)?.address as Address | undefined;
         if (!address) continue;
+
+        // Utiliser les coordonnées Notion (place) en priorité
+        if (address.latitude && address.longitude) {
+          cached.push({ node, lat: address.latitude, lng: address.longitude, related: relatedByOrgId.get(node.id) ?? [] });
+          continue;
+        }
+
         const queries = buildAddressQueries(address);
         // Chercher dans le cache pour n'importe quelle variante
         const cachedQ = queries.find(q => cache[q]);

@@ -29,7 +29,7 @@ import {
   gouvOrganizationNodeSchema,
 } from "./lib/schema"
 
-export const revalidate = 3600 // ISR: revalidate every hour
+export const revalidate = 60 // ISR: revalidate every 60 seconds
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
