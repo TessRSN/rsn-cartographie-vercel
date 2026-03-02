@@ -11,7 +11,7 @@ export function Logo({
   const isPhoto = variant === "photo";
   return (
     <div style={{
-      backgroundColor: isPhoto ? "transparent" : "#f1f5f9",
+      backgroundColor: isPhoto ? "transparent" : "rgba(241, 245, 249, 0.45)",
       borderRadius: "8px",
       padding: isPhoto ? "0" : "12px",
       display: "flex",

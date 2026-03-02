@@ -7,11 +7,12 @@ import { Logo } from "./Logo";
 interface PersonDetailCardProps {
   node: MyGraphNode & { data: PersonNode };
   onClose: () => void;
+  glass?: boolean;
 }
 
-export function PersonDetailCard({ node, onClose }: PersonDetailCardProps) {
+export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps) {
   return (
-    <DetailCard title={node.data.title} onClose={onClose}>
+    <DetailCard title={node.data.title} onClose={onClose} glass={glass}>
       {node.data.imageSrc && (
         <Logo imageSrc={node.data.imageSrc} alt={node.label ?? ""} variant="photo" />
       )}
@@ -115,7 +116,7 @@ interface DescriptionProps {
 function Description({ data }: DescriptionProps) {
   return data.description?.value ? (
     <div
-      className="max-h-84 overflow-y-auto list-decimal bg-base-100 px-2"
+      className="max-h-84 overflow-y-auto list-decimal bg-base-100/40 backdrop-blur-sm rounded-lg px-2"
       dangerouslySetInnerHTML={{
         __html: DOMPurify.sanitize(data.description.value),
       }}

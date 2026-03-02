@@ -9,14 +9,16 @@ import { Adresse } from "./Adresse";
 interface OrganizationDetailCardProps {
   node: MyGraphNode & { data: OrganizationNode };
   onClose: () => void;
+  glass?: boolean;
 }
 
 export function OrganizationDetailCard({
   node,
   onClose,
+  glass,
 }: OrganizationDetailCardProps) {
   return (
-    <DetailCard title={node.data.title} onClose={onClose}>
+    <DetailCard title={node.data.title} onClose={onClose} glass={glass}>
       {node.data.alternate_name?.length ? (
         <div>
           <div className="font-medium">Alias</div>
@@ -111,7 +113,7 @@ interface DescriptionProps {
 function Description({ data }: DescriptionProps) {
   return data.description?.value ? (
     <div
-      className="max-h-84 overflow-y-auto list-decimal bg-base-100 px-2"
+      className="max-h-84 overflow-y-auto list-decimal bg-base-100/40 backdrop-blur-sm rounded-lg px-2"
       dangerouslySetInnerHTML={{
         __html: DOMPurify.sanitize(data.description.value),
       }}

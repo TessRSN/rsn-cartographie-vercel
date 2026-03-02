@@ -9,22 +9,24 @@ import { DataCatalogDetailCard } from "./DataCatalogDetailCard";
 interface DetailCardRootProps {
   node: MyGraphNode;
   onClose: () => void;
+  /** When false, use opaque background instead of glassmorphism. Default true. */
+  glass?: boolean;
 }
 
-export function DetailCardRoot({ node, onClose }: DetailCardRootProps) {
+export function DetailCardRoot({ node, onClose, glass }: DetailCardRootProps) {
   if (isNodeOfType(node, "node--dataset")) {
-    return <DatasetDetailCard node={node} onClose={onClose} />;
+    return <DatasetDetailCard node={node} onClose={onClose} glass={glass} />;
   } else if (isNodeOfType(node, "node--data_catalog")) {
-    return <DataCatalogDetailCard node={node} onClose={onClose} />;
+    return <DataCatalogDetailCard node={node} onClose={onClose} glass={glass} />;
   } else if (isNodeOfType(node, "node--organization")) {
-    return <OrganizationDetailCard node={node} onClose={onClose} />;
+    return <OrganizationDetailCard node={node} onClose={onClose} glass={glass} />;
   } else if (isNodeOfType(node, "node--government_organization")) {
     // Gov orgs share the same schema/fields as regular orgs
-    return <OrganizationDetailCard node={node as any} onClose={onClose} />;
+    return <OrganizationDetailCard node={node as any} onClose={onClose} glass={glass} />;
   } else if (isNodeOfType(node, "node--person")) {
-    return <PersonDetailCard node={node} onClose={onClose} />;
+    return <PersonDetailCard node={node} onClose={onClose} glass={glass} />;
   } else if (isNodeOfType(node, "node--software_application")) {
-    return <SoftwareApplicationDetailCard node={node} onClose={onClose} />;
+    return <SoftwareApplicationDetailCard node={node} onClose={onClose} glass={glass} />;
   }
 
   return null;

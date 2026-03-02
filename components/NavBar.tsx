@@ -28,12 +28,13 @@ export function Navbar() {
     >
       <div className="flex items-center gap-5 px-5 py-4">
         {/* Logo */}
-        <img
-          src="/SVG_RSN/L_RSN_FR_RGB_W.svg"
-          width={110}
-          alt="Logo RSN"
-          className="flex-shrink-0"
-        />
+        <a href="https://rsn.quebec/" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+          <img
+            src="/SVG_RSN/L_RSN_FR_RGB_W.svg"
+            width={110}
+            alt="Logo RSN"
+          />
+        </a>
 
         {/* Separator */}
         <div
