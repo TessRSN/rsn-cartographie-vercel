@@ -468,8 +468,27 @@ export default function MapContent({
 
           {visibleOrgs.map(({ node, lat, lng, related }) => {
             const isSelected = selectedNode?.id === node.id;
-            const size = Math.min(14 + Math.sqrt(related.length) * 5, 44);
-            const groups = groupRelated(related, query || undefined);
+
+            // Filtrer les entités liées selon le filtre "Entités" actif
+            // pour ne montrer que les types sélectionnés dans le popup.
+            let popupRelated = related;
+            if (fMapEntityTypes.size > 0) {
+              const labelToType: Record<string, string> = {};
+              Object.entries(TYPE_LABELS).forEach(([k, v]) => { labelToType[v] = k; });
+              const selectedNonOrgTypes = new Set<string>();
+              fMapEntityTypes.forEach(label => {
+                const t = labelToType[label];
+                if (t && t !== "node--organization" && t !== "node--government_organization") {
+                  selectedNonOrgTypes.add(t);
+                }
+              });
+              if (selectedNonOrgTypes.size > 0) {
+                popupRelated = related.filter(r => selectedNonOrgTypes.has(r.data?.type ?? ""));
+              }
+            }
+
+            const size = Math.min(14 + Math.sqrt(popupRelated.length) * 5, 44);
+            const groups = groupRelated(popupRelated, query || undefined);
 
             const icon = divIcon({
               className: "",
@@ -520,7 +539,7 @@ export default function MapContent({
                         </div>
                       </div>
                     ))}
-                    {related.length === 0 && (
+                    {popupRelated.length === 0 && (
                       <div style={{ fontSize: "0.78rem", color: "#a0aec0", fontStyle: "italic" }}>Aucun élément associé</div>
                     )}
                   </div>
