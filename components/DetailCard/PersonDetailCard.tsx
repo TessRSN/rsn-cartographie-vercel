@@ -64,47 +64,56 @@ export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps
 
       <div className="space-y-1 pt-6">
         <div>Contact</div>
-        <div className="line-clamp-2">
-          {node.data.link && node.data.link.length > 0 ? (
-            node.data.link.map((link) => {
-              return (
-                <a
-                  className="link link-primary link-hover"
-                  href={link}
-                  target="_blank"
-                >
-                  {link}
-                </a>
-              );
-            })
+        <div>
+          {node.data.email ? (
+            <a
+              href={`mailto:${node.data.email}`}
+              className="link link-primary link-hover"
+            >
+              {node.data.email}
+            </a>
           ) : (
-            <div>Aucun lien</div>
+            <div>N/A</div>
           )}
         </div>
       </div>
 
-      <div className="space-y-1 pt-6">
-        <div>Lien(s)</div>
-        <div className="space-y-1">
-          {node.data.significant_link &&
-          node.data.significant_link.length > 0 ? (
-            node.data.significant_link.map((link, index) => {
-              return (
-                <a
-                  key={index}
-                  className="link link-primary link-hover block"
-                  href={link.uri}
-                  target="_blank"
-                >
-                  {link.uri}
-                </a>
-              );
-            })
-          ) : (
-            <div></div>
-          )}
+      {node.data.significant_link &&
+      node.data.significant_link.length > 0 ? (
+        <div className="space-y-1 pt-6">
+          <div>Profil web</div>
+          <div className="space-y-1">
+            {node.data.significant_link.map((link, index) => (
+              <a
+                key={index}
+                className="link link-primary link-hover block truncate"
+                href={link.uri}
+                target="_blank"
+              >
+                {link.uri}
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
+
+      {node.data.link && node.data.link.length > 0 ? (
+        <div className="space-y-1 pt-6">
+          <div>Lien(s)</div>
+          <div className="space-y-1">
+            {node.data.link.map((link, index) => (
+              <a
+                key={index}
+                className="link link-primary link-hover block truncate"
+                href={link}
+                target="_blank"
+              >
+                {link}
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </DetailCard>
   );
 }

@@ -182,6 +182,7 @@ export const personNodeSchema = baseGraphNodeSchema.extend({
     .nullish(),
   field_axe_si_membre_rsn: TaxonomyTermAxeRsnSchema.optional().nullish(),
   significant_link: z.array(LinkSchema).nullish(),
+  email: z.string().nullish(),
 })
 
 export const datasetNodeSchema = baseGraphNodeSchema.extend({

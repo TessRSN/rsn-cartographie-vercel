@@ -218,6 +218,21 @@ export function getEmail(
   return prop.email
 }
 
+/**
+ * Fetch all person names from the Personnes database (regardless of status).
+ * Returns a Map of page ID → full name. Used to resolve author relations
+ * even when the referenced person is not yet "Approuvé".
+ */
+export async function fetchAllPersonNames(): Promise<Map<string, string>> {
+  const pages = await queryNotionDatabase(NOTION_DB.personnes)
+  const map = new Map<string, string>()
+  for (const page of pages) {
+    const name = getTitle(page.properties, "Nom")
+    if (name) map.set(page.id, name)
+  }
+  return map
+}
+
 /** Extract the `place` property (lat/lon/address) or null. */
 export function getPlace(
   props: Record<string, any>,

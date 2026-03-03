@@ -13,6 +13,7 @@ import { fetchPerson } from "./lib/fetchPerson"
 import { fetchDataset } from "./lib/fetchDataset"
 import { fetchSoftwareApplication } from "./lib/fetchSoftwareApplication"
 import { fetchDataCatalog } from "./lib/fetchDataCatalog"
+import { fetchAllPersonNames } from "./lib/notion"
 import { GraphEdge, GraphNode } from "reagraph"
 import {
   OrganizationNode,
@@ -70,17 +71,19 @@ function resolveRelations(
     }))
 }
 
-/** Resolve relation IDs to partial person-like objects. */
+/** Resolve relation IDs to partial person-like objects.
+ *  Uses allPersonNames as fallback for non-approved persons. */
 function resolveAuthors(
   ids: string[],
   idToTitle: Map<string, string>,
+  personNames: Map<string, string>,
 ) {
   return ids
-    .filter((id) => idToTitle.has(id))
+    .filter((id) => idToTitle.has(id) || personNames.has(id))
     .map((id) => ({
       type: "node--person" as const,
       id,
-      title: idToTitle.get(id) ?? id,
+      title: idToTitle.get(id) ?? personNames.get(id) ?? id,
     }))
 }
 
@@ -113,6 +116,7 @@ export default async function Home() {
     allDatasets,
     allSoftwareApps,
     allDataCatalogs,
+    allPersonNames,
   ] = await Promise.all([
     fetchOrganization(),
     fetchGouvOrganization(),
@@ -120,6 +124,7 @@ export default async function Home() {
     fetchDataset(),
     fetchSoftwareApplication(),
     fetchDataCatalog(),
+    fetchAllPersonNames(),
   ])
 
   // ── Build global ID → title / type lookups ──────────────────────────────
@@ -256,14 +261,15 @@ export default async function Home() {
       hoverLabel: person.title,
       title: person.title,
       description: person.description,
-      link: person.same_as,
+      link: person.liens,
+      email: person.email,
       member_of: resolveRelations(
         person.member_of_ids,
         idToTitle,
         idToType,
         "node--organization",
       ),
-      significant_link: person.significant_link.map((uri) => ({
+      significant_link: person.profil_web.map((uri) => ({
         uri,
         title: "",
         options: [],
@@ -328,7 +334,7 @@ export default async function Home() {
         dataset.field_modele_acces,
         "taxonomy_term--modele_acces",
       ),
-      author: resolveAuthors(dataset.author_ids, idToTitle),
+      author: resolveAuthors(dataset.author_ids, idToTitle, allPersonNames),
       field_funder: resolveRelations(
         dataset.funder_ids,
         idToTitle,
@@ -392,7 +398,7 @@ export default async function Home() {
         dataCatalog.field_modele_acces,
         "taxonomy_term--modele_acces",
       ),
-      author: resolveAuthors(dataCatalog.author_ids, idToTitle),
+      author: resolveAuthors(dataCatalog.author_ids, idToTitle, allPersonNames),
       field_funder: resolveRelations(
         dataCatalog.funder_ids,
         idToTitle,
@@ -456,7 +462,7 @@ export default async function Home() {
           softapp.field_licence,
           "taxonomy_term--accessibility",
         ),
-        author: resolveAuthors(softapp.author_ids, idToTitle),
+        author: resolveAuthors(softapp.author_ids, idToTitle, allPersonNames),
         field_modele_acces: selectToTaxonomy(
           softapp.field_modele_acces,
           "taxonomy_term--modele_acces",

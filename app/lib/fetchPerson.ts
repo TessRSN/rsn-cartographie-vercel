@@ -23,8 +23,9 @@ export interface NotionPerson {
     summary: string
   } | null
   member_of_ids: string[]
+  liens: string[]
+  profil_web: string[]
   same_as: string[]
-  significant_link: string[]
   imageSrc: string | null
   email: string | null
   field_applied_domain: Array<{ id: string; name: string }>
@@ -47,13 +48,15 @@ export async function fetchPerson(): Promise<NotionPerson[]> {
     const mainUrl = getUrl(props, "Liens")
     const profilWeb = getRichText(props, "Profil web")
 
-    // Build links from Liens (url) and Profil web (rich_text with URLs)
-    const links: string[] = []
-    if (mainUrl) links.push(mainUrl)
+    // Separate Liens (url) from Profil web (rich_text with URLs)
+    const liens: string[] = []
+    if (mainUrl) liens.push(mainUrl)
+    const profilWebUrls: string[] = []
     if (profilWeb) {
       const urlMatches = profilWeb.match(/https?:\/\/[^\s,;]+/g)
-      if (urlMatches) links.push(...urlMatches)
+      if (urlMatches) profilWebUrls.push(...urlMatches)
     }
+    const allLinks = [...liens, ...profilWebUrls]
 
     // Axe RSN: select -> { id, name } or null
     const axeRsnSelect = props["Axe RSN"]
@@ -85,8 +88,9 @@ export async function fetchPerson(): Promise<NotionPerson[]> {
           }
         : null,
       member_of_ids: getRelationIds(props, "Membre de"),
-      same_as: links,
-      significant_link: links,
+      liens,
+      profil_web: profilWebUrls,
+      same_as: allLinks,
       imageSrc: getFileUrl(props, "Photo"),
       email: getEmail(props, "Email"),
       field_applied_domain: getMultiSelect(props, "Domaine appliqué"),
