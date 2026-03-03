@@ -27,6 +27,7 @@ _tmp_*
 
 # IDE
 .vscode/
+.claude/
 
 # Notion (fichiers locaux)
 notion-*.csv
