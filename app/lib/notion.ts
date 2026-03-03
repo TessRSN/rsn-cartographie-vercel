@@ -1,7 +1,6 @@
 /**
  * Notion API client and helpers.
  *
- * Replaces the old Drupal integration (`drupal.ts` + `next-drupal`).
  * Uses raw `fetch` (no @notionhq/client SDK).
  */
 

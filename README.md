@@ -1,6 +1,11 @@
 # RSN Cartographie
 
-Application web de cartographie interactive des plateformes du **Réseau en santé numérique (RSN)**. Elle consomme les données d'un backend Drupal via JSON:API et les affiche dans trois vues complémentaires : graphe de relations, tableau filtrable et carte géographique.
+Application web de cartographie interactive des plateformes du **Réseau en santé numérique (RSN)**. Elle consomme les données de bases Notion via l'API Notion et les affiche dans quatre vues complémentaires : graphe de relations, galerie de cartes, tableau filtrable et carte géographique.
+
+Déployée sur **Vercel** avec revalidation incrémentale (ISR) toutes les 60 secondes.
+
+<!-- Pour ajouter un screenshot : placer l'image dans docs/screenshot.png puis décommenter la ligne ci-dessous -->
+<!-- ![Aperçu de l'application](docs/screenshot.png) -->
 
 ## Prérequis
 
@@ -18,7 +23,7 @@ npm install -g pnpm
 ```bash
 # Cloner le dépôt
 git clone <url-du-depot>
-cd rsn_cartographie
+cd rsn-cartographie-vercel
 
 # Installer les dépendances
 pnpm install
@@ -26,15 +31,13 @@ pnpm install
 
 ## Configuration
 
-Le point d'entrée de l'API Drupal est défini dans `app/lib/drupal.ts` :
+L'application nécessite un jeton d'intégration Notion. Créer un fichier `.env.local` à la racine du projet :
 
-```ts
-export const API_ENDPOINT = "https://catalog.paradim.science";
+```env
+NOTION_TOKEN=ntn_votre_jeton_ici
 ```
 
-Si vous devez pointer vers un autre serveur Drupal, modifiez cette valeur.
-
-Le projet ne requiert pas de fichier `.env` par défaut. La connexion à Drupal est en lecture seule (pas d'authentification nécessaire pour les requêtes JSON:API publiques).
+> L'intégration Notion doit avoir accès aux 6 bases de données du projet (Organisations, Org. gouvernementales, Personnes, Plateformes, Catalogues de données, Jeux de données). Les IDs des bases sont définis dans `app/lib/notion.ts`.
 
 ## Lancement
 
@@ -51,18 +54,17 @@ pnpm start
 
 L'application sera accessible sur `http://localhost:3000`.
 
-## Synchronisation avec Drupal
+## Synchronisation avec Notion
 
-Les données sont récupérées depuis Drupal à chaque chargement de page (côté serveur, via les Server Components de Next.js). Il n'y a pas de connexion persistante ni de synchronisation en temps réel.
+Les données sont récupérées depuis Notion via l'API et mises en cache avec **ISR (Incremental Static Regeneration)** :
 
-Après une modification dans la base de données Drupal :
+- Les pages sont régénérées automatiquement toutes les **60 secondes**
+- Seules les entités avec le statut **« Approuvé »** dans Notion sont affichées
+- Aucune action manuelle n'est nécessaire après une modification dans Notion
 
-- **En développement** (`pnpm dev`) : il suffit de rafraîchir la page dans le navigateur. Next.js re-exécute les Server Components à chaque requête.
-- **En production** : relancer le build puis le serveur :
+**En développement** (`pnpm dev`) : rafraîchir la page suffit, Next.js re-exécute les Server Components à chaque requête.
 
-```bash
-pnpm build && pnpm start
-```
+**En production (Vercel)** : après modification dans Notion, attendre ~1 minute puis recharger la page deux fois (la première déclenche la revalidation, la seconde affiche les nouvelles données).
 
 Pour invalider le cache de géocodage (coordonnées GPS des organisations), ouvrez la console du navigateur et exécutez :
 
@@ -82,19 +84,22 @@ sessionStorage.removeItem("rsn_geocode_cache");
 | Thème clair/sombre | next-themes | 0.4 |
 | Graphe de relations | reagraph | 4.30 |
 | Carte géographique | react-leaflet + Leaflet | 5 / 1.9 |
-| Connecteur Drupal | next-drupal | 2 |
+| Backend | API Notion (raw fetch) | 2022-06-28 |
 | Validation de schéma | Zod | 4 |
 | Géocodage | Nominatim (OpenStreetMap) | — |
+| Déploiement | Vercel | — |
 
 ## Architecture
 
 ```
 app/
-├── layout.tsx          # Layout racine (Navbar, ThemeProvider)
-├── page.tsx            # Server Component — fetch Drupal, construit nodes/edges
+├── layout.tsx          # Layout racine (Navbar, ThemeProvider, SEO, JSON-LD)
+├── page.tsx            # Server Component — fetch Notion, construit nodes/edges (ISR 60s)
+├── sitemap.ts          # Génère /sitemap.xml
+├── robots.ts           # Génère /robots.txt
 ├── globals.css         # Tailwind + DaisyUI config
 └── lib/
-    ├── drupal.ts               # Client NextDrupal + API_ENDPOINT
+    ├── notion.ts               # Client API Notion, helpers d'extraction de propriétés
     ├── schema.ts               # Schémas Zod pour toutes les entités
     ├── types.ts                # Types partagés (MyGraphNode)
     ├── constants.ts            # Constantes partagées (TYPE_LABELS, NODE_FILL, ORG_TYPE_LABELS)
@@ -129,14 +134,14 @@ components/
 
 ## Types de nœuds
 
-| Type | Couleur | Source Drupal |
-|------|---------|---------------|
-| Organisation | `#0061AF` (bleu) | `node--organization` |
-| Org. gouvernementale | `#8C8C8C` (gris) | `node--government_organization` |
-| Personne | `#00A759` (vert) | `node--person` |
-| Jeu de données | `#FFCC4E` (jaune) | `node--dataset` |
-| Catalogue de données | `#FFCC4E` (jaune) | `node--data_catalog` |
-| Application | `#EE3124` (rouge) | `node--software_application` |
+| Type | Couleur | Base Notion |
+|------|---------|-------------|
+| Organisation | `#0061AF` (bleu) | Organisations |
+| Org. gouvernementale | `#8C8C8C` (gris) | Org. gouvernementales |
+| Personne | `#00A759` (vert) | Personnes |
+| Jeu de données | `#FFCC4E` (jaune) | Jeux de données |
+| Catalogue de données | `#FFCC4E` (jaune) | Catalogues de données |
+| Application | `#EE3124` (rouge) | Plateformes |
 
 ## Vues
 
@@ -144,39 +149,59 @@ components/
 
 Graphe 2D interactif (reagraph) montrant les relations entre entités. Fonctionnalités : filtres par type, filtres avancés (couverture géo., axe RSN, domaine de santé, etc.), filtre de connexions, zoom/pan, highlight au survol avec couleur par type, recherche avec highlight violet.
 
+### Vue galerie
+
+Cartes détaillées pour chaque entité avec image, badges, description et liens. Recherche textuelle et filtres par type.
+
 ### Vue tabulaire
 
 Tableau filtrable et triable avec colonnes adaptées au type de nœud sélectionné. Recherche textuelle sur titre, alias et tags.
 
 ### Vue géographique
 
-Carte OpenStreetMap (react-leaflet) avec géocodage automatique des adresses d'organisations via Nominatim. Popups détaillant les entités associées à chaque organisation. Les coordonnées sont mises en cache dans `sessionStorage` pour éviter de re-géocoder à chaque visite.
+Carte OpenStreetMap (react-leaflet) avec coordonnées provenant directement des propriétés `place` de Notion. Fallback sur le géocodage Nominatim si les coordonnées ne sont pas disponibles. Popups détaillant les entités associées à chaque organisation. Les coordonnées Nominatim sont mises en cache dans `sessionStorage`.
 
 ## Développement
 
-### Ajouter un nouveau type de contenu Drupal
+### Ajouter un nouveau type de contenu
 
-1. Créer le schéma Zod dans `app/lib/schema.ts`
-2. Créer la fonction fetch dans `app/lib/fetch<Type>.ts`
-3. Ajouter la conversion nodes/edges dans `app/page.tsx`
-4. Ajouter l'entrée dans `app/lib/constants.ts` (`TYPE_LABELS`, `NODE_FILL`) et dans `DiagramRoot.tsx` (`EDGE_FILTER_OPTIONS`)
-5. Créer une DetailCard si nécessaire
+1. Créer la base de données dans Notion avec une propriété `Statut` (select avec « Approuvé »)
+2. Ajouter l'ID de la base dans `NOTION_DB` dans `app/lib/notion.ts`
+3. Créer la fonction fetch dans `app/lib/fetch<Type>.ts`
+4. Ajouter le schéma Zod dans `app/lib/schema.ts`
+5. Ajouter la conversion nodes/edges dans `app/page.tsx`
+6. Ajouter l'entrée dans `app/lib/constants.ts` (`TYPE_LABELS`, `NODE_FILL`) et dans `DiagramRoot.tsx` (`EDGE_FILTER_OPTIONS`)
+7. Créer une DetailCard si nécessaire
 
-### Modifier le point d'entrée Drupal
+## Déploiement
 
-Éditer `app/lib/drupal.ts` et changer `API_ENDPOINT`.
+L'application est déployée sur **Vercel**. Le déploiement se fait automatiquement à chaque push sur la branche `main`.
 
-### Champs d'adresse
+### Variables d'environnement (Vercel)
 
-Les organisations classiques utilisent le champ `address` dans Drupal. Les organisations gouvernementales utilisent `schema_address`. Cette différence est gérée dans `fetchGouvOrganization.ts` et `page.tsx`.
+| Variable | Description |
+|----------|-------------|
+| `NOTION_TOKEN` | Jeton d'intégration Notion (obligatoire) |
+| `NEXT_PUBLIC_SITE_URL` | URL du site (optionnel, pour SEO) |
+
+### Étapes
+
+1. Connecter le dépôt GitHub à Vercel
+2. Configurer `NOTION_TOKEN` dans Settings > Environment Variables
+3. Déployer — Vercel détecte automatiquement Next.js
+
+Chaque push sur `main` déclenche un nouveau déploiement. Les données Notion se revalident automatiquement toutes les 60 secondes via ISR.
 
 ## Dépannage
 
 | Symptôme | Cause probable | Solution |
 |----------|---------------|----------|
-| La carte met du temps à charger | Le géocodage Nominatim impose un délai de ~1 s entre chaque requête (politique d'utilisation). Les résultats sont ensuite mis en cache dans `sessionStorage`. | Patienter lors du premier chargement ; les visites suivantes utilisent le cache. |
-| Le graphe ne s'affiche pas | reagraph nécessite WebGL. Certains navigateurs/environnements le désactivent. | Vérifier que WebGL est activé dans les paramètres du navigateur. |
-| Erreur `DOMPurify` côté serveur | `isomorphic-dompurify` est utilisé dans les DetailCards qui sont des Client Components. Si importé dans un Server Component, il échoue. | S'assurer que les composants utilisant DOMPurify ont la directive `"use client"`. |
+| Les données ne se mettent pas à jour | Le cache ISR n'a pas encore expiré | Attendre ~1 minute, recharger deux fois |
+| Entité absente malgré l'ajout dans Notion | Le statut n'est pas « Approuvé » | Vérifier le champ Statut dans Notion |
+| La carte met du temps à charger | Le géocodage Nominatim impose un délai de ~1 s par requête | Patienter ; les visites suivantes utilisent le cache |
+| Le graphe ne s'affiche pas | reagraph nécessite WebGL | Vérifier que WebGL est activé dans le navigateur |
+| Erreur `DOMPurify` côté serveur | `isomorphic-dompurify` importé dans un Server Component | S'assurer que le composant a la directive `"use client"` |
+| Build échoue sur Vercel | Variable `NOTION_TOKEN` manquante | Configurer la variable dans Vercel Settings |
 
 ## Navigateurs supportés
 
@@ -185,14 +210,3 @@ L'application requiert un navigateur moderne supportant **ES2020** et **WebGL** 
 - Chrome / Edge >= 90
 - Firefox >= 90
 - Safari >= 15
-
-## Déploiement
-
-L'application est un projet Next.js standard. Pour déployer en production :
-
-```bash
-pnpm build
-pnpm start
-```
-
-Aucun fichier `.env` n'est requis. Les données sont récupérées depuis Drupal au moment du build/rendu serveur. Pour rafraîchir les données après une modification dans Drupal, relancer `pnpm build`.

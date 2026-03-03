@@ -45,68 +45,58 @@ const EntityReferenceSchema = z.object({
 })
 
 // Taxonomy term schemas — frontend reads .id (key) and .name (display).
-// `drupal_internal__tid` kept optional for backward compat but never required.
 
 const TaxonomyTermPersonSchema = z.object({
   type: z.literal("taxonomy_term--person"),
   id: z.string(),
-  drupal_internal__tid: z.number().optional(),
   name: z.string(),
 })
 
 const TaxonomyTermHealthResearchCategorySchema = z.object({
   type: z.literal("taxonomy_term--health_research_category"),
   id: z.string(),
-  drupal_internal__tid: z.number().optional(),
   name: z.string(),
 })
 
 const TaxonomyTermMethodesNumeriquesSchema = z.object({
   type: z.literal("taxonomy_term--methodes_numeriques"),
   id: z.string(),
-  drupal_internal__tid: z.number().optional(),
   name: z.string(),
 })
 
 const TaxonomyTermAxeRsnSchema = z.object({
   type: z.literal("taxonomy_term--axe_rsn"),
   id: z.string(),
-  drupal_internal__tid: z.number().optional(),
   name: z.string(),
 })
 
 const TaxonomyTermGeographicalSchema = z.object({
   type: z.literal("taxonomy_term--geographical"),
   id: z.string(),
-  drupal_internal__tid: z.number().optional(),
   name: z.string(),
 })
 
 const TaxonomyCouvertureGeographiqueSchema = z.object({
   type: z.literal("taxonomy_term--couverture_geographique"),
   id: z.string(),
-  drupal_internal__tid: z.number().optional(),
   name: z.string(),
 })
 
 const TaxonomyApplicationCategorySchema = z.object({
   type: z.literal("taxonomy_term--software_type"),
   id: z.string(),
-  drupal_internal__tid: z.number().optional(),
   name: z.string(),
 })
 
 const TaxonomySoftwareLicenceSchema = z.object({
   type: z.literal("taxonomy_term--accessibility"),
   id: z.string(),
-  drupal_internal__tid: z.number().optional(),
   name: z.string(),
 })
 
 const TaxonomySoftwareModeleAccesSchema = z.object({
   type: z.literal("taxonomy_term--modele_acces"),
   id: z.string(),
-  drupal_internal__tid: z.number().optional(),
   name: z.string(),
 })
 

@@ -3,7 +3,7 @@
  * Used across DiagramRoot (graph/table), MapContent (map popups), and DetailCards.
  */
 
-/** Human-readable labels for each Drupal node type. */
+/** Human-readable labels for each node type. */
 export const TYPE_LABELS: Record<string, string> = {
   "node--organization": "Organisation",
   "node--government_organization": "Org. gouvernementale",
@@ -13,7 +13,7 @@ export const TYPE_LABELS: Record<string, string> = {
   "node--software_application": "Application",
 };
 
-/** Fill colors associated with each Drupal node type. */
+/** Fill colors associated with each node type. */
 export const NODE_FILL: Record<string, string> = {
   "node--organization": "#0061AF",
   "node--government_organization": "#8C8C8C",
@@ -23,7 +23,7 @@ export const NODE_FILL: Record<string, string> = {
   "node--software_application": "#EE3124",
 };
 
-/** Human-readable labels for organization sub-types (from Drupal schema_organization_type). */
+/** Human-readable labels for organization sub-types. */
 export const ORG_TYPE_LABELS: Record<string, string> = {
   consortium: "Regroupement de recherche",
   college_or_university: "Collège ou université",
