@@ -510,6 +510,11 @@ export default async function Home() {
     createEdgesFromIds(allGouvOrgs, (o) => o.parent_organization_ids, validIds, EDGE_COLOR),
   )
 
+  // Gov org → non-gov sub-organizations (graph links only, excluded from geomap)
+  edges = edges.concat(
+    createEdgesFromIds(allGouvOrgs, (o) => o.sous_org_non_gouv_ids, validIds, EDGE_COLOR),
+  )
+
   // Person member_of
   edges = edges.concat(
     createEdgesFromIds(allPersons, (p) => p.member_of_ids, validIds, EDGE_COLOR),

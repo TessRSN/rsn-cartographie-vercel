@@ -37,6 +37,7 @@ export interface NotionGouvOrganization {
   imageSrc: string | null
   sub_organization_ids: string[]
   parent_organization_ids: string[]
+  sous_org_non_gouv_ids: string[]
   funder_ids: string[]
   field_organization_geographical: Array<{ id: string; name: string }>
   field_couverture_geographique: Array<{ id: string; name: string }>
@@ -123,6 +124,7 @@ export async function fetchGouvOrganization(): Promise<
       imageSrc: getFileUrl(props, "Logo"),
       sub_organization_ids: getRelationIds(props, "Sous-organisations"),
       parent_organization_ids: getRelationIds(props, "Organisation parente"),
+      sous_org_non_gouv_ids: getRelationIds(props, "sous-org non gouv"),
       funder_ids: [],
       field_organization_geographical: getMultiSelect(props, "Région"),
       field_couverture_geographique: getMultiSelect(
