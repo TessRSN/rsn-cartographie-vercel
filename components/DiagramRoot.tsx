@@ -291,38 +291,6 @@ function FilterDropdown({ label, options, selected, onChange, fill, filterKey, o
   );
 }
 
-// ─── TypeFilterBar ────────────────────────────────────────────────────────────
-
-function TypeFilterBar({ nodes, typeFilter, onChange, glass }: {
-  nodes: MyGraphNode[]; typeFilter: string; onChange: (t: string) => void;
-  glass?: boolean;
-}) {
-  return (
-    <div className={`flex items-center gap-2 px-4 py-2 border-b flex-shrink-0 flex-wrap ${glass ? "relative z-[50] border-base-300/40 bg-base-200/45 backdrop-blur-xl" : "border-base-300/40 bg-base-200/50"}`}>
-      <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider">Type</span>
-      <button className={`btn btn-xs ${typeFilter === "all" ? "btn-primary" : "btn-ghost"}`}
-        onClick={() => onChange("all")}>Tous ({nodes.length})</button>
-      {Object.entries(TYPE_LABELS).map(([type, label]) => {
-        const count = nodes.filter(n => n.data?.type === type).length;
-        if (count === 0) return null;
-        const active = typeFilter === type;
-        const fill = NODE_FILL[type];
-        return (
-          <button key={type}
-            className="btn btn-xs gap-1.5 transition-all"
-            style={active
-              ? { backgroundColor: fill, borderColor: fill, color: getTextColor(fill) }
-              : { background: "transparent", borderColor: "transparent", opacity: 0.75 }}
-            onClick={() => onChange(active ? "all" : type)}>
-            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: fill }} />
-            {label} ({count})
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
@@ -336,7 +304,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
 
   const [selectedNode, setSelectedNode] = useState<MyGraphNode | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"graph" | "cards" | "table" | "map">("graph");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [fType, setFType] = useState<Set<string>>(new Set());
 
   // Filtres avancés — partagés entre graphe et tableau
   const [fCouverture,  setFCouverture]  = useState<Set<string>>(new Set());
@@ -369,12 +337,14 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
 
   // ── Options filtres (computed from all nodes) ─────────────────────────────
   const filterOptions = useMemo(() => {
-    const couverture = new Set<string>(), orgType = new Set<string>(),
+    const entityType = new Set<string>(), couverture = new Set<string>(), orgType = new Set<string>(),
           axeRsn = new Set<string>(), domain = new Set<string>(),
           digital = new Set<string>(), licence = new Set<string>(), acces = new Set<string>(),
           personType = new Set<string>();
     nodes.forEach(n => {
       const d = n.data as GraphNodeData;
+      const typeLabel = TYPE_LABELS[d.type];
+      if (typeLabel) entityType.add(typeLabel);
       if (d.type === "node--organization" || d.type === "node--government_organization") {
         d.field_couverture_geographique?.forEach(t => couverture.add(t.name));
         if (d.schema_organization_type) orgType.add(ORG_TYPE_LABELS[d.schema_organization_type] ?? d.schema_organization_type);
@@ -389,7 +359,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
       if ("field_modele_acces" in d && d.field_modele_acces) acces.add(d.field_modele_acces.name);
     });
     return {
-      couverture: [...couverture].sort(), orgType: [...orgType].sort(),
+      entityType: [...entityType].sort(), couverture: [...couverture].sort(), orgType: [...orgType].sort(),
       axeRsn: [...axeRsn].sort(), domain: [...domain].sort(),
       digital: [...digital].sort(), licence: [...licence].sort(), acces: [...acces].sort(),
       personType: [...personType].sort(),
@@ -398,8 +368,11 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
 
   // ── Filtre par type ───────────────────────────────────────────────────────
   const typeFilteredNodes = useMemo(() =>
-    typeFilter === "all" ? nodes : nodes.filter(n => n.data?.type === typeFilter),
-    [nodes, typeFilter]);
+    fType.size === 0 ? nodes : nodes.filter(n => {
+      const label = TYPE_LABELS[n.data?.type ?? ""];
+      return label !== undefined && fType.has(label);
+    }),
+    [nodes, fType]);
 
   // ── Filtres avancés (shared graph + table) ────────────────────────────────
   // Apply faceted filters sequentially. Each active filter narrows the result set.
@@ -483,7 +456,10 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
     });
   }, [advancedFilteredNodes, searchQuery]);
 
-  const visibleCols: ColKey[] = COLS_BY_TYPE[typeFilter] ?? COLS_BY_TYPE.all;
+  const singleTypeKey = fType.size === 1
+    ? Object.entries(TYPE_LABELS).find(([, v]) => v === [...fType][0])?.[0]
+    : undefined;
+  const visibleCols: ColKey[] = singleTypeKey ? (COLS_BY_TYPE[singleTypeKey] ?? COLS_BY_TYPE.all) : COLS_BY_TYPE.all;
 
   // ── Arêtes filtrées (graphe) ──────────────────────────────────────────────
   const nodeTypeMap = useMemo(() => {
@@ -518,10 +494,10 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   };
 
   const hiddenEdgeCount = EDGE_FILTER_OPTIONS.filter(opt => !opt.types.every(t => enabledEdgeTypes.has(t))).length;
-  const advFilterCount  = fCouverture.size + fOrgType.size + fAxeRsn.size + fDomain.size + fDigital.size + fLicence.size + fAcces.size + fPersonType.size;
+  const advFilterCount  = fType.size + fCouverture.size + fOrgType.size + fAxeRsn.size + fDomain.size + fDigital.size + fLicence.size + fAcces.size + fPersonType.size;
 
   const clearAdv = () => {
-    setFCouverture(new Set()); setFOrgType(new Set()); setFAxeRsn(new Set());
+    setFType(new Set()); setFCouverture(new Set()); setFOrgType(new Set()); setFAxeRsn(new Set());
     setFDomain(new Set()); setFDigital(new Set()); setFLicence(new Set()); setFAcces(new Set());
     setFPersonType(new Set());
   };
@@ -562,26 +538,22 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
         </div>
       </div>
 
-      {/* ── Barre de filtre de type — tableau seulement (flux normal) ───────── */}
-      {activeTab === "table" && (
-        <TypeFilterBar nodes={nodes} typeFilter={typeFilter} onChange={setTypeFilter} glass />
-      )}
 
       {/* ── Vue cartes — bannières sticky avec glassmorphism ──────────────── */}
       {activeTab === "cards" && (
         <div className="flex-1 overflow-auto">
           <div className="sticky top-0 z-10">
-            <TypeFilterBar nodes={nodes} typeFilter={typeFilter} onChange={setTypeFilter} glass />
             <div className="relative z-[50] flex items-center gap-2 px-4 py-2 border-b border-base-300/40 bg-base-200/45 backdrop-blur-xl flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
               <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1">Filtrer</span>
-              <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="graph-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="graph-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="graph-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    filterKey="graph-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   filterKey="graph-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   filterKey="graph-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     filterKey="graph-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} filterKey="graph-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+              <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       filterKey="cards-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="cards-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="cards-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="cards-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+              <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    filterKey="cards-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+              <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   filterKey="cards-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+              <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   filterKey="cards-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     filterKey="cards-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} filterKey="cards-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
               <span className="ml-auto text-xs text-base-content/50">
                 {advancedFilteredNodes.length} nœud{advancedFilteredNodes.length !== 1 ? "s" : ""}
               </span>
@@ -597,9 +569,9 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
       {/* ── Vue graphe — bannières glass + graphe en dessous ────────────────── */}
       {activeTab === "graph" && (
         <>
-          <TypeFilterBar nodes={nodes} typeFilter={typeFilter} onChange={setTypeFilter} glass />
           <div className="relative z-[50] flex items-center gap-2 px-4 py-2 border-b border-base-300/40 bg-base-200/45 backdrop-blur-xl flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
             <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1">Filtrer</span>
+            <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       filterKey="graph-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
             <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="graph-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
             <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="graph-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
             <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="graph-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
@@ -708,6 +680,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
           {/* Filtres avancés tableau */}
           <div className="relative z-[50] flex items-center gap-2 px-4 py-2 border-b border-base-300/40 bg-base-200/45 backdrop-blur-xl flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
             <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1">Filtrer</span>
+            <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       filterKey="table-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
             <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="table-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
             <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="table-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
             <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="table-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
