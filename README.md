@@ -4,7 +4,7 @@ Application web de cartographie interactive des plateformes du **Réseau en sant
 
 Déployée sur **Vercel** avec revalidation incrémentale (ISR) toutes les 60 secondes.
 
-![Demo](docs/demo.gif)
+<video src="https://github.com/user-attachments/assets/d6cd184e-63af-4381-9952-7fffd13337a6" controls loop muted width="100%"></video>
 
 ## Prérequis
 
