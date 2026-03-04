@@ -4,7 +4,7 @@ Application web de cartographie interactive des plateformes du **Réseau en sant
 
 Déployée sur **Vercel** avec revalidation incrémentale (ISR) toutes les 60 secondes.
 
-<video src="https://github.com/TessRSN/rsn-cartographie-vercel/raw/main/docs/demo.mp4" controls loop muted width="100%"></video>
+![Demo](docs/demo.gif)
 
 ## Prérequis
 
