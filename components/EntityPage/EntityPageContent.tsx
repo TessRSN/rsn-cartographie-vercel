@@ -1,6 +1,6 @@
 import DOMPurify from "isomorphic-dompurify"
 import Link from "next/link"
-import { TYPE_LABELS, NODE_FILL } from "@/app/lib/constants"
+import { TYPE_LABELS, NODE_FILL, ORG_TYPE_LABELS } from "@/app/lib/constants"
 import type { ParsedEntity } from "@/app/lib/parseEntity"
 
 interface Props {
@@ -79,7 +79,10 @@ export function EntityPageContent({ entity }: Props) {
       {/* Metadata grid */}
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
         {entity.organizationType && (
-          <MetaField label="Type" value={entity.organizationType} />
+          <MetaField
+            label="Type"
+            value={ORG_TYPE_LABELS[entity.organizationType] ?? entity.organizationType}
+          />
         )}
         {entity.licence && <MetaField label="Licence" value={entity.licence} />}
         {entity.accessModel && (
