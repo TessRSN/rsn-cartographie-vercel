@@ -134,7 +134,13 @@ export function richTextToHtml(
   return prop.rich_text
     .map((block: any) => {
       let text: string = block.plain_text
-      // Escape basic HTML entities
+      // Decode HTML entities Notion may include in plain_text, then re-encode
+      text = text
+        .replace(/&#039;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
       text = text
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
