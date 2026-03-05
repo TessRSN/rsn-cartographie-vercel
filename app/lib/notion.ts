@@ -246,3 +246,60 @@ export function getPlace(
     address: prop.place.address ?? "",
   }
 }
+
+// ─── Entity type resolution ────────────────────────────────────────────────
+
+export type EntityType =
+  | "node--organization"
+  | "node--government_organization"
+  | "node--person"
+  | "node--dataset"
+  | "node--data_catalog"
+  | "node--software_application"
+
+/** Maps Notion database IDs to entity types. */
+export const DB_ID_TO_TYPE: Record<string, EntityType> = {
+  [NOTION_DB.organisations]: "node--organization",
+  [NOTION_DB.orgGouvernementales]: "node--government_organization",
+  [NOTION_DB.personnes]: "node--person",
+  [NOTION_DB.plateformes]: "node--software_application",
+  [NOTION_DB.catalogues]: "node--data_catalog",
+  [NOTION_DB.jeuxDeDonnees]: "node--dataset",
+}
+
+// ─── Single page fetch ──────────────────────────────────────────────────────
+
+/**
+ * Fetch a single Notion page by ID.
+ * Returns the page with its resolved entity type, or null if not found / not approved.
+ */
+export async function fetchNotionPage(
+  pageId: string,
+): Promise<{ page: NotionPage; entityType: EntityType } | null> {
+  const token = process.env.NOTION_TOKEN
+  if (!token) throw new Error("NOTION_TOKEN is not set")
+
+  const res = await fetch(`${NOTION_API_BASE}/pages/${pageId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Notion-Version": NOTION_VERSION,
+    },
+    next: { revalidate: 60 },
+  })
+
+  if (!res.ok) return null
+
+  const page = await res.json()
+
+  // Resolve entity type from parent database
+  const dbId = page.parent?.database_id
+  if (!dbId) return null
+  const entityType = DB_ID_TO_TYPE[dbId]
+  if (!entityType) return null
+
+  // Check "Approuvé" status (the /pages endpoint doesn't support filters)
+  const statut = getSelect(page.properties, "Statut")
+  if (statut !== "Approuvé") return null
+
+  return { page, entityType }
+}
