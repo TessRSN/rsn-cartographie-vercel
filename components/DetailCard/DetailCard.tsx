@@ -21,11 +21,11 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
 
   return (
     <div
-      className={`w-full md:w-96 rounded-xl shadow-lg overflow-clip text-base-content ${bodyBg}`}
+      className={`w-full md:w-96 rounded-xl shadow-lg overflow-hidden text-base-content pointer-events-auto flex flex-col max-h-full ${bodyBg}`}
     >
-      {/* Sticky header — sticks within the wrapper's scroll context */}
+      {/* Fixed header — stays at top via flex layout */}
       <div
-        className={`sticky top-0 z-20 flex items-start justify-between gap-2 p-3 md:p-4 pb-2 ${headerBg}`}
+        className={`shrink-0 z-20 flex items-start justify-between gap-2 p-3 md:p-4 pb-2 ${headerBg}`}
       >
         <div className="text-lg md:text-2xl flex-1 min-w-0">{title}</div>
         <button
@@ -49,8 +49,8 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
         </button>
       </div>
 
-      {/* Content — flows naturally, wrapper handles scrolling */}
-      <div className="p-3 md:p-4 w-full flex flex-col gap-3 md:gap-4 pt-0 pb-6 md:pb-8">
+      {/* Scrollable content */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 md:p-4 w-full flex flex-col gap-3 md:gap-4 pt-0 pb-6 md:pb-8">
         {children}
       </div>
     </div>
