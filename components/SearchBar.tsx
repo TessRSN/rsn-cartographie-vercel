@@ -28,19 +28,18 @@ export function SearchBar() {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
       if (inputValue) {
-        window.history.pushState(
-          {},
-          "",
-          `${pathname}?q=${encodeURIComponent(inputValue)}`
-        );
+        params.set("q", inputValue);
       } else {
-        window.history.pushState({}, "", pathname);
+        params.delete("q");
       }
+      const qs = params.toString();
+      window.history.replaceState({}, "", `${pathname}${qs ? `?${qs}` : ""}`);
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [inputValue]);
+  }, [inputValue, searchParams, pathname]);
 
   return (
     <div
