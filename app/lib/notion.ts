@@ -273,39 +273,40 @@ export const DB_ID_TO_TYPE: Record<string, EntityType> = {
   [NOTION_DB.jeuxDeDonnees]: "node--dataset",
 }
 
-// ─── Single page fetch ──────────────────────────────────────────────────────
+// ─── Entity lookup via database queries ─────────────────────────────────────
 
 /**
- * Fetch a single Notion page by ID.
- * Returns the page with its resolved entity type, or null if not found / not approved.
+ * Find an approved entity by ID across all 6 databases.
+ * Uses queryNotionDatabase (same pipeline as DetailCards) to guarantee
+ * full property values (the /pages/{id} endpoint truncates some types).
  */
-export async function fetchNotionPage(
+export async function findEntityById(
   pageId: string,
 ): Promise<{ page: NotionPage; entityType: EntityType } | null> {
-  const token = process.env.NOTION_TOKEN
-  if (!token) throw new Error("NOTION_TOKEN is not set")
+  const entries = Object.entries(DB_ID_TO_TYPE) as [string, EntityType][]
+  const results = await Promise.all(
+    entries.map(async ([dbId, type]) => {
+      const pages = await queryNotionDatabase(dbId, APPROVED_FILTER)
+      const match = pages.find((p) => p.id === pageId)
+      return match ? { page: match, entityType: type } : null
+    }),
+  )
+  return results.find((r) => r !== null) ?? null
+}
 
-  const res = await fetch(`${NOTION_API_BASE}/pages/${pageId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Notion-Version": NOTION_VERSION,
-    },
-    next: { revalidate: 60 },
-  })
-
-  if (!res.ok) return null
-
-  const page = await res.json()
-
-  // Resolve entity type from parent database
-  const dbId = page.parent?.database_id
-  if (!dbId) return null
-  const entityType = DB_ID_TO_TYPE[dbId]
-  if (!entityType) return null
-
-  // Check "Approuvé" status (the /pages endpoint doesn't support filters)
-  const statut = getSelect(page.properties, "Statut")
-  if (statut !== "Approuvé") return null
-
-  return { page, entityType }
+/**
+ * Fetch all organisation names (both regular and government).
+ * Returns a Map of page ID → name. Used to resolve funder relations.
+ */
+export async function fetchAllOrgNames(): Promise<Map<string, string>> {
+  const [orgs, gouvOrgs] = await Promise.all([
+    queryNotionDatabase(NOTION_DB.organisations),
+    queryNotionDatabase(NOTION_DB.orgGouvernementales),
+  ])
+  const map = new Map<string, string>()
+  for (const page of [...orgs, ...gouvOrgs]) {
+    const name = getTitle(page.properties, "Nom")
+    if (name) map.set(page.id, name)
+  }
+  return map
 }

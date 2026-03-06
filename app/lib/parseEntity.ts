@@ -10,6 +10,7 @@ import {
   richTextToHtml,
   getSelect,
   getMultiSelect,
+  getRelationIds,
   getFileUrl,
   getUrl,
   getEmail,
@@ -32,6 +33,23 @@ export interface ParsedEntity {
   categories: string[]
   address: string | null
   lastEdited: string | null
+
+  // Organization-specific
+  regions: string[]
+  geographicCoverage: string[]
+
+  // Person-specific
+  digitalMethods: string[]
+  axeRsn: string | null
+  profileLinks: string[]
+
+  // Relation IDs (raw, for resolution in page.tsx)
+  funderIds: string[]
+  authorIds: string[]
+
+  // Resolved relation names (hydrated in page.tsx)
+  funderNames: string[]
+  authorNames: string[]
 }
 
 /** Extract links from a main URL field + supplementary rich_text field. */
@@ -75,6 +93,15 @@ export function parseEntity(
     categories: [],
     address: null,
     lastEdited: page.last_edited_time ?? null,
+    regions: [],
+    geographicCoverage: [],
+    digitalMethods: [],
+    axeRsn: null,
+    profileLinks: [],
+    funderIds: [],
+    authorIds: [],
+    funderNames: [],
+    authorNames: [],
   }
 
   switch (entityType) {
@@ -86,7 +113,13 @@ export function parseEntity(
       base.alternateNames = alias ? [alias] : []
       base.organizationType = getSelect(props, "Type")
       base.address = place?.address ?? null
-      base.categories = getMultiSelect(props, "Région").map((s) => s.name)
+      base.regions = getMultiSelect(props, "Région").map((s) => s.name)
+      base.categories = base.regions
+      base.geographicCoverage = getMultiSelect(
+        props,
+        "Couverture géographique",
+      ).map((s) => s.name)
+      base.funderIds = getRelationIds(props, "Financeur")
       break
     }
 
@@ -98,25 +131,38 @@ export function parseEntity(
       base.alternateNames = alias ? [alias] : []
       base.organizationType = "Organisation gouvernementale"
       base.address = place?.address ?? null
-      base.categories = getMultiSelect(props, "Région").map((s) => s.name)
+      base.regions = getMultiSelect(props, "Région").map((s) => s.name)
+      base.categories = base.regions
+      base.geographicCoverage = getMultiSelect(
+        props,
+        "Couverture géographique",
+      ).map((s) => s.name)
+      base.funderIds = getRelationIds(props, "Financeur")
       break
     }
 
     case "node--person": {
       base.imageSrc = getFileUrl(props, "Photo")
       base.email = getEmail(props, "Email")
+
+      // Liens (url property) — regular links
       const mainUrl = getUrl(props, "Liens")
+      base.links = mainUrl ? [mainUrl] : []
+
+      // Profil web (rich_text with URLs) — separate field
       const profilWeb = getRichText(props, "Profil web")
-      const links: string[] = []
-      if (mainUrl) links.push(mainUrl)
       if (profilWeb) {
         const matches = profilWeb.match(/https?:\/\/[^\s,;]+/g)
-        if (matches) links.push(...matches)
+        if (matches) base.profileLinks = matches
       }
-      base.links = links
+
       base.categories = getMultiSelect(props, "Domaine appliqué").map(
         (s) => s.name,
       )
+      base.digitalMethods = getMultiSelect(props, "Méthodes numériques").map(
+        (s) => s.name,
+      )
+      base.axeRsn = getSelect(props, "Axe RSN")
       const personType = getSelect(props, "Type de personne")
       if (personType) base.organizationType = personType
       break
@@ -133,6 +179,8 @@ export function parseEntity(
       base.categories = getMultiSelect(props, "Domaine appliqué").map(
         (s) => s.name,
       )
+      base.authorIds = getRelationIds(props, "Auteur·rice·s")
+      base.funderIds = getRelationIds(props, "Financeur")
       break
     }
 
@@ -146,6 +194,8 @@ export function parseEntity(
       base.categories = getMultiSelect(props, "Domaine appliqué").map(
         (s) => s.name,
       )
+      base.authorIds = getRelationIds(props, "Auteur·rice·s")
+      base.funderIds = getRelationIds(props, "Financeur")
       break
     }
 
@@ -158,6 +208,8 @@ export function parseEntity(
       base.licence = getSelect(props, "Licence")
       base.accessModel = getSelect(props, "Modèle d'accès")
       base.categories = getMultiSelect(props, "Catégorie").map((s) => s.name)
+      base.authorIds = getRelationIds(props, "Auteur·rice·s")
+      base.funderIds = getRelationIds(props, "Financeur")
       break
     }
   }
