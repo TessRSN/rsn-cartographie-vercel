@@ -21,11 +21,11 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
 
   return (
     <div
-      className={`w-full md:w-96 rounded-xl shadow-lg overflow-hidden text-base-content pointer-events-auto flex flex-col max-h-[60vh] md:max-h-[calc(100vh-2rem)] ${bodyBg}`}
+      className={`w-full md:w-96 rounded-xl shadow-lg text-base-content max-h-[60vh] flex flex-col overflow-hidden md:max-h-none md:block md:overflow-clip ${bodyBg}`}
     >
-      {/* Fixed header — stays at top via flex layout */}
+      {/* Mobile: shrink-0 keeps header at top in flex. Desktop: sticky in wrapper scroll. */}
       <div
-        className={`shrink-0 z-20 flex items-start justify-between gap-2 p-3 md:p-4 pb-2 ${headerBg}`}
+        className={`shrink-0 md:sticky md:top-0 z-20 flex items-start justify-between gap-2 p-3 md:p-4 pb-2 ${headerBg}`}
       >
         <div className="text-lg md:text-2xl flex-1 min-w-0">{title}</div>
         <button
@@ -49,8 +49,8 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
         </button>
       </div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 md:p-4 w-full flex flex-col gap-3 md:gap-4 pt-0 pb-6 md:pb-8">
+      {/* Mobile: scrolls inside card. Desktop: flows naturally, wrapper scrolls. */}
+      <div className="flex-1 min-h-0 overflow-y-auto md:overflow-y-visible p-3 md:p-4 w-full flex flex-col gap-3 md:gap-4 pt-0 pb-6 md:pb-8">
         {children}
       </div>
     </div>

@@ -684,7 +684,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
             </div>
 
             {/* Panneau détail */}
-            <div className="absolute z-10 inset-x-2 bottom-2 md:inset-x-auto md:right-12 md:top-4 md:bottom-4">
+            <div className="absolute z-10 inset-x-2 bottom-2 md:inset-x-auto md:right-12 md:top-4 md:bottom-4 md:overflow-y-auto">
               {selectedNode && <DetailCardRoot node={selectedNode} onClose={() => setSelectedNode(undefined)} />}
             </div>
 
@@ -731,7 +731,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
             fDigital={fDigital}
             fPersonType={fPersonType}
           />
-          <div className="absolute z-[1000] inset-x-2 bottom-2 md:inset-x-auto md:right-4 md:top-4 md:bottom-4">
+          <div className="absolute z-[1000] inset-x-2 bottom-2 md:inset-x-auto md:right-4 md:top-4 md:bottom-4 md:overflow-y-auto">
             {selectedNode && <DetailCardRoot node={selectedNode} onClose={() => setSelectedNode(undefined)} glass={mapGlass} />}
           </div>
         </div>
@@ -807,7 +807,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
               </table>
             </div>
 
-            <div className="absolute z-10 inset-x-2 bottom-2 md:inset-x-auto md:right-4 md:top-4 md:bottom-4">
+            <div className="absolute z-10 inset-x-2 bottom-2 md:inset-x-auto md:right-4 md:top-4 md:bottom-4 md:overflow-y-auto">
               {selectedNode && <DetailCardRoot node={selectedNode} onClose={() => setSelectedNode(undefined)} />}
             </div>
           </div>
