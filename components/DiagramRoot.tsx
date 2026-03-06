@@ -591,28 +591,39 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
 
       {/* ── Vue cartes — bannières sticky avec glassmorphism ──────────────── */}
       {activeTab === "cards" && (
-        <div className="flex-1 overflow-auto">
-          <div className="sticky top-0 z-10">
-            <div className="relative z-[50] flex items-center gap-2 px-4 py-2 border-b border-base-300/40 bg-base-200/45 backdrop-blur-xl flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
-              <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1">Filtrer</span>
-              <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       filterKey="cards-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="cards-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="cards-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="cards-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    filterKey="cards-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   filterKey="cards-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   filterKey="cards-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     filterKey="cards-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} filterKey="cards-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <span className="ml-auto text-xs text-base-content/50">
-                {advancedFilteredNodes.length} nœud{advancedFilteredNodes.length !== 1 ? "s" : ""}
-              </span>
-              {advFilterCount > 0 && (
-                <button className="btn btn-xs btn-ghost text-error" onClick={clearAdv}>✕ Effacer</button>
-              )}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="relative z-[50] flex items-center gap-2 px-4 py-2 border-b border-base-300/40 bg-base-200/45 backdrop-blur-xl flex-shrink-0 flex-wrap" onClick={e => e.stopPropagation()}>
+            <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1">Filtrer</span>
+            <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       filterKey="cards-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="cards-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="cards-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="cards-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    filterKey="cards-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   filterKey="cards-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   filterKey="cards-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     filterKey="cards-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} filterKey="cards-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <span className="ml-auto text-xs text-base-content/50">
+              {cardNodes.length} résultat{cardNodes.length !== 1 ? "s" : ""}
+              {searchQuery && <span className="ml-1 text-primary">· « {searchQuery} »</span>}
+            </span>
+            {advFilterCount > 0 && (
+              <button className="btn btn-xs btn-ghost text-error" onClick={clearAdv}>✕ Effacer</button>
+            )}
+          </div>
+          <div className="relative flex flex-1 overflow-hidden">
+            <div className="overflow-auto flex-1">
+              <CardGridView
+                nodes={cardNodes}
+                nodeById={nodeById}
+                selectedNodeId={selectedNode?.id}
+                onSelectNode={(n) => setSelectedNode(selectedNode?.id === n.id ? undefined : n)}
+              />
+            </div>
+            <div className="absolute z-10 right-4 top-4 bottom-4 overflow-y-auto">
+              {selectedNode && <DetailCardRoot node={selectedNode} onClose={() => setSelectedNode(undefined)} />}
             </div>
           </div>
-          <CardGridView nodes={cardNodes} nodeById={nodeById} />
         </div>
       )}
 
