@@ -38,11 +38,11 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
     return (
       <div className="card text-base-content w-full h-full">
         {closeBtn(onClose)}
-        <div className="card-body p-0 w-96 max-h-[80vh] rounded-xl shadow-lg flex flex-col gap-4 overflow-y-auto bg-base-200 border border-base-300">
-          <div className="text-2xl z-10 sticky top-0 p-4 pb-0 bg-base-200">
+        <div className="card-body p-0 w-full md:w-96 max-h-[80vh] rounded-xl shadow-lg flex flex-col gap-4 overflow-y-auto bg-base-200 border border-base-300">
+          <div className="text-lg md:text-2xl z-10 sticky top-0 p-3 md:p-4 pb-0 bg-base-200">
             {title}
           </div>
-          <div className="p-4 w-full flex flex-col gap-4 pt-0 pb-8 overflow-y-auto">
+          <div className="p-3 md:p-4 w-full flex flex-col gap-3 md:gap-4 pt-0 pb-6 md:pb-8 overflow-y-auto">
             {children}
           </div>
         </div>
@@ -53,11 +53,11 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
   return (
     <div className="card text-base-content w-full h-full">
       {closeBtn(onClose)}
-      <div className="card-body p-0 w-96 max-h-[80vh] rounded-xl shadow-lg flex flex-col gap-4 overflow-y-auto bg-base-200/65 dark:bg-base-200/55 backdrop-blur-xl border border-base-300/30">
-        <div className="text-2xl z-10 sticky top-0 p-4 pb-0 bg-base-200/50 dark:bg-base-200/40 backdrop-blur-xl">
+      <div className="card-body p-0 w-full md:w-96 max-h-[80vh] rounded-xl shadow-lg flex flex-col gap-4 overflow-y-auto bg-base-200/65 dark:bg-base-200/55 backdrop-blur-xl border border-base-300/30">
+        <div className="text-lg md:text-2xl z-10 sticky top-0 p-3 md:p-4 pb-0 bg-base-200/50 dark:bg-base-200/40 backdrop-blur-xl">
           {title}
         </div>
-        <div className="p-4 w-full flex flex-col gap-4 pt-0 pb-8 overflow-y-auto">
+        <div className="p-3 md:p-4 w-full flex flex-col gap-3 md:gap-4 pt-0 pb-6 md:pb-8 overflow-y-auto">
           {children}
         </div>
       </div>
