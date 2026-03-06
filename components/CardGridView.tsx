@@ -21,15 +21,15 @@ export function CardGridView({ nodes, nodeById }: CardGridViewProps) {
   });
 
   return (
-    <div className="p-4">
-      <p className="text-sm text-base-content/60 mb-4">
+    <div className="p-2 md:p-4">
+      <p className="text-sm text-base-content/60 mb-3 md:mb-4">
         <span className="font-medium text-base-content">{sortedNodes.length}</span>{" "}
         entité{sortedNodes.length !== 1 ? "s" : ""} affichée{sortedNodes.length !== 1 ? "s" : ""}
       </p>
       {sortedNodes.length === 0 ? (
         <p className="text-center text-base-content/40 py-12">Aucun résultat</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {sortedNodes.map((node) => (
             <EntityCard key={node.id} node={node} nodeById={nodeById} />
           ))}

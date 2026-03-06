@@ -86,7 +86,7 @@ export function SearchBar() {
         </button>
       )}
       {!inputValue && (
-        <div className="flex items-center gap-0.5 flex-shrink-0" style={{ opacity: 0.35 }}>
+        <div className="hidden md:flex items-center gap-0.5 flex-shrink-0" style={{ opacity: 0.35 }}>
           <kbd
             className="text-[10px] font-mono px-1 py-0.5 rounded"
             style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "#e2e8f0" }}
