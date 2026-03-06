@@ -412,7 +412,16 @@ export default function MapContent({
         </div>
       )}
 
-      <div className="flex-1" style={{ minHeight: 0 }}>
+      <div className="relative flex-1" style={{ minHeight: 0 }}>
+        {visibleOrgs.length === 0 && (fAxeRsn.size + fDomain.size + fDigital.size + fPersonType.size > 0 || query) && (
+          <div className="absolute inset-0 z-[500] flex items-center justify-center pointer-events-none">
+            <div className="bg-base-200/80 backdrop-blur-sm rounded-xl px-6 py-4 shadow-lg text-center max-w-xs">
+              <p className="text-sm text-base-content/70">
+                Aucune organisation localisée ne correspond aux filtres appliqués.
+              </p>
+            </div>
+          </div>
+        )}
         <MapContainer
           center={[46.8, -71.2]}
           zoom={7}
