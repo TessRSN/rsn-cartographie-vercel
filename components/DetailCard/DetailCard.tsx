@@ -21,7 +21,7 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
 
   return (
     <div
-      className={`w-full md:w-96 rounded-xl shadow-lg text-base-content max-h-[60vh] flex flex-col overflow-hidden md:max-h-none md:block md:overflow-clip ${bodyBg}`}
+      className={`w-full md:w-96 rounded-xl shadow-lg text-base-content max-h-[85vh] flex flex-col overflow-hidden md:max-h-none md:block md:overflow-clip ${bodyBg}`}
     >
       {/* Mobile: shrink-0 keeps header at top in flex. Desktop: sticky in wrapper scroll. */}
       <div
