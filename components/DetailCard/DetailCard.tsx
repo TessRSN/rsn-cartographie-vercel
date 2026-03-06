@@ -50,8 +50,8 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
           </button>
         </div>
 
-        {/* Scrollable content */}
-        <div className="overflow-y-auto min-h-0 p-3 md:p-4 w-full flex flex-col gap-3 md:gap-4 pt-0 pb-6 md:pb-8">
+        {/* Scrollable content — flex-1 constrains height to remaining space so overflow-y-auto activates */}
+        <div className="overflow-y-auto min-h-0 flex-1 p-3 md:p-4 w-full flex flex-col gap-3 md:gap-4 pt-0 pb-6 md:pb-8">
           {children}
         </div>
       </div>
