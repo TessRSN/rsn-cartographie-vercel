@@ -46,30 +46,32 @@ const DEFAULT_ENABLED_EDGES = new Set([
 
 type ColKey =
   | "alias" | "subtype" | "parentOrg" | "localisation" | "couverture"
-  | "axeRsn" | "santeDomain" | "digitalDomain" | "licence" | "acces" | "links";
+  | "axeRsn" | "santeDomain" | "digitalDomain" | "licence" | "acces"
+  | "funder" | "author" | "email" | "links";
 
 const COL_HEADERS: Record<ColKey, string> = {
   alias: "Alias", subtype: "Sous-type / Catégorie", parentOrg: "Appartenance / Org. parente",
   localisation: "Localisation", couverture: "Couverture géo.",
   axeRsn: "Axe RSN", santeDomain: "Domaine de santé",
   digitalDomain: "Méthodes numériques", licence: "Licence",
-  acces: "Modèle d'accès", links: "Liens",
+  acces: "Modèle d'accès", funder: "Subventionné par",
+  author: "Personne responsable", email: "Contact", links: "Liens",
 };
 
 const COL_MIN_W: Record<ColKey, string> = {
   alias: "140px", subtype: "160px", parentOrg: "180px", localisation: "140px", couverture: "130px",
   axeRsn: "130px", santeDomain: "180px", digitalDomain: "180px",
-  licence: "130px", acces: "140px", links: "180px",
+  licence: "130px", acces: "140px", funder: "180px", author: "180px", email: "180px", links: "180px",
 };
 
 const COLS_BY_TYPE: Record<string, ColKey[]> = {
-  all:                             ["alias","subtype","parentOrg","localisation","couverture","axeRsn","santeDomain","digitalDomain","licence","acces","links"],
-  "node--organization":            ["alias","subtype","localisation","couverture","links"],
-  "node--government_organization": ["alias","subtype","localisation","couverture","links"],
-  "node--person":                  ["subtype","parentOrg","axeRsn","santeDomain","digitalDomain","links"],
-  "node--dataset":                 ["alias","parentOrg","santeDomain","licence","acces","links"],
-  "node--data_catalog":            ["alias","parentOrg","santeDomain","licence","acces","links"],
-  "node--software_application":    ["alias","subtype","parentOrg","santeDomain","licence","acces","links"],
+  all:                             ["alias","subtype","parentOrg","localisation","couverture","axeRsn","santeDomain","digitalDomain","licence","acces","funder","author","email","links"],
+  "node--organization":            ["alias","subtype","localisation","couverture","funder","links"],
+  "node--government_organization": ["alias","subtype","localisation","couverture","funder","links"],
+  "node--person":                  ["subtype","parentOrg","axeRsn","santeDomain","digitalDomain","email","links"],
+  "node--dataset":                 ["alias","parentOrg","santeDomain","licence","acces","author","funder","links"],
+  "node--data_catalog":            ["alias","parentOrg","santeDomain","licence","acces","author","funder","links"],
+  "node--software_application":    ["alias","subtype","parentOrg","santeDomain","licence","acces","author","funder","email","links"],
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -202,6 +204,39 @@ function cellContent(node: MyGraphNode, col: ColKey, nodeById: Map<string, MyGra
     case "acces": {
       const v = "field_modele_acces" in data ? (data.field_modele_acces?.name ?? null) : null;
       return v ? <NeutralChip label={v} /> : DASH;
+    }
+
+    case "funder": {
+      const funders = "field_funder" in data ? (data.field_funder ?? []) : [];
+      const fNames = funders
+        .filter((f: { id: string; title?: string }) => f.id !== "missing")
+        .map((f: { id: string; title?: string }) => resolveOrgTitle(f.id, f.title, nodeById))
+        .filter(Boolean)
+        .join(", ");
+      return fNames
+        ? <span className="block truncate text-sm" title={fNames}>{fNames}</span>
+        : DASH;
+    }
+
+    case "author": {
+      const authors = "author" in data ? (data.author ?? []) : [];
+      const aNames = authors
+        .filter((a: { id?: string; title?: string }) => a.id !== "missing")
+        .map((a: { id?: string; title?: string }) => a.title ?? (a.id ? resolveOrgTitle(a.id, undefined, nodeById) : null))
+        .filter(Boolean)
+        .join(", ");
+      return aNames
+        ? <span className="block truncate text-sm" title={aNames}>{aNames}</span>
+        : DASH;
+    }
+
+    case "email": {
+      let emailVal: string | null = null;
+      if (data.type === "node--person") emailVal = data.email ?? null;
+      else if (data.type === "node--software_application") emailVal = data.schema_email ?? null;
+      return emailVal
+        ? <a href={`mailto:${emailVal}`} className="link link-primary text-sm truncate block" title={emailVal} onClick={e => e.stopPropagation()}>{emailVal}</a>
+        : DASH;
     }
 
     case "links": {
