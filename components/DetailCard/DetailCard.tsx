@@ -21,7 +21,7 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
 
   return (
     <div
-      className={`w-full md:w-96 rounded-xl shadow-lg overflow-hidden text-base-content pointer-events-auto flex flex-col max-h-full ${bodyBg}`}
+      className={`w-full md:w-96 rounded-xl shadow-lg overflow-hidden text-base-content pointer-events-auto flex flex-col max-h-[60vh] md:max-h-[calc(100vh-2rem)] ${bodyBg}`}
     >
       {/* Fixed header — stays at top via flex layout */}
       <div
