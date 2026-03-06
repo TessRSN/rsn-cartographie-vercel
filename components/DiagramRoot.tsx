@@ -15,7 +15,7 @@ import { MyDiagram } from "./Reagraph";
 import { DetailCardRoot } from "./DetailCard/DetailCardRoot";
 import { MapView } from "./MapView";
 import { CardGridView } from "./CardGridView";
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -277,7 +277,7 @@ function FilterDropdown({ label, options, selected, onChange, fill, filterKey, o
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const isOpen = openKey === filterKey;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isOpen && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
       // Clamp left position so the dropdown doesn't overflow the viewport on mobile
