@@ -15,9 +15,9 @@ import { MyDiagram } from "./Reagraph";
 import { DetailCardRoot } from "./DetailCard/DetailCardRoot";
 import { MapView } from "./MapView";
 import { CardGridView } from "./CardGridView";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { MyGraphNode } from "@/app/lib/types";
 import { GraphNodeData } from "@/app/lib/schema";
@@ -328,8 +328,13 @@ function FilterDropdown({ label, options, selected, onChange, fill, filterKey, o
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
+const VALID_TABS = new Set(["graph", "cards", "table", "map"] as const);
+type TabKey = "graph" | "cards" | "table" | "map";
+
 export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const searchQuery = searchParams.get("q") ?? "";
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -338,7 +343,17 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   const mapGlass = mounted ? resolvedTheme !== "dark" : true;
 
   const [selectedNode, setSelectedNode] = useState<MyGraphNode | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState<"graph" | "cards" | "table" | "map">("graph");
+
+  // Tab state driven by URL query param ?tab=
+  const rawTab = searchParams.get("tab");
+  const activeTab: TabKey = rawTab && VALID_TABS.has(rawTab as TabKey) ? (rawTab as TabKey) : "graph";
+  const setActiveTab = useCallback((tab: TabKey) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === "graph") params.delete("tab");
+    else params.set("tab", tab);
+    const qs = params.toString();
+    router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+  }, [searchParams, router, pathname]);
   const [fType, setFType] = useState<Set<string>>(new Set());
 
   // Filtres avancés — partagés entre graphe et tableau
