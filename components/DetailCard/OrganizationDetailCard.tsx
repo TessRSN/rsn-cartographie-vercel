@@ -82,21 +82,20 @@ export function OrganizationDetailCard({
       ) : null}
 
       <div className="space-y-1 pt-2">
-        <div>Lien(s)</div>
-        <div className="line-clamp-2">
+        <div className="font-medium">Lien(s)</div>
+        <div className="space-y-1">
           {node.data.link && node.data.link.length > 0 ? (
-            node.data.link.map((link, index) => {
-              return (
-                <a
-                  key={index}
-                  className="link link-primary link-hover"
-                  href={link}
-                  target="_blank"
-                >
-                  {link}
-                </a>
-              );
-            })
+            node.data.link.map((link, index) => (
+              <a
+                key={index}
+                className="link link-primary link-hover block truncate"
+                href={link}
+                target="_blank"
+                title={link}
+              >
+                {link}
+              </a>
+            ))
           ) : (
             <div>Aucun lien</div>
           )}
