@@ -267,11 +267,11 @@ function cellContent(node: MyGraphNode, col: ColKey, nodeById: Map<string, MyGra
 
 // ─── FilterDropdown (contrôlé — un seul ouvert à la fois) ─────────────────────
 
-function FilterDropdown({ label, options, selected, onChange, fill, filterKey, openKey, setOpenKey, glass = true }: {
+function FilterDropdown({ label, options, selected, onChange, fill, filterKey, openKey, setOpenKey, glass = true, counts }: {
   label: string; options: string[]; selected: Set<string>;
   onChange: (next: Set<string>) => void; fill?: string;
   filterKey: string; openKey: string | null; setOpenKey: (k: string | null) => void;
-  glass?: boolean;
+  glass?: boolean; counts?: Map<string, number>;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   const [pos, setPos] = useState({ top: 0, left: 0 });
@@ -317,7 +317,8 @@ function FilterDropdown({ label, options, selected, onChange, fill, filterKey, o
               <label key={opt} className="flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-base-200/60">
                 <input type="checkbox" className="checkbox checkbox-xs" checked={selected.has(opt)}
                   onChange={() => { const n = new Set(selected); n.has(opt) ? n.delete(opt) : n.add(opt); onChange(n); }} />
-                <span className="text-sm">{opt}</span>
+                <span className="text-sm flex-1">{opt}</span>
+                {counts && <span className="text-xs text-base-content/40 tabular-nums">{counts.get(opt) ?? 0}</span>}
               </label>
             ))}
           </div>
@@ -387,34 +388,42 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
     return m;
   }, [nodes]);
 
-  // ── Options filtres (computed from all nodes) ─────────────────────────────
+  // ── Options filtres + compteurs (computed from all nodes) ───────────────
   const filterOptions = useMemo(() => {
-    const entityType = new Set<string>(), couverture = new Set<string>(), orgType = new Set<string>(),
-          axeRsn = new Set<string>(), domain = new Set<string>(),
-          digital = new Set<string>(), licence = new Set<string>(), acces = new Set<string>(),
-          personType = new Set<string>();
+    const inc = (m: Map<string, number>, k: string) => m.set(k, (m.get(k) ?? 0) + 1);
+
+    const entityType = new Map<string, number>(), couverture = new Map<string, number>(),
+          orgType = new Map<string, number>(), axeRsn = new Map<string, number>(),
+          domain = new Map<string, number>(), digital = new Map<string, number>(),
+          licence = new Map<string, number>(), acces = new Map<string, number>(),
+          personType = new Map<string, number>();
+
     nodes.forEach(n => {
       const d = n.data as GraphNodeData;
       const typeLabel = TYPE_LABELS[d.type];
-      if (typeLabel) entityType.add(typeLabel);
+      if (typeLabel) inc(entityType, typeLabel);
       if (d.type === "node--organization" || d.type === "node--government_organization") {
-        d.field_couverture_geographique?.forEach(t => couverture.add(t.name));
-        if (d.schema_organization_type) orgType.add(ORG_TYPE_LABELS[d.schema_organization_type] ?? d.schema_organization_type);
+        d.field_couverture_geographique?.forEach(t => inc(couverture, t.name));
+        if (d.schema_organization_type) inc(orgType, ORG_TYPE_LABELS[d.schema_organization_type] ?? d.schema_organization_type);
       }
       if (d.type === "node--person") {
-        if (d.field_axe_si_membre_rsn) axeRsn.add(d.field_axe_si_membre_rsn.name);
-        d.field_digital_domain?.forEach(t => digital.add(t.name));
-        if (d.field_person_type) personType.add(d.field_person_type.name);
+        if (d.field_axe_si_membre_rsn) inc(axeRsn, d.field_axe_si_membre_rsn.name);
+        d.field_digital_domain?.forEach(t => inc(digital, t.name));
+        if (d.field_person_type) inc(personType, d.field_person_type.name);
       }
-      if ("field_applied_domain" in d) d.field_applied_domain?.forEach(t => domain.add(t.name));
-      if ("field_licence" in d && d.field_licence) licence.add(d.field_licence.name);
-      if ("field_modele_acces" in d && d.field_modele_acces) acces.add(d.field_modele_acces.name);
+      if ("field_applied_domain" in d) d.field_applied_domain?.forEach(t => inc(domain, t.name));
+      if ("field_licence" in d && d.field_licence) inc(licence, d.field_licence.name);
+      if ("field_modele_acces" in d && d.field_modele_acces) inc(acces, d.field_modele_acces.name);
     });
+
+    const sorted = (m: Map<string, number>) => [...m.keys()].sort();
     return {
-      entityType: [...entityType].sort(), couverture: [...couverture].sort(), orgType: [...orgType].sort(),
-      axeRsn: [...axeRsn].sort(), domain: [...domain].sort(),
-      digital: [...digital].sort(), licence: [...licence].sort(), acces: [...acces].sort(),
-      personType: [...personType].sort(),
+      entityType: sorted(entityType), couverture: sorted(couverture), orgType: sorted(orgType),
+      axeRsn: sorted(axeRsn), domain: sorted(domain),
+      digital: sorted(digital), licence: sorted(licence), acces: sorted(acces),
+      personType: sorted(personType),
+      // Count maps
+      counts: { entityType, couverture, orgType, axeRsn, domain, digital, licence, acces, personType },
     };
   }, [nodes]);
 
@@ -554,6 +563,9 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
     setFPersonType(new Set());
   };
 
+  // Raccourci compteurs filtres
+  const fc = filterOptions.counts;
+
   // Ferme tous les dropdowns flottants sur click extérieur
   const closeDropdowns = () => { setEdgeDropdownOpen(false); setOpenFilterKey(null); };
 
@@ -597,15 +609,15 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
           <div className="sticky top-0 z-10">
             <div className="relative z-[50] flex items-center gap-2 px-2 md:px-4 py-2 border-b border-base-300/40 bg-base-200/45 backdrop-blur-xl flex-shrink-0 overflow-x-auto" onClick={e => e.stopPropagation()}>
               <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1 flex-shrink-0">Filtrer</span>
-              <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       filterKey="cards-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="cards-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="cards-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="cards-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    filterKey="cards-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   filterKey="cards-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-              <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   filterKey="cards-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     filterKey="cards-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-              <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} filterKey="cards-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+              <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       counts={fc.entityType}       filterKey="cards-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} counts={fc.couverture} filterKey="cards-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    counts={fc.orgType}    filterKey="cards-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    counts={fc.axeRsn}    filterKey="cards-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+              <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    counts={fc.domain}    filterKey="cards-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+              <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   counts={fc.digital}   filterKey="cards-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+              <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   counts={fc.licence}   filterKey="cards-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     counts={fc.acces}     filterKey="cards-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+              <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} counts={fc.personType} filterKey="cards-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
               <span className="ml-auto text-xs text-base-content/50 flex-shrink-0">
                 {advancedFilteredNodes.length} nœud{advancedFilteredNodes.length !== 1 ? "s" : ""}
               </span>
@@ -623,15 +635,15 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
         <>
           <div className="relative z-[50] flex items-center gap-2 px-2 md:px-4 py-2 border-b border-base-300/40 bg-base-200/45 backdrop-blur-xl flex-shrink-0 overflow-x-auto" onClick={e => e.stopPropagation()}>
             <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1 flex-shrink-0">Filtrer</span>
-            <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       filterKey="graph-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="graph-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="graph-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="graph-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-            <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    filterKey="graph-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-            <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   filterKey="graph-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-            <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   filterKey="graph-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     filterKey="graph-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} filterKey="graph-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       counts={fc.entityType}       filterKey="graph-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} counts={fc.couverture} filterKey="graph-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    counts={fc.orgType}    filterKey="graph-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    counts={fc.axeRsn}    filterKey="graph-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    counts={fc.domain}    filterKey="graph-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   counts={fc.digital}   filterKey="graph-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   counts={fc.licence}   filterKey="graph-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     counts={fc.acces}     filterKey="graph-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} counts={fc.personType} filterKey="graph-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
             <span className="ml-auto text-xs text-base-content/50 flex-shrink-0">
               {advancedFilteredNodes.length} nœud{advancedFilteredNodes.length !== 1 ? "s" : ""}
             </span>
@@ -695,10 +707,10 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
         {/* Bannière filtres géomap */}
         <div className={`flex items-center gap-2 px-2 md:px-4 py-2 border-b flex-shrink-0 overflow-x-auto relative z-[401] ${mapGlass ? "border-base-300/40 bg-base-200/45 backdrop-blur-xl" : "border-base-300 bg-base-200"}`} onClick={e => e.stopPropagation()}>
           <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1 flex-shrink-0">Filtrer</span>
-          <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}      selected={fAxeRsn}      onChange={setFAxeRsn}     filterKey="map-axeRsn"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" glass={mapGlass} />
-          <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}      selected={fDomain}      onChange={setFDomain}     filterKey="map-domain"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" glass={mapGlass} />
-          <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}     selected={fDigital}     onChange={setFDigital}    filterKey="map-digital"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" glass={mapGlass} />
-          <FilterDropdown label="Type de personne"    options={filterOptions.personType}  selected={fPersonType}  onChange={setFPersonType} filterKey="map-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" glass={mapGlass} />
+          <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}      selected={fAxeRsn}      onChange={setFAxeRsn}     counts={fc.axeRsn}     filterKey="map-axeRsn"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" glass={mapGlass} />
+          <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}      selected={fDomain}      onChange={setFDomain}     counts={fc.domain}     filterKey="map-domain"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" glass={mapGlass} />
+          <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}     selected={fDigital}     onChange={setFDigital}    counts={fc.digital}    filterKey="map-digital"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" glass={mapGlass} />
+          <FilterDropdown label="Type de personne"    options={filterOptions.personType}  selected={fPersonType}  onChange={setFPersonType} counts={fc.personType} filterKey="map-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" glass={mapGlass} />
           {(fAxeRsn.size + fDomain.size + fDigital.size + fPersonType.size) > 0 && (
             <button className="btn btn-xs btn-ghost text-error" onClick={() => { setFAxeRsn(new Set()); setFDomain(new Set()); setFDigital(new Set()); setFPersonType(new Set()); }}>✕ Effacer</button>
           )}
@@ -732,15 +744,15 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
           {/* Filtres avancés tableau */}
           <div className="relative z-[50] flex items-center gap-2 px-2 md:px-4 py-2 border-b border-base-300/40 bg-base-200/45 backdrop-blur-xl flex-shrink-0 overflow-x-auto" onClick={e => e.stopPropagation()}>
             <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mr-1 flex-shrink-0">Filtrer</span>
-            <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       filterKey="table-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} filterKey="table-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    filterKey="table-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    filterKey="table-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-            <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    filterKey="table-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-            <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   filterKey="table-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
-            <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   filterKey="table-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     filterKey="table-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
-            <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} filterKey="table-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Type d'entité"       options={filterOptions.entityType} selected={fType}       onChange={setFType}       counts={fc.entityType}       filterKey="table-type"       openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Couverture géo."     options={filterOptions.couverture} selected={fCouverture} onChange={setFCouverture} counts={fc.couverture} filterKey="table-couverture" openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Type d'org."         options={filterOptions.orgType}    selected={fOrgType}    onChange={setFOrgType}    counts={fc.orgType}    filterKey="table-orgType"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Axe RSN"             options={filterOptions.axeRsn}     selected={fAxeRsn}     onChange={setFAxeRsn}    counts={fc.axeRsn}    filterKey="table-axeRsn"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Domaine de santé"    options={filterOptions.domain}     selected={fDomain}     onChange={setFDomain}    counts={fc.domain}    filterKey="table-domain"    openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Méthodes numériques" options={filterOptions.digital}    selected={fDigital}    onChange={setFDigital}   counts={fc.digital}   filterKey="table-digital"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
+            <FilterDropdown label="Licence"             options={filterOptions.licence}    selected={fLicence}    onChange={setFLicence}   counts={fc.licence}   filterKey="table-licence"   openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Modèle d'accès"      options={filterOptions.acces}      selected={fAcces}      onChange={setFAcces}     counts={fc.acces}     filterKey="table-acces"     openKey={openFilterKey} setOpenKey={setOpenFilterKey} />
+            <FilterDropdown label="Type de personne"    options={filterOptions.personType} selected={fPersonType} onChange={setFPersonType} counts={fc.personType} filterKey="table-personType" openKey={openFilterKey} setOpenKey={setOpenFilterKey} fill="#00A759" />
             <span className="ml-auto text-xs text-base-content/50 flex-shrink-0">
               {tableNodes.length} résultat{tableNodes.length !== 1 ? "s" : ""}
               {searchQuery && <span className="ml-1 text-primary">· « {searchQuery} »</span>}
