@@ -14,6 +14,16 @@
     "switchLanguageAriaLabel": "Change language",
     "githubAriaLabel": "Source code on GitHub"
   },
+  "tabs": {
+    "graph": "Graph",
+    "cards": "Cards",
+    "table": "Table",
+    "map": "Map"
+  },
+  "search": {
+    "placeholder": "Search…",
+    "clearAriaLabel": "Clear search"
+  },
   "onboarding": {
     "openAriaLabel": "User guide",
     "closeAriaLabel": "Close",
