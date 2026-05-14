@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { OnboardingModal } from "./OnboardingModal";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
@@ -92,6 +93,7 @@ export function Navbar() {
               </svg>
             )}
           </button>
+          <LanguageSwitcher />
           <OnboardingModal />
         </div>
       </div>

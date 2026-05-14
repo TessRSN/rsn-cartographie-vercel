@@ -10,6 +10,7 @@
     "logoAlt": "RSN Logo",
     "titleMobile": "RSN Cartography",
     "titleDesktop": "Cartography of the Quebec Digital Health Network platforms",
-    "toggleThemeAriaLabel": "Toggle theme"
+    "toggleThemeAriaLabel": "Toggle theme",
+    "switchLanguageAriaLabel": "Change language"
   }
 }
