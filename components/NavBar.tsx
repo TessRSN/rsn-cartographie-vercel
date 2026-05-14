@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { OnboardingModal } from "./OnboardingModal";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { GithubLink } from "./GithubLink";
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
@@ -94,6 +95,7 @@ export function Navbar() {
             )}
           </button>
           <LanguageSwitcher />
+          <GithubLink />
           <OnboardingModal />
         </div>
       </div>

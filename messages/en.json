@@ -11,6 +11,7 @@
     "titleMobile": "RSN Cartography",
     "titleDesktop": "Cartography of the Quebec Digital Health Network platforms",
     "toggleThemeAriaLabel": "Toggle theme",
-    "switchLanguageAriaLabel": "Change language"
+    "switchLanguageAriaLabel": "Change language",
+    "githubAriaLabel": "Source code on GitHub"
   }
 }

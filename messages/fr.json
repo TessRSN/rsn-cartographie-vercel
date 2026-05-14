@@ -11,6 +11,7 @@
     "titleMobile": "Cartographie RSN",
     "titleDesktop": "Cartographie des plateformes du Réseau en santé numérique",
     "toggleThemeAriaLabel": "Changer le thème",
-    "switchLanguageAriaLabel": "Changer la langue"
+    "switchLanguageAriaLabel": "Changer la langue",
+    "githubAriaLabel": "Code source sur GitHub"
   }
 }
