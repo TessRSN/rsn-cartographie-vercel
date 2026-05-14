@@ -1,10 +1,22 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Geist, Geist_Mono } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Navbar } from "@/components/NavBar";
 import { ThemeProvider } from "next-themes";
 import { routing } from "@/i18n/routing";
+import "../globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://rsn-cartographie.vercel.app";
@@ -24,7 +36,7 @@ export async function generateMetadata({
   return {
     title: { default: t("siteTitle"), template: t("titleTemplate") },
     description: t("siteDescription"),
-    keywords: t("keywords").split(","),
+    keywords: t("keywords").split(",").map((k) => k.trim()).filter(Boolean),
     authors: [{ name: t("authorName") }],
     openGraph: {
       title: t("siteTitle"),
@@ -80,15 +92,21 @@ export default async function LocaleLayout({
   const jsonLdHtml = JSON.stringify(jsonLd);
 
   return (
-    <NextIntlClientProvider>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdHtml }}
-      />
-      <ThemeProvider>
-        <Navbar />
-        <main className="flex-1 overflow-hidden">{children}</main>
-      </ThemeProvider>
-    </NextIntlClientProvider>
+    <html lang={locale} suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen overflow-hidden`}
+      >
+        <NextIntlClientProvider>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: jsonLdHtml }}
+          />
+          <ThemeProvider>
+            <Navbar />
+            <main className="flex-1 overflow-hidden">{children}</main>
+          </ThemeProvider>
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }
