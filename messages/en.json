@@ -1,1 +1,9 @@
-{}
+{
+  "meta": {
+    "siteTitle": "RSN Cartography",
+    "titleTemplate": "%s | RSN Cartography",
+    "siteDescription": "Interactive cartography of platforms, organizations, people and datasets of the Quebec Digital Health Network (RSN)",
+    "keywords": "RSN,digital health,cartography,health data,Quebec,network,platforms",
+    "authorName": "Réseau en santé numérique"
+  }
+}

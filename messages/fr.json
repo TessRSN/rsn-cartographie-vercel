@@ -1,1 +1,9 @@
-{}
+{
+  "meta": {
+    "siteTitle": "Cartographie RSN",
+    "titleTemplate": "%s | Cartographie RSN",
+    "siteDescription": "Cartographie interactive des plateformes, organismes, personnes et jeux de données du Réseau en santé numérique (RSN)",
+    "keywords": "RSN,santé numérique,cartographie,données de santé,Québec,réseau,plateformes",
+    "authorName": "Réseau en santé numérique"
+  }
+}
