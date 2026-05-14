@@ -13,5 +13,41 @@
     "toggleThemeAriaLabel": "Changer le thème",
     "switchLanguageAriaLabel": "Changer la langue",
     "githubAriaLabel": "Code source sur GitHub"
+  },
+  "onboarding": {
+    "openAriaLabel": "Guide d'utilisation",
+    "closeAriaLabel": "Fermer",
+    "title": "Guide d'utilisation",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "finish": "Terminer",
+    "keyboardHint": "Utilisez ← → ou Échap pour naviguer",
+    "steps": {
+      "welcome": {
+        "title": "Bienvenue",
+        "description": "Cet outil permet de visualiser et explorer les plateformes du Réseau en santé numérique (RSN). Naviguez entre quatre vues complémentaires pour découvrir les organisations, personnes, applications et jeux de données du réseau.",
+        "tip": "Utilisez la barre de recherche dans le bandeau pour trouver rapidement une entité. Les filtres avancés permettent de filtrer par type, domaine et plus encore."
+      },
+      "graph": {
+        "title": "Vue Graphe",
+        "description": "Le graphe interactif affiche les relations entre les entités du réseau. Maintenez le clic gauche pour faire tourner la vue, utilisez la molette pour zoomer, et cliquez sur un nœud pour voir ses détails.",
+        "tip": "Chaque type de nœud a une couleur : bleu pour les organisations, vert pour les personnes, jaune pour les datasets, rouge pour les applications."
+      },
+      "cards": {
+        "title": "Vue Cartes",
+        "description": "Les fiches résument chaque entité avec ses informations clés. Cliquez sur « Voir plus » pour accéder aux détails complets : description, adresse, responsable, subventions et liens.",
+        "tip": "Les fiches sont triées par ordre alphabétique et la bordure de couleur correspond au type d'entité."
+      },
+      "table": {
+        "title": "Vue Tableau",
+        "description": "Le tableau liste toutes les entités de manière structurée, triées par ordre alphabétique. Cliquez sur une ligne pour voir les détails complets de l'entité.",
+        "tip": "Combinez la recherche et les filtres pour affiner les résultats dans le tableau."
+      },
+      "map": {
+        "title": "Vue Géomap",
+        "description": "La carte géographique localise les entités ayant une adresse physique. Cliquez sur un marqueur pour voir le résumé de l'entité et accéder à sa fiche détaillée.",
+        "tip": "Les marqueurs violets indiquent la position des entités. Plus le marqueur est grand, plus il regroupe d'entités proches."
+      }
+    }
   }
 }
