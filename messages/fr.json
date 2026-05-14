@@ -5,5 +5,11 @@
     "siteDescription": "Cartographie interactive des plateformes, organismes, personnes et jeux de données du Réseau en santé numérique (RSN)",
     "keywords": "RSN,santé numérique,cartographie,données de santé,Québec,réseau,plateformes",
     "authorName": "Réseau en santé numérique"
+  },
+  "nav": {
+    "logoAlt": "Logo RSN",
+    "titleMobile": "Cartographie RSN",
+    "titleDesktop": "Cartographie des plateformes du Réseau en santé numérique",
+    "toggleThemeAriaLabel": "Changer le thème"
   }
 }
