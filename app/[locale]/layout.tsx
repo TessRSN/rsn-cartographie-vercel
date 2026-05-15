@@ -56,6 +56,9 @@ export async function generateMetadata({
       languages: { fr: "/", en: "/en" },
     },
     robots: { index: true, follow: true },
+    verification: {
+      google: "HRRCXRoPZ9wNwlIlBZEYOR-qnbGFAekhlaKC1Z5HJPk",
+    },
   };
 }
 
