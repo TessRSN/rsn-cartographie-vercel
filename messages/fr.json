@@ -72,6 +72,32 @@
     "noAssociatedItem": "Aucun élément associé",
     "moreItems": "{count, plural, =0 {aucun autre} =1 {+1 autre} other {+# autres}}"
   },
+  "detailCard": {
+    "closeAriaLabel": "Fermer la carte",
+    "sections": {
+      "alias": "Alias",
+      "description": "Description",
+      "type": "Type",
+      "adminLocation": "Localisation administrative",
+      "address": "Adresse",
+      "geoCoverage": "Couverture géographique",
+      "healthDomain": "Domaine de santé",
+      "digitalMethods": "Méthodes numériques",
+      "rsnAxis": "Axe RSN",
+      "license": "Licence",
+      "accessModel": "Modèle d'accès",
+      "responsiblePerson": "Personne responsable",
+      "fundedBy": "Subventionné par",
+      "contact": "Contact",
+      "webProfile": "Profil web",
+      "links": "Lien(s)"
+    },
+    "empty": {
+      "description": "Aucune description",
+      "links": "Aucun lien",
+      "notAvailable": "N/A"
+    }
+  },
   "gallery": {
     "entitiesShown": "{count, plural, =0 {0 entité affichée} =1 {1 entité affichée} other {# entités affichées}}",
     "noResults": "Aucun résultat",

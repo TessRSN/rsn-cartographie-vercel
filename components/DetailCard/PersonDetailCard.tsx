@@ -1,4 +1,5 @@
 import DOMPurify from "isomorphic-dompurify";
+import { useTranslations } from "next-intl";
 import { MyGraphNode } from "@/app/lib/types";
 import { PersonNode, personNodeSchema } from "@/app/lib/schema";
 import { DetailCard } from "./DetailCard";
@@ -11,6 +12,7 @@ interface PersonDetailCardProps {
 }
 
 export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps) {
+  const t = useTranslations("detailCard");
   return (
     <DetailCard title={node.data.title} onClose={onClose} glass={glass}>
       {node.data.imageSrc && (
@@ -18,52 +20,52 @@ export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps
       )}
 
       <div className="space-y-1 pt-2">
-        <div>Type</div>
-        <div> {node.data.field_person_type?.name || "N/A"}</div>
+        <div>{t("sections.type")}</div>
+        <div> {node.data.field_person_type?.name || t("empty.notAvailable")}</div>
       </div>
 
       <div className="space-y-1 pt-2">
-        <div>Domaine de santé</div>
+        <div>{t("sections.healthDomain")}</div>
         <div className="flex gap-2 flex-wrap">
           {node.data.field_applied_domain?.map((term) => (
             <div key={term.id} className="badge badge-soft badge-success">
               {term.name}
             </div>
-          )) || <div className="badge badge-ghost">N/A</div>}
+          )) || <div className="badge badge-ghost">{t("empty.notAvailable")}</div>}
         </div>
       </div>
 
       <div className="space-y-1 pt-2">
-        <div>Méthodes numériques</div>
+        <div>{t("sections.digitalMethods")}</div>
         <div className="flex gap-2 flex-wrap">
           {node.data.field_digital_domain?.map((term) => (
             <div key={term.id} className="badge badge-soft badge-info">
               {term.name}
             </div>
-          )) || <div className="badge badge-ghost">N/A</div>}
+          )) || <div className="badge badge-ghost">{t("empty.notAvailable")}</div>}
         </div>
       </div>
 
       <div className="space-y-1 pt-2">
-        <div>Axe RSN</div>
+        <div>{t("sections.rsnAxis")}</div>
         <div className="flex gap-2 flex-wrap">
           {node.data.field_axe_si_membre_rsn?.name ? (
             <div className="badge badge-soft badge-warning">
               {node.data.field_axe_si_membre_rsn.name}
             </div>
           ) : (
-            <div className="badge badge-ghost">N/A</div>
+            <div className="badge badge-ghost">{t("empty.notAvailable")}</div>
           )}
         </div>
       </div>
 
       <div className="space-y-1">
-        <div>Description</div>
+        <div>{t("sections.description")}</div>
         <Description data={node.data} />
       </div>
 
       <div className="space-y-1 pt-6">
-        <div>Contact</div>
+        <div>{t("sections.contact")}</div>
         <div>
           {node.data.email ? (
             <a
@@ -73,7 +75,7 @@ export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps
               {node.data.email}
             </a>
           ) : (
-            <div>N/A</div>
+            <div>{t("empty.notAvailable")}</div>
           )}
         </div>
       </div>
@@ -81,7 +83,7 @@ export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps
       {node.data.significant_link &&
       node.data.significant_link.length > 0 ? (
         <div className="space-y-1 pt-6">
-          <div>Profil web</div>
+          <div>{t("sections.webProfile")}</div>
           <div className="space-y-1">
             {node.data.significant_link.map((link, index) => (
               <a
@@ -99,7 +101,7 @@ export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps
 
       {node.data.link && node.data.link.length > 0 ? (
         <div className="space-y-1 pt-6">
-          <div>Lien(s)</div>
+          <div>{t("sections.links")}</div>
           <div className="space-y-1">
             {node.data.link.map((link, index) => (
               <a
@@ -123,6 +125,7 @@ interface DescriptionProps {
 }
 
 function Description({ data }: DescriptionProps) {
+  const t = useTranslations("detailCard");
   return data.description?.value ? (
     <div
       className="max-h-84 overflow-y-auto list-decimal bg-base-100/40 backdrop-blur-sm rounded-lg px-2"
@@ -131,6 +134,6 @@ function Description({ data }: DescriptionProps) {
       }}
     ></div>
   ) : (
-    <div>Aucune description</div>
+    <div>{t("empty.description")}</div>
   );
 }

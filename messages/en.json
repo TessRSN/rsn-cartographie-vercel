@@ -72,6 +72,32 @@
     "noAssociatedItem": "No associated item",
     "moreItems": "{count, plural, =0 {no others} =1 {+1 other} other {+# others}}"
   },
+  "detailCard": {
+    "closeAriaLabel": "Close card",
+    "sections": {
+      "alias": "Alias",
+      "description": "Description",
+      "type": "Type",
+      "adminLocation": "Administrative location",
+      "address": "Address",
+      "geoCoverage": "Geographic coverage",
+      "healthDomain": "Health domain",
+      "digitalMethods": "Digital methods",
+      "rsnAxis": "RSN axis",
+      "license": "License",
+      "accessModel": "Access model",
+      "responsiblePerson": "Responsible person",
+      "fundedBy": "Funded by",
+      "contact": "Contact",
+      "webProfile": "Web profile",
+      "links": "Link(s)"
+    },
+    "empty": {
+      "description": "No description",
+      "links": "No link",
+      "notAvailable": "N/A"
+    }
+  },
   "gallery": {
     "entitiesShown": "{count, plural, =0 {0 entities shown} =1 {1 entity shown} other {# entities shown}}",
     "noResults": "No results",
