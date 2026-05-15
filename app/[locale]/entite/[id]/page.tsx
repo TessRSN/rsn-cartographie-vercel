@@ -13,7 +13,7 @@ import { EntityPageContent } from "@/components/EntityPage/EntityPageContent"
 export const revalidate = 60
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://rsn-cartographie-vercel.vercel.app"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://cartographie.rsn.quebec"
 
 const UUID_RE =
   /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
