@@ -63,6 +63,60 @@
     "placeholder": "Rechercher…",
     "clearAriaLabel": "Effacer la recherche"
   },
+  "map": {
+    "loading": "Chargement de la carte…",
+    "geocodingInProgress": "Localisation en cours…",
+    "geocodingProgress": "{done}/{total} organisations",
+    "geocodingCacheHint": "(mis en cache après la 1ʳᵉ visite)",
+    "noLocatedOrganizations": "Aucune organisation localisée ne correspond aux filtres appliqués.",
+    "noAssociatedItem": "Aucun élément associé",
+    "moreItems": "{count, plural, =0 {aucun autre} =1 {+1 autre} other {+# autres}}"
+  },
+  "gallery": {
+    "entitiesShown": "{count, plural, =0 {0 entité affichée} =1 {1 entité affichée} other {# entités affichées}}",
+    "noResults": "Aucun résultat",
+    "seeMore": "Voir plus ▼",
+    "seeLess": "Voir moins ▲",
+    "fields": {
+      "status": "Statut",
+      "type": "Type",
+      "category": "Catégorie"
+    },
+    "sections": {
+      "healthDomain": "Domaine de santé",
+      "digitalMethods": "Méthodes numériques",
+      "rsnAxis": "Axe RSN",
+      "geoCoverage": "Couverture géographique",
+      "license": "Licence",
+      "accessModel": "Modèle d'accès",
+      "description": "Description",
+      "address": "Adresse",
+      "adminLocation": "Localisation administrative",
+      "responsiblePerson": "Personne responsable",
+      "fundedBy": "Subventionné par",
+      "links": "Lien(s)",
+      "personLinks": "Liens"
+    }
+  },
+  "table": {
+    "emptyState": "Aucun résultat",
+    "columns": {
+      "alias": "Alias",
+      "subtype": "Sous-type / Catégorie",
+      "parentOrg": "Appartenance / Org. parente",
+      "localisation": "Localisation",
+      "couverture": "Couverture géo.",
+      "axeRsn": "Axe RSN",
+      "santeDomain": "Domaine de santé",
+      "digitalDomain": "Méthodes numériques",
+      "licence": "Licence",
+      "acces": "Modèle d'accès",
+      "funder": "Subventionné par",
+      "author": "Personne responsable",
+      "email": "Contact",
+      "links": "Liens"
+    }
+  },
   "onboarding": {
     "openAriaLabel": "Guide d'utilisation",
     "closeAriaLabel": "Fermer",

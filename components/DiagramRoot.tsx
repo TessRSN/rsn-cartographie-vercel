@@ -339,6 +339,7 @@ type TabKey = "graph" | "cards" | "table" | "map";
 export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
   const tTabs = useTranslations("tabs");
   const tFilters = useTranslations("filters");
+  const tTable = useTranslations("table");
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -775,7 +776,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
                     <th className="sticky left-0 bg-base-200 z-20" style={{ minWidth: "140px" }}>{tFilters("name")}</th>
                     <th style={{ minWidth: "100px" }}>{tFilters("type")}</th>
                     {visibleCols.map(col => (
-                      <th key={col} style={{ minWidth: COL_MIN_W[col] }}>{COL_HEADERS[col]}</th>
+                      <th key={col} style={{ minWidth: COL_MIN_W[col] }}>{tTable(`columns.${col}`)}</th>
                     ))}
                   </tr>
                 </thead>

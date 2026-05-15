@@ -63,6 +63,60 @@
     "placeholder": "Search…",
     "clearAriaLabel": "Clear search"
   },
+  "map": {
+    "loading": "Loading map…",
+    "geocodingInProgress": "Locating…",
+    "geocodingProgress": "{done}/{total} organizations",
+    "geocodingCacheHint": "(cached after first visit)",
+    "noLocatedOrganizations": "No located organization matches the active filters.",
+    "noAssociatedItem": "No associated item",
+    "moreItems": "{count, plural, =0 {no others} =1 {+1 other} other {+# others}}"
+  },
+  "gallery": {
+    "entitiesShown": "{count, plural, =0 {0 entities shown} =1 {1 entity shown} other {# entities shown}}",
+    "noResults": "No results",
+    "seeMore": "See more ▼",
+    "seeLess": "See less ▲",
+    "fields": {
+      "status": "Status",
+      "type": "Type",
+      "category": "Category"
+    },
+    "sections": {
+      "healthDomain": "Health domain",
+      "digitalMethods": "Digital methods",
+      "rsnAxis": "RSN axis",
+      "geoCoverage": "Geographic coverage",
+      "license": "License",
+      "accessModel": "Access model",
+      "description": "Description",
+      "address": "Address",
+      "adminLocation": "Administrative location",
+      "responsiblePerson": "Responsible person",
+      "fundedBy": "Funded by",
+      "links": "Link(s)",
+      "personLinks": "Links"
+    }
+  },
+  "table": {
+    "emptyState": "No results",
+    "columns": {
+      "alias": "Alias",
+      "subtype": "Subtype / Category",
+      "parentOrg": "Membership / Parent org.",
+      "localisation": "Location",
+      "couverture": "Geo. coverage",
+      "axeRsn": "RSN axis",
+      "santeDomain": "Health domain",
+      "digitalDomain": "Digital methods",
+      "licence": "License",
+      "acces": "Access model",
+      "funder": "Funded by",
+      "author": "Responsible person",
+      "email": "Contact",
+      "links": "Links"
+    }
+  },
   "onboarding": {
     "openAriaLabel": "User guide",
     "closeAriaLabel": "Close",
