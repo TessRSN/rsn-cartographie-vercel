@@ -1,20 +1,9 @@
 import { ImageResponse } from "next/og";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { hasLocale } from "next-intl";
-import { notFound } from "next/navigation";
-import { routing } from "@/i18n/routing";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-
-export async function generateImageMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  return [{ id: locale, alt: locale === "fr" ? "Cartographie RSN" : "RSN Cartography" }];
-}
+export const alt = "Cartographie RSN";
 
 export default async function OpengraphImage({
   params,
@@ -22,7 +11,6 @@ export default async function OpengraphImage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: "meta" });
