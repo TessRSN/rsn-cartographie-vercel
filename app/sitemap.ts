@@ -23,6 +23,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         : new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.7,
+      alternates: {
+        languages: {
+          fr: `${SITE_URL}/entite/${page.id}`,
+          en: `${SITE_URL}/en/entite/${page.id}`,
+        },
+      },
     }))
 
   return [
@@ -31,6 +37,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1,
+      alternates: {
+        languages: {
+          fr: SITE_URL,
+          en: `${SITE_URL}/en`,
+        },
+      },
     },
     ...entityEntries,
   ]
