@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://rsn-cartographie-vercel.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://cartographie.rsn.quebec";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

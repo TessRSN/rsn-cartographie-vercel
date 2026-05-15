@@ -5,7 +5,7 @@
 import type { ParsedEntity } from "./parseEntity"
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://rsn-cartographie-vercel.vercel.app"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://cartographie.rsn.quebec"
 
 const SCHEMA_TYPE: Record<string, string> = {
   "node--organization": "Organization",

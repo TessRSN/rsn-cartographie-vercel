@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next"
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://rsn-cartographie-vercel.vercel.app"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://cartographie.rsn.quebec"
 
 export default function robots(): MetadataRoute.Robots {
   return {
