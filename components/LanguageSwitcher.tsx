@@ -1,29 +1,25 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTransition } from "react";
+import { useRouter, usePathname } from "@/i18n/navigation";
 
 export function LanguageSwitcher() {
   const locale = useLocale();
   const t = useTranslations("nav");
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const targetLocale = locale === "fr" ? "en" : "fr";
 
   function handleClick() {
     startTransition(() => {
-      let newPath: string;
-      if (locale === "en") {
-        newPath = pathname.startsWith("/en")
-          ? pathname.replace(/^\/en/, "") || "/"
-          : pathname;
-      } else {
-        newPath = pathname === "/" ? "/en" : `/en${pathname}`;
-      }
-      router.replace(newPath);
+      const query = searchParams?.toString();
+      const href = query ? `${pathname}?${query}` : pathname;
+      router.replace(href, { locale: targetLocale });
     });
   }
 
