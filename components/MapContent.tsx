@@ -14,6 +14,7 @@
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import { divIcon, latLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSearchParams } from "next/navigation";
@@ -64,6 +65,29 @@ function buildAddressQueries(address: Address): string[] {
     queries.push(`${address.postal_code}, ${country}`);
 
   return queries;
+}
+
+/** Génère l'icône d'un cluster (groupe de markers) — style cohérent avec les markers individuels (violet semi-transparent). */
+function createClusterIcon(cluster: { getChildCount: () => number }) {
+  const count = cluster.getChildCount();
+  const size = Math.min(28 + Math.sqrt(count) * 4, 52);
+  const fontSize = Math.max(11, Math.min(15, size / 3.5));
+  return divIcon({
+    className: "",
+    html: `<div style="
+      width: ${size}px; height: ${size}px;
+      background: rgba(168, 85, 247, 0.75);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: ${fontSize}px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      cursor: pointer;
+    ">${count}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
 }
 
 const CACHE_KEY = "rsn_geocode_cache";
@@ -437,6 +461,12 @@ export default function MapContent({
             attribution='&copy; <a href="https://carto.com/">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
           />
 
+          <MarkerClusterGroup
+            chunkedLoading
+            iconCreateFunction={createClusterIcon}
+            showCoverageOnHover={false}
+            maxClusterRadius={80}
+          >
           {visibleOrgs.map(({ node, lat, lng, related }) => {
             const isSelected = selectedNode?.id === node.id;
 
@@ -500,6 +530,7 @@ export default function MapContent({
               </Marker>
             );
           })}
+          </MarkerClusterGroup>
         </MapContainer>
       </div>
     </div>
