@@ -17,6 +17,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { divIcon, latLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { MyGraphNode } from "@/app/lib/types";
 import { GraphNodeData } from "@/app/lib/schema";
 import { GraphEdge } from "reagraph";
@@ -207,6 +208,7 @@ export default function MapContent({
 }: MapContentProps) {
   const [orgsWithCoords, setOrgsWithCoords] = useState<OrgWithCoords[]>([]);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const t = useTranslations("map");
 
   const searchParams = useSearchParams();
   const rawQuery = searchParams.get("q") ?? "";
@@ -407,8 +409,8 @@ export default function MapContent({
       {progress && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-info/10 border-b border-info/20 text-xs text-info flex-shrink-0">
           <span className="loading loading-spinner loading-xs" />
-          Localisation en cours… {progress.done}/{progress.total} organisations
-          <span className="text-info/60 ml-1">(mis en cache après la 1ʳᵉ visite)</span>
+          {t("geocodingInProgress")} {t("geocodingProgress", { done: progress.done, total: progress.total })}
+          <span className="text-info/60 ml-1">{t("geocodingCacheHint")}</span>
         </div>
       )}
 
@@ -417,7 +419,7 @@ export default function MapContent({
           <div className="absolute inset-0 z-[500] flex items-center justify-center pointer-events-none">
             <div className="bg-base-200/80 backdrop-blur-sm rounded-xl px-6 py-4 shadow-lg text-center max-w-xs">
               <p className="text-sm text-base-content/70">
-                Aucune organisation localisée ne correspond aux filtres appliqués.
+                {t("noLocatedOrganizations")}
               </p>
             </div>
           </div>
@@ -485,13 +487,13 @@ export default function MapContent({
                             </div>
                           ))}
                           {items.length > 7 && (
-                            <div style={{ fontSize: "0.72rem", color: "#a0aec0" }}>+{items.length - 7} autres</div>
+                            <div style={{ fontSize: "0.72rem", color: "#a0aec0" }}>{t("moreItems", { count: items.length - 7 })}</div>
                           )}
                         </div>
                       </div>
                     ))}
                     {related.length === 0 && (
-                      <div style={{ fontSize: "0.78rem", color: "#a0aec0", fontStyle: "italic" }}>Aucun élément associé</div>
+                      <div style={{ fontSize: "0.78rem", color: "#a0aec0", fontStyle: "italic" }}>{t("noAssociatedItem")}</div>
                     )}
                   </div>
                 </Popup>

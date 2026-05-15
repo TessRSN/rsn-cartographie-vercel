@@ -2,8 +2,10 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function SearchBar() {
+  const tSearch = useTranslations("search");
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
@@ -68,7 +70,7 @@ export function SearchBar() {
         type="text"
         className="bg-transparent border-none outline-none text-sm flex-1 min-w-0"
         style={{ color: "#e2e8f0" }}
-        placeholder="Rechercher…"
+        placeholder={tSearch("placeholder")}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
       />
@@ -77,7 +79,7 @@ export function SearchBar() {
           onClick={() => setInputValue("")}
           className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded-full transition-opacity"
           style={{ backgroundColor: "rgba(255,255,255,0.25)", color: "#fff" }}
-          aria-label="Effacer la recherche"
+          aria-label={tSearch("clearAriaLabel")}
         >
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" />

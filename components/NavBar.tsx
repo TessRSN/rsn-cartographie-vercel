@@ -3,11 +3,16 @@
 import { SearchBar } from "./SearchBar";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { OnboardingModal } from "./OnboardingModal";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { GithubLink } from "./GithubLink";
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+  const locale = useLocale();
+  const t = useTranslations("nav");
 
   useEffect(() => {
     setMounted(true);
@@ -16,6 +21,10 @@ export function Navbar() {
   if (!mounted) return null;
 
   const isDark = theme === "dark";
+  const logoSrc =
+    locale === "en"
+      ? "/SVG_RSN/L_RSN_EN_RGB_W.svg"
+      : "/SVG_RSN/L_RSN_FR_RGB_W.svg";
 
   return (
     <nav
@@ -30,8 +39,8 @@ export function Navbar() {
         {/* Logo */}
         <a href="https://rsn.quebec/" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
           <img
-            src="/SVG_RSN/L_RSN_FR_RGB_W.svg"
-            alt="Logo RSN"
+            src={logoSrc}
+            alt={t("logoAlt")}
             className="w-20 md:w-[110px]"
           />
         </a>
@@ -48,8 +57,8 @@ export function Navbar() {
             className="text-xs md:text-base font-semibold tracking-tight leading-tight truncate"
             style={{ color: "#e2e8f0" }}
           >
-            <span className="md:hidden">Cartographie RSN</span>
-            <span className="hidden md:inline">Cartographie des plateformes du Réseau en santé numérique</span>
+            <span className="md:hidden">{t("titleMobile")}</span>
+            <span className="hidden md:inline">{t("titleDesktop")}</span>
           </h1>
           <div className="max-w-md">
             <SearchBar />
@@ -65,7 +74,7 @@ export function Navbar() {
               backgroundColor: "rgba(255,255,255,0.1)",
               color: "#e2e8f0",
             }}
-            aria-label="Toggle theme"
+            aria-label={t("toggleThemeAriaLabel")}
           >
             {isDark ? (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -85,6 +94,8 @@ export function Navbar() {
               </svg>
             )}
           </button>
+          <LanguageSwitcher />
+          <GithubLink />
           <OnboardingModal />
         </div>
       </div>

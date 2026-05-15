@@ -1,0 +1,188 @@
+{
+  "meta": {
+    "siteTitle": "Cartographie RSN",
+    "titleTemplate": "%s | Cartographie RSN",
+    "siteDescription": "Cartographie interactive des plateformes, organismes, personnes et jeux de données du Réseau en santé numérique (RSN)",
+    "keywords": "RSN,santé numérique,cartographie,données de santé,Québec,réseau,plateformes",
+    "authorName": "Réseau en santé numérique"
+  },
+  "nav": {
+    "logoAlt": "Logo RSN",
+    "titleMobile": "Cartographie RSN",
+    "titleDesktop": "Cartographie des plateformes du Réseau en santé numérique",
+    "toggleThemeAriaLabel": "Changer le thème",
+    "switchLanguageAriaLabel": "Changer la langue",
+    "githubAriaLabel": "Code source sur GitHub"
+  },
+  "tabs": {
+    "graph": "Graphe",
+    "cards": "Galerie",
+    "table": "Tableau",
+    "map": "Carte"
+  },
+  "filters": {
+    "filterHeader": "Filtrer",
+    "entityType": "Type d'entité",
+    "orgType": "Type d'org.",
+    "geoCoverage": "Couverture géo.",
+    "rsnAxis": "Axe RSN",
+    "healthDomain": "Domaine de santé",
+    "digitalMethods": "Méthodes numériques",
+    "license": "Licence",
+    "accessModel": "Modèle d'accès",
+    "personType": "Type de personne",
+    "clear": "Effacer",
+    "noResults": "Aucun résultat",
+    "name": "Nom",
+    "type": "Type",
+    "connections": {
+      "label": "Connexions",
+      "hidden": "{count, plural, =0 {aucun masqué} =1 {1 masqué} other {# masqués}}",
+      "showLink": "Afficher les connexions"
+    },
+    "edgeTypes": {
+      "organizations": "Organisations",
+      "governmentOrganizations": "Org. gouvernementales",
+      "persons": "Personnes",
+      "datasets": "Jeux de données",
+      "applications": "Applications"
+    },
+    "stats": {
+      "organizations": "org.",
+      "government": "gouv.",
+      "persons": "pers.",
+      "datasets": "données",
+      "apps": "apps"
+    },
+    "counters": {
+      "nodes": "{count, plural, =0 {0 nœud} =1 {1 nœud} other {# nœuds}}",
+      "results": "{count, plural, =0 {0 résultat} =1 {1 résultat} other {# résultats}}"
+    }
+  },
+  "search": {
+    "placeholder": "Rechercher…",
+    "clearAriaLabel": "Effacer la recherche"
+  },
+  "map": {
+    "loading": "Chargement de la carte…",
+    "geocodingInProgress": "Localisation en cours…",
+    "geocodingProgress": "{done}/{total} organisations",
+    "geocodingCacheHint": "(mis en cache après la 1ʳᵉ visite)",
+    "noLocatedOrganizations": "Aucune organisation localisée ne correspond aux filtres appliqués.",
+    "noAssociatedItem": "Aucun élément associé",
+    "moreItems": "{count, plural, =0 {aucun autre} =1 {+1 autre} other {+# autres}}"
+  },
+  "detailCard": {
+    "closeAriaLabel": "Fermer la carte",
+    "sections": {
+      "alias": "Alias",
+      "description": "Description",
+      "type": "Type",
+      "adminLocation": "Localisation administrative",
+      "address": "Adresse",
+      "geoCoverage": "Couverture géographique",
+      "healthDomain": "Domaine de santé",
+      "digitalMethods": "Méthodes numériques",
+      "rsnAxis": "Axe RSN",
+      "license": "Licence",
+      "accessModel": "Modèle d'accès",
+      "responsiblePerson": "Personne responsable",
+      "fundedBy": "Subventionné par",
+      "contact": "Contact",
+      "webProfile": "Profil web",
+      "links": "Lien(s)"
+    },
+    "empty": {
+      "description": "Aucune description",
+      "links": "Aucun lien",
+      "notAvailable": "N/A"
+    }
+  },
+  "gallery": {
+    "entitiesShown": "{count, plural, =0 {0 entité affichée} =1 {1 entité affichée} other {# entités affichées}}",
+    "noResults": "Aucun résultat",
+    "seeMore": "Voir plus ▼",
+    "seeLess": "Voir moins ▲",
+    "fields": {
+      "status": "Statut",
+      "type": "Type",
+      "category": "Catégorie"
+    },
+    "sections": {
+      "healthDomain": "Domaine de santé",
+      "digitalMethods": "Méthodes numériques",
+      "rsnAxis": "Axe RSN",
+      "geoCoverage": "Couverture géographique",
+      "license": "Licence",
+      "accessModel": "Modèle d'accès",
+      "description": "Description",
+      "address": "Adresse",
+      "adminLocation": "Localisation administrative",
+      "responsiblePerson": "Personne responsable",
+      "fundedBy": "Subventionné par",
+      "links": "Lien(s)",
+      "personLinks": "Liens"
+    }
+  },
+  "table": {
+    "emptyState": "Aucun résultat",
+    "columns": {
+      "alias": "Alias",
+      "subtype": "Sous-type / Catégorie",
+      "parentOrg": "Appartenance / Org. parente",
+      "localisation": "Localisation",
+      "couverture": "Couverture géo.",
+      "axeRsn": "Axe RSN",
+      "santeDomain": "Domaine de santé",
+      "digitalDomain": "Méthodes numériques",
+      "licence": "Licence",
+      "acces": "Modèle d'accès",
+      "funder": "Subventionné par",
+      "author": "Personne responsable",
+      "email": "Contact",
+      "links": "Liens"
+    }
+  },
+  "onboarding": {
+    "openAriaLabel": "Guide d'utilisation",
+    "closeAriaLabel": "Fermer",
+    "title": "Guide d'utilisation",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "finish": "Terminer",
+    "keyboardHint": "Utilisez ← → ou Échap pour naviguer",
+    "steps": {
+      "welcome": {
+        "title": "Bienvenue",
+        "description": "Cet outil permet de visualiser et explorer les plateformes du Réseau en santé numérique (RSN). Naviguez entre quatre vues complémentaires pour découvrir les organisations, personnes, applications et jeux de données du réseau.",
+        "tip": "Utilisez la barre de recherche dans le bandeau pour trouver rapidement une entité. Les filtres avancés permettent de filtrer par type, domaine et plus encore."
+      },
+      "graph": {
+        "title": "Vue Graphe",
+        "description": "Le graphe interactif affiche les relations entre les entités du réseau. Maintenez le clic gauche pour faire tourner la vue, utilisez la molette pour zoomer, et cliquez sur un nœud pour voir ses détails.",
+        "tip": "Chaque type de nœud a une couleur : bleu pour les organisations, vert pour les personnes, jaune pour les datasets, rouge pour les applications."
+      },
+      "cards": {
+        "title": "Vue Cartes",
+        "description": "Les fiches résument chaque entité avec ses informations clés. Cliquez sur « Voir plus » pour accéder aux détails complets : description, adresse, responsable, subventions et liens.",
+        "tip": "Les fiches sont triées par ordre alphabétique et la bordure de couleur correspond au type d'entité."
+      },
+      "table": {
+        "title": "Vue Tableau",
+        "description": "Le tableau liste toutes les entités de manière structurée, triées par ordre alphabétique. Cliquez sur une ligne pour voir les détails complets de l'entité.",
+        "tip": "Combinez la recherche et les filtres pour affiner les résultats dans le tableau."
+      },
+      "map": {
+        "title": "Vue Géomap",
+        "description": "La carte géographique localise les entités ayant une adresse physique. Cliquez sur un marqueur pour voir le résumé de l'entité et accéder à sa fiche détaillée.",
+        "tip": "Les marqueurs violets indiquent la position des entités. Plus le marqueur est grand, plus il regroupe d'entités proches."
+      }
+    }
+  },
+  "entityPage": {
+    "metaDescription": "Fiche de {name} sur la cartographie du Réseau en santé numérique.",
+    "notFoundTitle": "Entité introuvable",
+    "notFoundDescription": "Cette entité n'existe pas ou a été supprimée.",
+    "backToMap": "Retour à la cartographie"
+  }
+}

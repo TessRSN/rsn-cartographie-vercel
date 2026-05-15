@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
+import { useTranslations } from "next-intl";
 import { MyGraphNode } from "@/app/lib/types";
 import { GraphNodeData } from "@/app/lib/schema";
 import { NODE_FILL, TYPE_LABELS, ORG_TYPE_LABELS } from "@/app/lib/constants";
@@ -14,6 +15,7 @@ interface CardGridViewProps {
 }
 
 export function CardGridView({ nodes, nodeById }: CardGridViewProps) {
+  const t = useTranslations("gallery");
   const sortedNodes = [...nodes].sort((a, b) => {
     const titleA = (a.data?.title ?? a.label ?? "").toLowerCase();
     const titleB = (b.data?.title ?? b.label ?? "").toLowerCase();
@@ -23,11 +25,10 @@ export function CardGridView({ nodes, nodeById }: CardGridViewProps) {
   return (
     <div className="p-2 md:p-4">
       <p className="text-sm text-base-content/60 mb-3 md:mb-4">
-        <span className="font-medium text-base-content">{sortedNodes.length}</span>{" "}
-        entité{sortedNodes.length !== 1 ? "s" : ""} affichée{sortedNodes.length !== 1 ? "s" : ""}
+        {t("entitiesShown", { count: sortedNodes.length })}
       </p>
       {sortedNodes.length === 0 ? (
-        <p className="text-center text-base-content/40 py-12">Aucun résultat</p>
+        <p className="text-center text-base-content/40 py-12">{t("noResults")}</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {sortedNodes.map((node) => (
@@ -49,6 +50,7 @@ function EntityCard({
   nodeById: Map<string, MyGraphNode>;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const t = useTranslations("gallery");
   const data = node.data as GraphNodeData;
   const fill = node.fill ?? "#888";
   const typeLabel = TYPE_LABELS[data.type] ?? data.type;
@@ -85,7 +87,7 @@ function EntityCard({
           className="text-sm text-primary hover:underline self-start cursor-pointer"
           onClick={() => setExpanded((v) => !v)}
         >
-          {expanded ? "Voir moins ▲" : "Voir plus ▼"}
+          {expanded ? t("seeLess") : t("seeMore")}
         </button>
 
         {expanded && <ExpandedSection data={data} nodeById={nodeById} />}
@@ -103,6 +105,7 @@ function SummaryByType({
   data: GraphNodeData;
   nodeById: Map<string, MyGraphNode>;
 }) {
+  const t = useTranslations("gallery");
   switch (data.type) {
     case "node--person":
       return (
@@ -124,7 +127,7 @@ function SummaryByType({
             </p>
           )}
           {data.field_person_type && (
-            <Field label="Statut" value={data.field_person_type.name} />
+            <Field label={t("fields.status")} value={data.field_person_type.name} />
           )}
         </div>
       );
@@ -138,7 +141,7 @@ function SummaryByType({
           )}
           {data.schema_organization_type && (
             <Field
-              label="Type"
+              label={t("fields.type")}
               value={ORG_TYPE_LABELS[data.schema_organization_type] ?? data.schema_organization_type}
             />
           )}
@@ -166,7 +169,7 @@ function SummaryByType({
             </p>
           )}
           {data.application_category && data.application_category.length > 0 && (
-            <Field label="Catégorie" value={data.application_category.map((c) => c.name).join(", ")} />
+            <Field label={t("fields.category")} value={data.application_category.map((c) => c.name).join(", ")} />
           )}
         </div>
       );
@@ -189,13 +192,14 @@ function SummaryByType({
 // ─── Tags badges by type ────────────────────────────────────────────────────
 
 function TagsByType({ data }: { data: GraphNodeData }) {
+  const t = useTranslations("gallery");
   const sections: React.ReactNode[] = [];
 
   // Domaine de santé (persons, datasets, catalogs)
   if ("field_applied_domain" in data && data.field_applied_domain && data.field_applied_domain.length > 0) {
     sections.push(
       <div key="domain">
-        <p className="text-xs font-medium text-base-content/60 mb-1">Domaine de santé</p>
+        <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.healthDomain")}</p>
         <div className="flex flex-wrap gap-1.5">
           {data.field_applied_domain.map((d) => (
             <span key={d.id} className="badge badge-soft badge-success badge-sm">{d.name}</span>
@@ -209,7 +213,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
   if (data.type === "node--person" && data.field_digital_domain && data.field_digital_domain.length > 0) {
     sections.push(
       <div key="digital">
-        <p className="text-xs font-medium text-base-content/60 mb-1">Méthodes numériques</p>
+        <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.digitalMethods")}</p>
         <div className="flex flex-wrap gap-1.5">
           {data.field_digital_domain.map((d) => (
             <span key={d.id} className="badge badge-soft badge-info badge-sm">{d.name}</span>
@@ -223,7 +227,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
   if (data.type === "node--person" && data.field_axe_si_membre_rsn?.name) {
     sections.push(
       <div key="axe-rsn">
-        <p className="text-xs font-medium text-base-content/60 mb-1">Axe RSN</p>
+        <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.rsnAxis")}</p>
         <span className="badge badge-soft badge-warning badge-sm">{data.field_axe_si_membre_rsn.name}</span>
       </div>
     );
@@ -238,7 +242,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
   ) {
     sections.push(
       <div key="couverture">
-        <p className="text-xs font-medium text-base-content/60 mb-1">Couverture géographique</p>
+        <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.geoCoverage")}</p>
         <div className="flex flex-wrap gap-1.5">
           {data.field_couverture_geographique.map((c) => (
             <span key={c.id} className="badge badge-soft badge-secondary badge-sm">{c.name}</span>
@@ -252,7 +256,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
   if ("field_licence" in data && data.field_licence?.name) {
     sections.push(
       <div key="licence">
-        <p className="text-xs font-medium text-base-content/60 mb-1">Licence</p>
+        <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.license")}</p>
         <span className="badge badge-soft badge-accent badge-sm">{data.field_licence.name}</span>
       </div>
     );
@@ -262,7 +266,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
   if ("field_modele_acces" in data && data.field_modele_acces?.name) {
     sections.push(
       <div key="acces">
-        <p className="text-xs font-medium text-base-content/60 mb-1">Modèle d&apos;accès</p>
+        <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.accessModel")}</p>
         <span className="badge badge-soft badge-error badge-sm">{data.field_modele_acces.name}</span>
       </div>
     );
@@ -282,12 +286,13 @@ function ExpandedSection({
   data: GraphNodeData;
   nodeById: Map<string, MyGraphNode>;
 }) {
+  const tg = useTranslations("gallery");
   return (
     <div className="border-t border-base-300 pt-3 space-y-3 text-sm">
       {/* Description */}
       {data.description?.value && (
         <div>
-          <p className="font-medium mb-1">Description</p>
+          <p className="font-medium mb-1">{tg("sections.description")}</p>
           <div
             className="max-h-40 overflow-y-auto bg-base-100 rounded px-2 py-1 text-sm"
             dangerouslySetInnerHTML={{
@@ -300,7 +305,7 @@ function ExpandedSection({
       {/* Adresse (organizations) */}
       {"address" in data && data.address && (
         <div>
-          <p className="font-medium mb-1">Adresse</p>
+          <p className="font-medium mb-1">{tg("sections.address")}</p>
           <Adresse address={data.address} />
         </div>
       )}
@@ -310,7 +315,7 @@ function ExpandedSection({
         data.field_organization_geographical &&
         data.field_organization_geographical.length > 0 && (
           <div>
-            <p className="font-medium mb-1">Localisation administrative</p>
+            <p className="font-medium mb-1">{tg("sections.adminLocation")}</p>
             {data.field_organization_geographical.map((t: { id: string; name: string }) => (
               <p key={t.id}>{t.name}</p>
             ))}
@@ -320,7 +325,7 @@ function ExpandedSection({
       {/* Personne responsable (software, dataset, catalog) */}
       {"author" in data && data.author && data.author.length > 0 && (
         <div>
-          <p className="font-medium mb-1">Personne responsable</p>
+          <p className="font-medium mb-1">{tg("sections.responsiblePerson")}</p>
           {(data.author as Array<{ id: string; title?: string }>).map((a) => (
             <p key={a.id}>{resolveTitle(a, nodeById)}</p>
           ))}
@@ -330,7 +335,7 @@ function ExpandedSection({
       {/* Subventionné par */}
       {"field_funder" in data && data.field_funder && (data.field_funder as unknown[]).length > 0 && (
         <div>
-          <p className="font-medium mb-1">Subventionné par</p>
+          <p className="font-medium mb-1">{tg("sections.fundedBy")}</p>
           {(data.field_funder as Array<{ id: string; title?: string }>)
             .filter((f) => f.id !== "missing")
             .map((f) => (
@@ -342,7 +347,7 @@ function ExpandedSection({
       {/* Liens */}
       {data.link && data.link.length > 0 && (
         <div>
-          <p className="font-medium mb-1">Lien(s)</p>
+          <p className="font-medium mb-1">{tg("sections.links")}</p>
           <div className="space-y-1">
             {data.link.map((link, i) => (
               <a
@@ -362,7 +367,7 @@ function ExpandedSection({
       {/* Liens significatifs (persons) */}
       {data.type === "node--person" && data.significant_link && data.significant_link.length > 0 && (
         <div>
-          <p className="font-medium mb-1">Liens</p>
+          <p className="font-medium mb-1">{tg("sections.personLinks")}</p>
           <div className="space-y-1">
             {data.significant_link.map((link, i) => (
               <a

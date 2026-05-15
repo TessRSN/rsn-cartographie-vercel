@@ -1,18 +1,24 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import { MyGraphNode } from "@/app/lib/types";
 import { GraphEdge } from "reagraph";
 
 const MapContent = dynamic(() => import("./MapContent"), {
   ssr: false,
-  loading: () => (
+  loading: () => <MapLoadingIndicator />,
+});
+
+function MapLoadingIndicator() {
+  const t = useTranslations("map");
+  return (
     <div className="flex items-center justify-center h-full text-base-content/50">
       <span className="loading loading-spinner loading-md mr-2" />
-      Chargement de la carte…
+      {t("loading")}
     </div>
-  ),
-});
+  );
+}
 
 interface MapViewProps {
   nodes: MyGraphNode[];

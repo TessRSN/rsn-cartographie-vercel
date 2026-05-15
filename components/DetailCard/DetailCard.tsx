@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 interface DetailCardProps {
   title: string;
@@ -9,6 +10,7 @@ interface DetailCardProps {
 }
 
 export function DetailCard({ title, children, onClose, glass }: DetailCardProps) {
+  const t = useTranslations("detailCard");
   const bodyBg =
     glass === false
       ? "bg-base-200 border border-base-300"
@@ -31,6 +33,7 @@ export function DetailCard({ title, children, onClose, glass }: DetailCardProps)
         <button
           className="shrink-0 p-1 opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
           onClick={onClose}
+          aria-label={t("closeAriaLabel")}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

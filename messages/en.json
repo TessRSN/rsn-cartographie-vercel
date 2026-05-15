@@ -1,0 +1,188 @@
+{
+  "meta": {
+    "siteTitle": "RSN Cartography",
+    "titleTemplate": "%s | RSN Cartography",
+    "siteDescription": "Interactive cartography of platforms, organizations, people and datasets of the Quebec Digital Health Network (RSN)",
+    "keywords": "RSN,digital health,cartography,health data,Quebec,network,platforms",
+    "authorName": "Réseau en santé numérique"
+  },
+  "nav": {
+    "logoAlt": "RSN Logo",
+    "titleMobile": "RSN Cartography",
+    "titleDesktop": "Cartography of the Quebec Digital Health Network platforms",
+    "toggleThemeAriaLabel": "Toggle theme",
+    "switchLanguageAriaLabel": "Change language",
+    "githubAriaLabel": "Source code on GitHub"
+  },
+  "tabs": {
+    "graph": "Graph",
+    "cards": "Cards",
+    "table": "Table",
+    "map": "Map"
+  },
+  "filters": {
+    "filterHeader": "Filter",
+    "entityType": "Entity type",
+    "orgType": "Org. type",
+    "geoCoverage": "Geo. coverage",
+    "rsnAxis": "RSN axis",
+    "healthDomain": "Health domain",
+    "digitalMethods": "Digital methods",
+    "license": "License",
+    "accessModel": "Access model",
+    "personType": "Person type",
+    "clear": "Clear",
+    "noResults": "No results",
+    "name": "Name",
+    "type": "Type",
+    "connections": {
+      "label": "Connections",
+      "hidden": "{count, plural, =0 {none hidden} =1 {1 hidden} other {# hidden}}",
+      "showLink": "Show connections"
+    },
+    "edgeTypes": {
+      "organizations": "Organizations",
+      "governmentOrganizations": "Gov. organizations",
+      "persons": "People",
+      "datasets": "Datasets",
+      "applications": "Applications"
+    },
+    "stats": {
+      "organizations": "orgs",
+      "government": "gov.",
+      "persons": "people",
+      "datasets": "data",
+      "apps": "apps"
+    },
+    "counters": {
+      "nodes": "{count, plural, =0 {0 nodes} =1 {1 node} other {# nodes}}",
+      "results": "{count, plural, =0 {0 results} =1 {1 result} other {# results}}"
+    }
+  },
+  "search": {
+    "placeholder": "Search…",
+    "clearAriaLabel": "Clear search"
+  },
+  "map": {
+    "loading": "Loading map…",
+    "geocodingInProgress": "Locating…",
+    "geocodingProgress": "{done}/{total} organizations",
+    "geocodingCacheHint": "(cached after first visit)",
+    "noLocatedOrganizations": "No located organization matches the active filters.",
+    "noAssociatedItem": "No associated item",
+    "moreItems": "{count, plural, =0 {no others} =1 {+1 other} other {+# others}}"
+  },
+  "detailCard": {
+    "closeAriaLabel": "Close card",
+    "sections": {
+      "alias": "Alias",
+      "description": "Description",
+      "type": "Type",
+      "adminLocation": "Administrative location",
+      "address": "Address",
+      "geoCoverage": "Geographic coverage",
+      "healthDomain": "Health domain",
+      "digitalMethods": "Digital methods",
+      "rsnAxis": "RSN axis",
+      "license": "License",
+      "accessModel": "Access model",
+      "responsiblePerson": "Responsible person",
+      "fundedBy": "Funded by",
+      "contact": "Contact",
+      "webProfile": "Web profile",
+      "links": "Link(s)"
+    },
+    "empty": {
+      "description": "No description",
+      "links": "No link",
+      "notAvailable": "N/A"
+    }
+  },
+  "gallery": {
+    "entitiesShown": "{count, plural, =0 {0 entities shown} =1 {1 entity shown} other {# entities shown}}",
+    "noResults": "No results",
+    "seeMore": "See more ▼",
+    "seeLess": "See less ▲",
+    "fields": {
+      "status": "Status",
+      "type": "Type",
+      "category": "Category"
+    },
+    "sections": {
+      "healthDomain": "Health domain",
+      "digitalMethods": "Digital methods",
+      "rsnAxis": "RSN axis",
+      "geoCoverage": "Geographic coverage",
+      "license": "License",
+      "accessModel": "Access model",
+      "description": "Description",
+      "address": "Address",
+      "adminLocation": "Administrative location",
+      "responsiblePerson": "Responsible person",
+      "fundedBy": "Funded by",
+      "links": "Link(s)",
+      "personLinks": "Links"
+    }
+  },
+  "table": {
+    "emptyState": "No results",
+    "columns": {
+      "alias": "Alias",
+      "subtype": "Subtype / Category",
+      "parentOrg": "Membership / Parent org.",
+      "localisation": "Location",
+      "couverture": "Geo. coverage",
+      "axeRsn": "RSN axis",
+      "santeDomain": "Health domain",
+      "digitalDomain": "Digital methods",
+      "licence": "License",
+      "acces": "Access model",
+      "funder": "Funded by",
+      "author": "Responsible person",
+      "email": "Contact",
+      "links": "Links"
+    }
+  },
+  "onboarding": {
+    "openAriaLabel": "User guide",
+    "closeAriaLabel": "Close",
+    "title": "User guide",
+    "previous": "Previous",
+    "next": "Next",
+    "finish": "Finish",
+    "keyboardHint": "Use ← → or Esc to navigate",
+    "steps": {
+      "welcome": {
+        "title": "Welcome",
+        "description": "This tool helps you visualize and explore the platforms of the Quebec Digital Health Network (RSN). Navigate between four complementary views to discover the organizations, people, applications and datasets of the network.",
+        "tip": "Use the search bar in the header to quickly find an entity. The advanced filters let you filter by type, domain and more."
+      },
+      "graph": {
+        "title": "Graph view",
+        "description": "The interactive graph shows the relationships between the entities of the network. Hold left-click to rotate the view, use the scroll wheel to zoom, and click a node to see its details.",
+        "tip": "Each node type has its own color: blue for organizations, green for people, yellow for datasets, red for applications."
+      },
+      "cards": {
+        "title": "Cards view",
+        "description": "The cards summarize each entity with its key information. Click \"See more\" to access the full details: description, address, contact, grants and links.",
+        "tip": "Cards are sorted alphabetically and the colored border matches the entity type."
+      },
+      "table": {
+        "title": "Table view",
+        "description": "The table lists all entities in a structured way, sorted alphabetically. Click a row to see the entity's full details.",
+        "tip": "Combine search and filters to refine the results in the table."
+      },
+      "map": {
+        "title": "Map view",
+        "description": "The geographic map locates entities that have a physical address. Click a marker to see the entity summary and access its detail card.",
+        "tip": "Purple markers indicate entity locations. The larger the marker, the more nearby entities it groups together."
+      }
+    }
+  },
+  "entityPage": {
+    "metaDescription": "Profile of {name} on the Quebec Digital Health Network cartography.",
+    "notFoundTitle": "Entity not found",
+    "notFoundDescription": "This entity does not exist or has been removed.",
+    "backToMap": "Back to cartography"
+  }
+}

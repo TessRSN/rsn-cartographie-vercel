@@ -7,13 +7,13 @@
  */
 import { Suspense } from "react"
 import { DiagramRoot } from "@/components/DiagramRoot"
-import { fetchOrganization } from "./lib/fetchOrganization"
-import { fetchGouvOrganization } from "./lib/fetchGouvOrganization"
-import { fetchPerson } from "./lib/fetchPerson"
-import { fetchDataset } from "./lib/fetchDataset"
-import { fetchSoftwareApplication } from "./lib/fetchSoftwareApplication"
-import { fetchDataCatalog } from "./lib/fetchDataCatalog"
-import { fetchAllPersonNames } from "./lib/notion"
+import { fetchOrganization } from "@/app/lib/fetchOrganization"
+import { fetchGouvOrganization } from "@/app/lib/fetchGouvOrganization"
+import { fetchPerson } from "@/app/lib/fetchPerson"
+import { fetchDataset } from "@/app/lib/fetchDataset"
+import { fetchSoftwareApplication } from "@/app/lib/fetchSoftwareApplication"
+import { fetchDataCatalog } from "@/app/lib/fetchDataCatalog"
+import { fetchAllPersonNames } from "@/app/lib/notion"
 import { GraphEdge, GraphNode } from "reagraph"
 import {
   OrganizationNode,
@@ -28,7 +28,7 @@ import {
   DataCatalogNode,
   dataCatalogNodeSchema,
   gouvOrganizationNodeSchema,
-} from "./lib/schema"
+} from "@/app/lib/schema"
 
 export const revalidate = 60 // ISR: revalidate every 60 seconds
 

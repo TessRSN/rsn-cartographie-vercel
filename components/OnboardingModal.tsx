@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Fragment } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/app/lib/cn";
 
@@ -9,52 +10,29 @@ const stepIcon = (children: React.ReactNode) => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{children}</svg>
 );
 
-const onboardingSteps: { id: number; title: string; description: string; icon: React.ReactNode; tip: string }[] = [
-  {
-    id: 1,
-    title: "Bienvenue",
-    description:
-      "Cet outil permet de visualiser et explorer les plateformes du Réseau en santé numérique (RSN). Naviguez entre quatre vues complémentaires pour découvrir les organisations, personnes, applications et jeux de données du réseau.",
-    icon: stepIcon(<><path d="M12 2l2.09 6.26L20.18 9l-5.09 3.74L16.18 19 12 15.27 7.82 19l1.09-6.26L3.82 9l6.09-.74z"/></>),
-    tip: "Utilisez la barre de recherche dans le bandeau pour trouver rapidement une entité. Les filtres avancés permettent de filtrer par type, domaine et plus encore.",
-  },
-  {
-    id: 2,
-    title: "Vue Graphe",
-    description:
-      "Le graphe interactif affiche les relations entre les entités du réseau. Maintenez le clic gauche pour faire tourner la vue, utilisez la molette pour zoomer, et cliquez sur un nœud pour voir ses détails.",
-    icon: stepIcon(<><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="16.5"/></>),
-    tip: "Chaque type de nœud a une couleur : bleu pour les organisations, vert pour les personnes, jaune pour les datasets, rouge pour les applications.",
-  },
-  {
-    id: 3,
-    title: "Vue Cartes",
-    description:
-      "Les fiches résument chaque entité avec ses informations clés. Cliquez sur « Voir plus » pour accéder aux détails complets : description, adresse, responsable, subventions et liens.",
-    icon: stepIcon(<><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="9" rx="1"/><rect x="3" y="15" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/></>),
-    tip: "Les fiches sont triées par ordre alphabétique et la bordure de couleur correspond au type d'entité.",
-  },
-  {
-    id: 4,
-    title: "Vue Tableau",
-    description:
-      "Le tableau liste toutes les entités de manière structurée, triées par ordre alphabétique. Cliquez sur une ligne pour voir les détails complets de l'entité.",
-    icon: stepIcon(<><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></>),
-    tip: "Combinez la recherche et les filtres pour affiner les résultats dans le tableau.",
-  },
-  {
-    id: 5,
-    title: "Vue Géomap",
-    description:
-      "La carte géographique localise les entités ayant une adresse physique. Cliquez sur un marqueur pour voir le résumé de l'entité et accéder à sa fiche détaillée.",
-    icon: stepIcon(<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>),
-    tip: "Les marqueurs violets indiquent la position des entités. Plus le marqueur est grand, plus il regroupe d'entités proches.",
-  },
-];
+const stepIds = ["welcome", "graph", "cards", "table", "map"] as const;
+
+const stepIcons: Record<(typeof stepIds)[number], React.ReactNode> = {
+  welcome: stepIcon(<><path d="M12 2l2.09 6.26L20.18 9l-5.09 3.74L16.18 19 12 15.27 7.82 19l1.09-6.26L3.82 9l6.09-.74z"/></>),
+  graph: stepIcon(<><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="16.5"/></>),
+  cards: stepIcon(<><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="9" rx="1"/><rect x="3" y="15" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/></>),
+  table: stepIcon(<><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></>),
+  map: stepIcon(<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>),
+};
 
 export function OnboardingModal() {
+  const t = useTranslations("onboarding");
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+
+  const onboardingSteps = stepIds.map((id, index) => ({
+    id: index + 1,
+    title: t(`steps.${id}.title`),
+    description: t(`steps.${id}.description`),
+    tip: t(`steps.${id}.tip`),
+    icon: stepIcons[id],
+  }));
+
   useEffect(() => {
     // Check if user has already seen the onboarding
     const seen = localStorage.getItem("hasSeenOnboarding");
@@ -125,7 +103,7 @@ export function OnboardingModal() {
         onClick={() => {
           setOpen(true);
         }}
-        aria-label="Guide d'utilisation"
+        aria-label={t("openAriaLabel")}
       >
         ?
       </button>
@@ -141,9 +119,10 @@ export function OnboardingModal() {
             {/* Header */}
             <div className="bg-base-300 text-base-content px-6 py-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Guide d&apos;utilisation</h2>
+                <h2 className="text-2xl font-bold">{t("title")}</h2>
                 <button
                   onClick={handleSkip}
+                  aria-label={t("closeAriaLabel")}
                   className="text-base-content/50 hover:text-base-content transition-colors p-1 rounded-full hover:bg-base-content/10"
                 >
                   <svg
@@ -218,14 +197,14 @@ export function OnboardingModal() {
                     d="M15 19l-7-7 7-7"
                   />
                 </svg>
-                <span>Précédent</span>
+                <span>{t("previous")}</span>
               </button>
 
               <button onClick={handleNext} className="btn btn-soft">
                 <span>
                   {currentStep === onboardingSteps.length - 1
-                    ? "Terminer"
-                    : "Suivant"}
+                    ? t("finish")
+                    : t("next")}
                 </span>
                 {currentStep < onboardingSteps.length - 1 && (
                   <svg
@@ -247,7 +226,7 @@ export function OnboardingModal() {
 
             {/* Keyboard hints */}
             <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
-              <span>Utilisez ← → ou Échap pour naviguer</span>
+              <span>{t("keyboardHint")}</span>
             </div>
           </div>
         </div>,

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
+import { getTranslations } from "next-intl/server"
 import {
   findEntityById,
   fetchAllPersonNames,
@@ -7,7 +8,6 @@ import {
 } from "@/app/lib/notion"
 import { parseEntity } from "@/app/lib/parseEntity"
 import { buildJsonLd } from "@/app/lib/jsonld"
-import { TYPE_LABELS } from "@/app/lib/constants"
 import { EntityPageContent } from "@/components/EntityPage/EntityPageContent"
 
 export const revalidate = 60
@@ -19,7 +19,7 @@ const UUID_RE =
   /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i
 
 interface Props {
-  params: Promise<{ id: string }>
+  params: Promise<{ locale: string; id: string }>
 }
 
 async function loadEntity(id: string) {
@@ -55,25 +55,37 @@ async function loadEntity(id: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params
+  const { locale, id } = await params
   const entity = await loadEntity(id)
   if (!entity) return {}
 
-  const typeLabel = TYPE_LABELS[entity.type] ?? ""
+  const t = await getTranslations({ locale, namespace: "entityPage" })
+
+  const fallback = t("metaDescription", { name: entity.title })
   const description =
     entity.description.length > 160
       ? entity.description.slice(0, 157) + "..."
-      : entity.description || `${typeLabel} — Cartographie RSN`
+      : entity.description || fallback
+
+  const canonical =
+    locale === "fr" ? `/entite/${id}` : `/${locale}/entite/${id}`
 
   return {
     title: entity.title,
     description,
+    alternates: {
+      canonical,
+      languages: {
+        fr: `/entite/${id}`,
+        en: `/en/entite/${id}`,
+      },
+    },
     openGraph: {
       title: entity.title,
       description,
-      url: `${SITE_URL}/entite/${id}`,
+      url: `${SITE_URL}${canonical}`,
       siteName: "Cartographie RSN",
-      locale: "fr_CA",
+      locale: locale === "fr" ? "fr_CA" : "en_CA",
       type: "article",
       ...(entity.imageSrc && {
         images: [{ url: entity.imageSrc, alt: entity.title }],

@@ -1,4 +1,5 @@
 import DOMPurify from "isomorphic-dompurify";
+import { useTranslations } from "next-intl";
 import { MyGraphNode } from "@/app/lib/types";
 import { OrganizationNode } from "@/app/lib/schema";
 import { ORG_TYPE_LABELS } from "@/app/lib/constants";
@@ -17,11 +18,12 @@ export function OrganizationDetailCard({
   onClose,
   glass,
 }: OrganizationDetailCardProps) {
+  const t = useTranslations("detailCard");
   return (
     <DetailCard title={node.data.title} onClose={onClose} glass={glass}>
       {node.data.alternate_name?.length ? (
         <div>
-          <div className="font-medium">Alias</div>
+          <div className="font-medium">{t("sections.alias")}</div>
           <div> {node.data.alternate_name[0]}</div>
         </div>
       ) : null}
@@ -33,7 +35,7 @@ export function OrganizationDetailCard({
       {node.data.schema_organization_type &&
       ORG_TYPE_LABELS[node.data.schema_organization_type] ? (
         <div className="space-y-1 pt-2">
-          <div className="font-medium">Type</div>
+          <div className="font-medium">{t("sections.type")}</div>
           <div className="badge badge-soft badge-secondary">
             {ORG_TYPE_LABELS[node.data.schema_organization_type]}
           </div>
@@ -41,14 +43,14 @@ export function OrganizationDetailCard({
       ) : null}
 
       <div className="space-y-1">
-        <div className="font-medium">Description</div>
+        <div className="font-medium">{t("sections.description")}</div>
         <Description data={node.data} />
       </div>
 
       <div className="space-y-1 pt-2">
         {node.data.field_organization_geographical?.length ? (
           <div className="space-y-1">
-            <div className="font-medium">Localisation administrative</div>
+            <div className="font-medium">{t("sections.adminLocation")}</div>
             {node.data.field_organization_geographical.map((term) => (
               <div key={term.id}>{term.name}</div>
             ))}
@@ -57,14 +59,14 @@ export function OrganizationDetailCard({
       </div>
 
       <div className="space-y-1">
-        <div className="font-medium">Adresse</div>
+        <div className="font-medium">{t("sections.address")}</div>
         <Adresse address={node.data.address} />
       </div>
 
       <div className="space-y-1 pt-2">
         {node.data.field_couverture_geographique?.length ? (
           <div className="space-y-1">
-            <div className="font-medium">Couverture géographique</div>
+            <div className="font-medium">{t("sections.geoCoverage")}</div>
             {node.data.field_couverture_geographique.map((term) => (
               <div key={term.id}>{term.name}</div>
             ))}
@@ -74,7 +76,7 @@ export function OrganizationDetailCard({
 
       {node.data.field_funder && node.data.field_funder.length > 0 ? (
         <div className="space-y-1 pt-2">
-          <div className="font-medium">Subventionné par</div>
+          <div className="font-medium">{t("sections.fundedBy")}</div>
           {node.data.field_funder.map((term) => (
             <div key={term.id}>{"title" in term ? term.title : term.id}</div>
           ))}
@@ -82,7 +84,7 @@ export function OrganizationDetailCard({
       ) : null}
 
       <div className="space-y-1 pt-2">
-        <div className="font-medium">Lien(s)</div>
+        <div className="font-medium">{t("sections.links")}</div>
         <div className="space-y-1">
           {node.data.link && node.data.link.length > 0 ? (
             node.data.link.map((link, index) => (
@@ -97,7 +99,7 @@ export function OrganizationDetailCard({
               </a>
             ))
           ) : (
-            <div>Aucun lien</div>
+            <div>{t("empty.links")}</div>
           )}
         </div>
       </div>
@@ -110,6 +112,7 @@ interface DescriptionProps {
 }
 
 function Description({ data }: DescriptionProps) {
+  const t = useTranslations("detailCard");
   return data.description?.value ? (
     <div
       className="max-h-84 overflow-y-auto list-decimal bg-base-100/40 backdrop-blur-sm rounded-lg px-2"
@@ -118,6 +121,6 @@ function Description({ data }: DescriptionProps) {
       }}
     ></div>
   ) : (
-    <div>Aucune description</div>
+    <div>{t("empty.description")}</div>
   );
 }
