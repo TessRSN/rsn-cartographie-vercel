@@ -20,6 +20,38 @@
     "table": "Table",
     "map": "Map"
   },
+  "filters": {
+    "filterHeader": "Filter",
+    "entityType": "Entity type",
+    "orgType": "Org. type",
+    "geoCoverage": "Geo. coverage",
+    "rsnAxis": "RSN axis",
+    "healthDomain": "Health domain",
+    "digitalMethods": "Digital methods",
+    "license": "License",
+    "accessModel": "Access model",
+    "personType": "Person type",
+    "clear": "Clear",
+    "noResults": "No results",
+    "name": "Name",
+    "type": "Type",
+    "connections": {
+      "label": "Connections",
+      "hidden": "{count, plural, =0 {none hidden} =1 {1 hidden} other {# hidden}}",
+      "showLink": "Show connections"
+    },
+    "stats": {
+      "organizations": "orgs",
+      "government": "gov.",
+      "persons": "people",
+      "datasets": "data",
+      "apps": "apps"
+    },
+    "counters": {
+      "nodes": "{count, plural, =0 {0 nodes} =1 {1 node} other {# nodes}}",
+      "results": "{count, plural, =0 {0 results} =1 {1 result} other {# results}}"
+    }
+  },
   "search": {
     "placeholder": "Search…",
     "clearAriaLabel": "Clear search"

@@ -20,6 +20,38 @@
     "table": "Tableau",
     "map": "Carte"
   },
+  "filters": {
+    "filterHeader": "Filtrer",
+    "entityType": "Type d'entité",
+    "orgType": "Type d'org.",
+    "geoCoverage": "Couverture géo.",
+    "rsnAxis": "Axe RSN",
+    "healthDomain": "Domaine de santé",
+    "digitalMethods": "Méthodes numériques",
+    "license": "Licence",
+    "accessModel": "Modèle d'accès",
+    "personType": "Type de personne",
+    "clear": "Effacer",
+    "noResults": "Aucun résultat",
+    "name": "Nom",
+    "type": "Type",
+    "connections": {
+      "label": "Connexions",
+      "hidden": "{count, plural, =0 {aucun masqué} =1 {1 masqué} other {# masqués}}",
+      "showLink": "Afficher les connexions"
+    },
+    "stats": {
+      "organizations": "org.",
+      "government": "gouv.",
+      "persons": "pers.",
+      "datasets": "données",
+      "apps": "apps"
+    },
+    "counters": {
+      "nodes": "{count, plural, =0 {0 nœud} =1 {1 nœud} other {# nœuds}}",
+      "results": "{count, plural, =0 {0 résultat} =1 {1 résultat} other {# résultats}}"
+    }
+  },
   "search": {
     "placeholder": "Rechercher…",
     "clearAriaLabel": "Effacer la recherche"
