@@ -31,12 +31,12 @@ interface DiagramRootProps {
 }
 
 const EDGE_FILTER_OPTIONS = [
-  { types: ["node--organization"],                    label: "Organisations",        fill: "#0061AF" },
-  { types: ["node--government_organization"],         label: "Org. gouvernementales", fill: "#8C8C8C" },
-  { types: ["node--person"],                          label: "Personnes",             fill: "#00A759" },
-  { types: ["node--dataset", "node--data_catalog"],   label: "Jeux de données",       fill: "#FFCC4E" },
-  { types: ["node--software_application"],            label: "Applications",          fill: "#EE3124" },
-];
+  { types: ["node--organization"],                    labelKey: "organizations",            fill: "#0061AF" },
+  { types: ["node--government_organization"],         labelKey: "governmentOrganizations",  fill: "#8C8C8C" },
+  { types: ["node--person"],                          labelKey: "persons",                  fill: "#00A759" },
+  { types: ["node--dataset", "node--data_catalog"],   labelKey: "datasets",                 fill: "#FFCC4E" },
+  { types: ["node--software_application"],            labelKey: "applications",             fill: "#EE3124" },
+] as const;
 
 const DEFAULT_ENABLED_EDGES = new Set([
   "node--organization", "node--person",
@@ -551,7 +551,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
     apps:     nodes.filter(n => n.data?.type === "node--software_application").length,
   };
 
-  const toggleEdgeGroup = (types: string[]) => {
+  const toggleEdgeGroup = (types: readonly string[]) => {
     const allOn = types.every(t => enabledEdgeTypes.has(t));
     const next = new Set(enabledEdgeTypes);
     allOn ? types.forEach(t => next.delete(t)) : types.forEach(t => next.add(t));
@@ -679,7 +679,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
                       <label key={opt.types[0]} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-base-200">
                         <input type="checkbox" className="checkbox checkbox-xs" checked={checked} onChange={() => toggleEdgeGroup(opt.types)} />
                         <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: opt.fill }} />
-                        <span className="text-sm">{opt.label}</span>
+                        <span className="text-sm">{tFilters(`edgeTypes.${opt.labelKey}`)}</span>
                       </label>
                     );
                   })}

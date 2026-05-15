@@ -40,6 +40,13 @@
       "hidden": "{count, plural, =0 {none hidden} =1 {1 hidden} other {# hidden}}",
       "showLink": "Show connections"
     },
+    "edgeTypes": {
+      "organizations": "Organizations",
+      "governmentOrganizations": "Gov. organizations",
+      "persons": "People",
+      "datasets": "Datasets",
+      "applications": "Applications"
+    },
     "stats": {
       "organizations": "orgs",
       "government": "gov.",
