@@ -178,5 +178,11 @@
         "tip": "Purple markers indicate entity locations. The larger the marker, the more nearby entities it groups together."
       }
     }
+  },
+  "entityPage": {
+    "metaDescription": "Profile of {name} on the Quebec Digital Health Network cartography.",
+    "notFoundTitle": "Entity not found",
+    "notFoundDescription": "This entity does not exist or has been removed.",
+    "backToMap": "Back to cartography"
   }
 }

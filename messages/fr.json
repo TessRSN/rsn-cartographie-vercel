@@ -178,5 +178,11 @@
         "tip": "Les marqueurs violets indiquent la position des entités. Plus le marqueur est grand, plus il regroupe d'entités proches."
       }
     }
+  },
+  "entityPage": {
+    "metaDescription": "Fiche de {name} sur la cartographie du Réseau en santé numérique.",
+    "notFoundTitle": "Entité introuvable",
+    "notFoundDescription": "Cette entité n'existe pas ou a été supprimée.",
+    "backToMap": "Retour à la cartographie"
   }
 }
