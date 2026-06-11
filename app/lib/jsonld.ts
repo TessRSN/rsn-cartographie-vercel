@@ -3,6 +3,7 @@
  */
 
 import type { ParsedEntity } from "./parseEntity"
+import { buildEntityKeywords, cleanMetaText } from "./seo"
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://cartographie.rsn.quebec"
@@ -16,19 +17,30 @@ const SCHEMA_TYPE: Record<string, string> = {
   "node--software_application": "SoftwareApplication",
 }
 
-export function buildJsonLd(entity: ParsedEntity): Record<string, unknown> {
+export function buildJsonLd(
+  entity: ParsedEntity,
+  locale: string = "fr",
+): Record<string, unknown> {
   const schemaType = SCHEMA_TYPE[entity.type] ?? "Thing"
-  const pageUrl = `${SITE_URL}/entite/${entity.id}`
+  const localePath = locale === "fr" ? "" : `/${locale}`
+  const pageUrl = `${SITE_URL}${localePath}/entite/${entity.id}`
+  const cartographyUrl = `${SITE_URL}${localePath}`
 
   const ld: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": schemaType,
     name: entity.title,
     url: pageUrl,
+    inLanguage: locale === "fr" ? "fr-CA" : "en-CA",
+    isPartOf: {
+      "@type": "WebSite",
+      name: locale === "fr" ? "Cartographie RSN" : "RSN Cartography",
+      url: cartographyUrl,
+    },
   }
 
   if (entity.description) {
-    ld.description = entity.description.slice(0, 300)
+    ld.description = cleanMetaText(entity.description, 300)
   }
 
   if (entity.imageSrc) {
@@ -45,6 +57,15 @@ export function buildJsonLd(entity: ParsedEntity): Record<string, unknown> {
 
   if (entity.email) {
     ld.email = entity.email
+  }
+
+  if (entity.lastEdited) {
+    ld.dateModified = entity.lastEdited
+  }
+
+  const keywords = buildEntityKeywords(entity)
+  if (keywords.length > 0) {
+    ld.keywords = keywords.join(", ")
   }
 
   // Type-specific fields
