@@ -4,6 +4,7 @@ import { SearchBar } from "./SearchBar";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { OnboardingModal } from "./OnboardingModal";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { GithubLink } from "./GithubLink";
@@ -37,13 +38,13 @@ export function Navbar() {
     >
       <div className="flex items-center gap-3 px-3 py-2 md:gap-5 md:px-5 md:py-4">
         {/* Logo */}
-        <a href="https://rsn.quebec/" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+        <Link href="/" className="flex-shrink-0">
           <img
             src={logoSrc}
             alt={t("logoAlt")}
             className="w-20 md:w-[110px]"
           />
-        </a>
+        </Link>
 
         {/* Separator — hidden on mobile */}
         <div

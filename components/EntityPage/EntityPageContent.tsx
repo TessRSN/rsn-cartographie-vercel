@@ -1,5 +1,5 @@
 import DOMPurify from "isomorphic-dompurify"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
 import { TYPE_LABELS, NODE_FILL, ORG_TYPE_LABELS } from "@/app/lib/constants"
 import type { ParsedEntity } from "@/app/lib/parseEntity"
 
@@ -86,6 +86,40 @@ export function EntityPageContent({ entity }: Props) {
           </ul>
         </section>
       )}
+
+      {/* Discovery CTA — visible quand on arrive directement depuis un moteur de recherche */}
+      <section className="mt-12 border-t border-base-300 pt-8">
+        <div className="rounded-2xl bg-base-200 p-6 md:p-8 text-center">
+          <h2 className="text-lg md:text-xl font-semibold mb-3">
+            Découvrez l&apos;écosystème du Réseau en santé numérique
+          </h2>
+          <p className="text-base-content/70 mb-5 max-w-xl mx-auto leading-relaxed">
+            Explorez les organisations, plateformes, jeux de données et chercheurs
+            du RSN via la cartographie interactive : graphe de relations, galerie,
+            tableau ou carte géographique.
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-content rounded-lg font-medium hover:opacity-90 transition-opacity"
+          >
+            Explorer la cartographie
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+      </section>
     </article>
   )
 }
