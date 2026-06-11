@@ -8,7 +8,7 @@ import {
 } from "@/app/lib/notion"
 import { parseEntity } from "@/app/lib/parseEntity"
 import { buildJsonLd } from "@/app/lib/jsonld"
-import { cleanMetaText } from "@/app/lib/seo"
+import { buildEntityKeywords, cleanMetaText } from "@/app/lib/seo"
 import { EntityPageContent } from "@/components/EntityPage/EntityPageContent"
 
 export const revalidate = 60
@@ -72,6 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: entity.title,
     description,
+    keywords: buildEntityKeywords(entity),
     alternates: {
       canonical,
       languages: {
@@ -86,6 +87,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: "Cartographie RSN",
       locale: locale === "fr" ? "fr_CA" : "en_CA",
       type: "article",
+      ...(entity.lastEdited && { modifiedTime: entity.lastEdited }),
       ...(entity.imageSrc && {
         images: [{ url: entity.imageSrc, alt: entity.title }],
       }),
@@ -99,11 +101,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function EntityPage({ params }: Props) {
-  const { id } = await params
+  const { locale, id } = await params
   const entity = await loadEntity(id)
   if (!entity) notFound()
 
-  const jsonLd = buildJsonLd(entity)
+  const jsonLd = buildJsonLd(entity, locale)
 
   return (
     <>

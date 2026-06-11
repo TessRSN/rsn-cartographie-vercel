@@ -1,3 +1,41 @@
+import { TYPE_LABELS } from "./constants"
+import type { ParsedEntity } from "./parseEntity"
+
+/**
+ * Construit la liste de mots-clés pour une entité, à utiliser dans le meta
+ * `keywords` et dans `keywords` du JSON-LD. Combine le nom, le type, les
+ * catégories, les domaines, la couverture géographique et un socle constant
+ * de mots-clés RSN. Filtre les vides et déduplique.
+ */
+export function buildEntityKeywords(entity: ParsedEntity): string[] {
+  const typeLabel = TYPE_LABELS[entity.type] ?? entity.type
+  const base = [
+    entity.title,
+    typeLabel,
+    ...entity.alternateNames,
+    ...entity.categories,
+    ...entity.geographicCoverage,
+    ...entity.digitalMethods,
+    ...entity.regions,
+    entity.organizationType,
+    entity.axeRsn,
+    "Réseau en santé numérique",
+    "RSN",
+    "Québec",
+    "santé numérique",
+  ]
+  const seen = new Set<string>()
+  return base
+    .filter((k): k is string => typeof k === "string" && k.length > 0)
+    .map((k) => k.trim())
+    .filter((k) => {
+      const key = k.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+}
+
 /**
  * Nettoie un texte destiné aux meta tags (description, og:description, etc.) :
  * - Décode les entités HTML (gère le double encodage type `&amp;#039;` → `'`)
