@@ -8,6 +8,7 @@ import {
 } from "@/app/lib/notion"
 import { parseEntity } from "@/app/lib/parseEntity"
 import { buildJsonLd } from "@/app/lib/jsonld"
+import { cleanMetaText } from "@/app/lib/seo"
 import { EntityPageContent } from "@/components/EntityPage/EntityPageContent"
 
 export const revalidate = 60
@@ -62,10 +63,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "entityPage" })
 
   const fallback = t("metaDescription", { name: entity.title })
-  const description =
-    entity.description.length > 160
-      ? entity.description.slice(0, 157) + "..."
-      : entity.description || fallback
+  const cleanedDescription = cleanMetaText(entity.description, 160)
+  const description = cleanedDescription || fallback
 
   const canonical =
     locale === "fr" ? `/entite/${id}` : `/${locale}/entite/${id}`
