@@ -2,6 +2,7 @@ import DOMPurify from "isomorphic-dompurify";
 import { useTranslations } from "next-intl";
 import { MyGraphNode } from "@/app/lib/types";
 import { PersonNode, personNodeSchema } from "@/app/lib/schema";
+import { translateValue } from "@/app/lib/i18nHelpers";
 import { DetailCard } from "./DetailCard";
 import { Logo } from "./Logo";
 
@@ -13,6 +14,7 @@ interface PersonDetailCardProps {
 
 export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps) {
   const t = useTranslations("detailCard");
+  const tt = useTranslations("taxonomyValues");
   return (
     <DetailCard title={node.data.title} onClose={onClose} glass={glass}>
       {node.data.imageSrc && (
@@ -21,7 +23,12 @@ export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps
 
       <div className="space-y-1 pt-2">
         <div>{t("sections.type")}</div>
-        <div> {node.data.field_person_type?.name || t("empty.notAvailable")}</div>
+        <div>
+          {" "}
+          {node.data.field_person_type?.name
+            ? translateValue(tt, node.data.field_person_type.name)
+            : t("empty.notAvailable")}
+        </div>
       </div>
 
       <div className="space-y-1 pt-2">
@@ -29,7 +36,7 @@ export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps
         <div className="flex gap-2 flex-wrap">
           {node.data.field_applied_domain?.map((term) => (
             <div key={term.id} className="badge badge-soft badge-success">
-              {term.name}
+              {translateValue(tt, term.name)}
             </div>
           )) || <div className="badge badge-ghost">{t("empty.notAvailable")}</div>}
         </div>
@@ -40,7 +47,7 @@ export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps
         <div className="flex gap-2 flex-wrap">
           {node.data.field_digital_domain?.map((term) => (
             <div key={term.id} className="badge badge-soft badge-info">
-              {term.name}
+              {translateValue(tt, term.name)}
             </div>
           )) || <div className="badge badge-ghost">{t("empty.notAvailable")}</div>}
         </div>
@@ -51,7 +58,7 @@ export function PersonDetailCard({ node, onClose, glass }: PersonDetailCardProps
         <div className="flex gap-2 flex-wrap">
           {node.data.field_axe_si_membre_rsn?.name ? (
             <div className="badge badge-soft badge-warning">
-              {node.data.field_axe_si_membre_rsn.name}
+              {translateValue(tt, node.data.field_axe_si_membre_rsn.name)}
             </div>
           ) : (
             <div className="badge badge-ghost">{t("empty.notAvailable")}</div>

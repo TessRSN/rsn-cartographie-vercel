@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { MyGraphNode } from "@/app/lib/types";
 import { OrganizationNode } from "@/app/lib/schema";
 import { ORG_TYPE_LABELS } from "@/app/lib/constants";
+import { translateOrgType, translateValue } from "@/app/lib/i18nHelpers";
 import { DetailCard } from "./DetailCard";
 import { Logo } from "./Logo";
 import { Adresse } from "./Adresse";
@@ -19,6 +20,8 @@ export function OrganizationDetailCard({
   glass,
 }: OrganizationDetailCardProps) {
   const t = useTranslations("detailCard");
+  const tOrgType = useTranslations("orgTypeValues");
+  const tt = useTranslations("taxonomyValues");
   return (
     <DetailCard title={node.data.title} onClose={onClose} glass={glass}>
       {node.data.alternate_name?.length ? (
@@ -37,7 +40,7 @@ export function OrganizationDetailCard({
         <div className="space-y-1 pt-2">
           <div className="font-medium">{t("sections.type")}</div>
           <div className="badge badge-soft badge-secondary">
-            {ORG_TYPE_LABELS[node.data.schema_organization_type]}
+            {translateOrgType(tOrgType, node.data.schema_organization_type)}
           </div>
         </div>
       ) : null}
@@ -52,7 +55,7 @@ export function OrganizationDetailCard({
           <div className="space-y-1">
             <div className="font-medium">{t("sections.adminLocation")}</div>
             {node.data.field_organization_geographical.map((term) => (
-              <div key={term.id}>{term.name}</div>
+              <div key={term.id}>{translateValue(tt, term.name)}</div>
             ))}
           </div>
         ) : null}
@@ -68,7 +71,7 @@ export function OrganizationDetailCard({
           <div className="space-y-1">
             <div className="font-medium">{t("sections.geoCoverage")}</div>
             {node.data.field_couverture_geographique.map((term) => (
-              <div key={term.id}>{term.name}</div>
+              <div key={term.id}>{translateValue(tt, term.name)}</div>
             ))}
           </div>
         ) : null}

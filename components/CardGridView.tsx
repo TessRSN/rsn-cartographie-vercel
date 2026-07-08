@@ -5,7 +5,8 @@ import DOMPurify from "isomorphic-dompurify";
 import { useTranslations } from "next-intl";
 import { MyGraphNode } from "@/app/lib/types";
 import { GraphNodeData } from "@/app/lib/schema";
-import { NODE_FILL, TYPE_LABELS, ORG_TYPE_LABELS } from "@/app/lib/constants";
+import { NODE_FILL, TYPE_LABELS } from "@/app/lib/constants";
+import { translateValue, translateOrgType, translateType } from "@/app/lib/i18nHelpers";
 import { Logo } from "./DetailCard/Logo";
 import { Adresse } from "./DetailCard/Adresse";
 
@@ -51,9 +52,12 @@ function EntityCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const t = useTranslations("gallery");
+  const tt = useTranslations("taxonomyValues");
+  const tOrgType = useTranslations("orgTypeValues");
+  const tType = useTranslations("typeLabels");
   const data = node.data as GraphNodeData;
   const fill = node.fill ?? "#888";
-  const typeLabel = TYPE_LABELS[data.type] ?? data.type;
+  const typeLabel = translateType(tType, data.type);
 
   return (
     <div className="card bg-base-200 border border-base-300 shadow-sm" style={{ borderLeft: `4px solid ${fill}` }}>
@@ -70,7 +74,7 @@ function EntityCard({
         </div>
 
         {/* Résumé selon le type */}
-        <SummaryByType data={data} nodeById={nodeById} />
+        <SummaryByType data={data} nodeById={nodeById} tt={tt} tOrgType={tOrgType} />
 
         {/* Logo / Photo (petit format) */}
         {data.imageSrc && (
@@ -80,7 +84,7 @@ function EntityCard({
         )}
 
         {/* Tags (domaines, méthodes, axes — selon type) */}
-        <TagsByType data={data} />
+        <TagsByType data={data} tt={tt} />
 
         {/* Voir plus / Voir moins */}
         <button
@@ -90,7 +94,7 @@ function EntityCard({
           {expanded ? t("seeLess") : t("seeMore")}
         </button>
 
-        {expanded && <ExpandedSection data={data} nodeById={nodeById} />}
+        {expanded && <ExpandedSection data={data} nodeById={nodeById} tt={tt} />}
       </div>
     </div>
   );
@@ -101,9 +105,13 @@ function EntityCard({
 function SummaryByType({
   data,
   nodeById,
+  tt,
+  tOrgType,
 }: {
   data: GraphNodeData;
   nodeById: Map<string, MyGraphNode>;
+  tt: ReturnType<typeof useTranslations>;
+  tOrgType: ReturnType<typeof useTranslations>;
 }) {
   const t = useTranslations("gallery");
   switch (data.type) {
@@ -127,7 +135,10 @@ function SummaryByType({
             </p>
           )}
           {data.field_person_type && (
-            <Field label={t("fields.status")} value={data.field_person_type.name} />
+            <Field
+              label={t("fields.status")}
+              value={translateValue(tt, data.field_person_type.name)}
+            />
           )}
         </div>
       );
@@ -142,7 +153,7 @@ function SummaryByType({
           {data.schema_organization_type && (
             <Field
               label={t("fields.type")}
-              value={ORG_TYPE_LABELS[data.schema_organization_type] ?? data.schema_organization_type}
+              value={translateOrgType(tOrgType, data.schema_organization_type)}
             />
           )}
           {data.link && data.link.length > 0 && (
@@ -169,7 +180,12 @@ function SummaryByType({
             </p>
           )}
           {data.application_category && data.application_category.length > 0 && (
-            <Field label={t("fields.category")} value={data.application_category.map((c) => c.name).join(", ")} />
+            <Field
+              label={t("fields.category")}
+              value={data.application_category
+                .map((c) => translateValue(tt, c.name))
+                .join(", ")}
+            />
           )}
         </div>
       );
@@ -191,7 +207,7 @@ function SummaryByType({
 
 // ─── Tags badges by type ────────────────────────────────────────────────────
 
-function TagsByType({ data }: { data: GraphNodeData }) {
+function TagsByType({ data, tt }: { data: GraphNodeData; tt: ReturnType<typeof useTranslations> }) {
   const t = useTranslations("gallery");
   const sections: React.ReactNode[] = [];
 
@@ -202,7 +218,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
         <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.healthDomain")}</p>
         <div className="flex flex-wrap gap-1.5">
           {data.field_applied_domain.map((d) => (
-            <span key={d.id} className="badge badge-soft badge-success badge-sm">{d.name}</span>
+            <span key={d.id} className="badge badge-soft badge-success badge-sm">{translateValue(tt, d.name)}</span>
           ))}
         </div>
       </div>
@@ -216,7 +232,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
         <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.digitalMethods")}</p>
         <div className="flex flex-wrap gap-1.5">
           {data.field_digital_domain.map((d) => (
-            <span key={d.id} className="badge badge-soft badge-info badge-sm">{d.name}</span>
+            <span key={d.id} className="badge badge-soft badge-info badge-sm">{translateValue(tt, d.name)}</span>
           ))}
         </div>
       </div>
@@ -228,7 +244,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
     sections.push(
       <div key="axe-rsn">
         <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.rsnAxis")}</p>
-        <span className="badge badge-soft badge-warning badge-sm">{data.field_axe_si_membre_rsn.name}</span>
+        <span className="badge badge-soft badge-warning badge-sm">{translateValue(tt, data.field_axe_si_membre_rsn.name)}</span>
       </div>
     );
   }
@@ -245,7 +261,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
         <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.geoCoverage")}</p>
         <div className="flex flex-wrap gap-1.5">
           {data.field_couverture_geographique.map((c) => (
-            <span key={c.id} className="badge badge-soft badge-secondary badge-sm">{c.name}</span>
+            <span key={c.id} className="badge badge-soft badge-secondary badge-sm">{translateValue(tt, c.name)}</span>
           ))}
         </div>
       </div>
@@ -257,7 +273,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
     sections.push(
       <div key="licence">
         <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.license")}</p>
-        <span className="badge badge-soft badge-accent badge-sm">{data.field_licence.name}</span>
+        <span className="badge badge-soft badge-accent badge-sm">{translateValue(tt, data.field_licence.name)}</span>
       </div>
     );
   }
@@ -267,7 +283,7 @@ function TagsByType({ data }: { data: GraphNodeData }) {
     sections.push(
       <div key="acces">
         <p className="text-xs font-medium text-base-content/60 mb-1">{t("sections.accessModel")}</p>
-        <span className="badge badge-soft badge-error badge-sm">{data.field_modele_acces.name}</span>
+        <span className="badge badge-soft badge-error badge-sm">{translateValue(tt, data.field_modele_acces.name)}</span>
       </div>
     );
   }
@@ -282,9 +298,11 @@ function TagsByType({ data }: { data: GraphNodeData }) {
 function ExpandedSection({
   data,
   nodeById,
+  tt,
 }: {
   data: GraphNodeData;
   nodeById: Map<string, MyGraphNode>;
+  tt: ReturnType<typeof useTranslations>;
 }) {
   const tg = useTranslations("gallery");
   return (
@@ -316,8 +334,8 @@ function ExpandedSection({
         data.field_organization_geographical.length > 0 && (
           <div>
             <p className="font-medium mb-1">{tg("sections.adminLocation")}</p>
-            {data.field_organization_geographical.map((t: { id: string; name: string }) => (
-              <p key={t.id}>{t.name}</p>
+            {data.field_organization_geographical.map((term: { id: string; name: string }) => (
+              <p key={term.id}>{translateValue(tt, term.name)}</p>
             ))}
           </div>
         )}

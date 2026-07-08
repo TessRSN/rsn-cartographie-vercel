@@ -184,5 +184,8 @@
     "notFoundTitle": "Entité introuvable",
     "notFoundDescription": "Cette entité n'existe pas ou a été supprimée.",
     "backToMap": "Retour à la cartographie"
-  }
+  },
+  "typeLabels": {},
+  "orgTypeValues": {},
+  "taxonomyValues": {}
 }

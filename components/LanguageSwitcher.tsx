@@ -2,31 +2,35 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useTransition } from "react";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { usePathname } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 
 export function LanguageSwitcher() {
   const locale = useLocale();
   const t = useTranslations("nav");
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
 
   const targetLocale = locale === "fr" ? "en" : "fr";
 
   function handleClick() {
-    startTransition(() => {
-      const query = searchParams?.toString();
-      const href = query ? `${pathname}?${query}` : pathname;
-      router.replace(href, { locale: targetLocale });
-    });
+    const query = searchParams?.toString();
+    const pathWithQuery = query ? `${pathname}?${query}` : pathname;
+    // Build the URL directly instead of relying on next-intl's client router,
+    // which always forces a locale prefix (even for the unprefixed default
+    // locale) and depends on a middleware redirect to strip it back off —
+    // a redirect that Next.js's soft client-side navigation can silently drop.
+    const href =
+      targetLocale === routing.defaultLocale
+        ? pathWithQuery
+        : `/${targetLocale}${pathWithQuery}`;
+    document.cookie = `NEXT_LOCALE=${targetLocale}; path=/; max-age=31536000`;
+    window.location.href = href;
   }
 
   return (
     <button
       onClick={handleClick}
-      disabled={isPending}
       className="flex items-center gap-1.5 h-7 md:h-8 px-2 md:px-3 rounded-lg transition-all text-xs md:text-sm font-medium"
       style={{
         backgroundColor: "rgba(255,255,255,0.1)",

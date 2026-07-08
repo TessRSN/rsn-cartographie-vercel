@@ -2,6 +2,7 @@ import DOMPurify from "isomorphic-dompurify";
 import { useTranslations } from "next-intl";
 import { MyGraphNode } from "@/app/lib/types";
 import { DataCatalogNode } from "@/app/lib/schema";
+import { translateValue } from "@/app/lib/i18nHelpers";
 import { DetailCard } from "./DetailCard";
 import { Logo } from "./Logo";
 
@@ -17,6 +18,7 @@ export function DataCatalogDetailCard({
   glass,
 }: DataCatalogDetailCardProps) {
   const t = useTranslations("detailCard");
+  const tt = useTranslations("taxonomyValues");
   return (
     <DetailCard title={node.data.title} onClose={onClose} glass={glass}>
       {node.data.alternate_name && node.data.alternate_name.length > 0 ? (
@@ -35,7 +37,7 @@ export function DataCatalogDetailCard({
         <div className="flex gap-2 flex-wrap">
           {node.data.field_applied_domain?.map((term) => (
             <div key={term.id} className="badge badge-soft badge-success">
-              {term.name}
+              {translateValue(tt, term.name)}
             </div>
           )) || <div className="badge badge-ghost">{t("empty.notAvailable")}</div>}
         </div>
@@ -51,7 +53,7 @@ export function DataCatalogDetailCard({
           <div className="font-medium">{t("sections.license")}</div>
           <div className="badge badge-soft badge-accent h-fit">
             <div key={node.data.field_licence.id}>
-              {node.data.field_licence.name}
+              {translateValue(tt, node.data.field_licence.name)}
             </div>
           </div>
         </div>
@@ -62,7 +64,7 @@ export function DataCatalogDetailCard({
           <div className="font-medium">{t("sections.accessModel")}</div>
           <div className="badge badge-soft badge-error h-fit">
             <div key={node.data.field_modele_acces.id}>
-              {node.data.field_modele_acces.name}
+              {translateValue(tt, node.data.field_modele_acces.name)}
             </div>
           </div>
         </div>

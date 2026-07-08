@@ -30,5 +30,7 @@ export const ORG_TYPE_LABELS: Record<string, string> = {
   funding_scheme: "Programme de financement",
   government_organization: "Organisation gouvernementale",
   hospital: "Hôpital",
+  "hôpital": "Hôpital",
   autre: "Autre",
 };
+

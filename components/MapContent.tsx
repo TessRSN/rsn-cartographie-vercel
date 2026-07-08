@@ -23,6 +23,7 @@ import { MyGraphNode } from "@/app/lib/types";
 import { GraphNodeData } from "@/app/lib/schema";
 import { GraphEdge } from "reagraph";
 import { TYPE_LABELS, ORG_TYPE_LABELS } from "@/app/lib/constants";
+import { translateType } from "@/app/lib/i18nHelpers";
 import { removeAccents } from "@/app/lib/utils";
 
 type OrgWithCoords = {
@@ -233,6 +234,7 @@ export default function MapContent({
   const [orgsWithCoords, setOrgsWithCoords] = useState<OrgWithCoords[]>([]);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const t = useTranslations("map");
+  const tType = useTranslations("typeLabels");
 
   const searchParams = useSearchParams();
   const rawQuery = searchParams.get("q") ?? "";
@@ -499,12 +501,12 @@ export default function MapContent({
                       {node.data?.title ?? node.label}
                     </div>
                     <div style={{ fontSize: "0.72rem", color: "#718096", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                      {TYPE_LABELS[node.data?.type ?? ""] ?? node.data?.type}
+                      {(() => { const ty = node.data?.type; return ty ? translateType(tType, ty) : ty; })()}
                     </div>
                     {Object.entries(groups).map(([type, items]) => (
                       <div key={type} style={{ marginBottom: "0.4rem" }}>
                         <div style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "#a0aec0", marginBottom: "0.2rem" }}>
-                          {TYPE_LABELS[type] ?? type} ({items.length})
+                          {translateType(tType, type)} ({items.length})
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
                           {items.slice(0, 7).map((r) => (
