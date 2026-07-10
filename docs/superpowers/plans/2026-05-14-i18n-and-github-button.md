@@ -411,7 +411,7 @@ Ajouter dans `messages/fr.json` (en gardant le namespace `meta` existant) :
 "nav": {
   "logoAlt": "Logo RSN",
   "titleMobile": "Cartographie RSN",
-  "titleDesktop": "Cartographie des plateformes du Réseau en santé numérique",
+  "titleDesktop": "Cartographie des plateformes du Réseau de santé numérique",
   "toggleThemeAriaLabel": "Changer le thème"
 }
 ```
