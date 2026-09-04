@@ -79,6 +79,15 @@ export function DataCatalogDetailCard({
         </div>
       ) : null}
 
+      {node.data.parent_organization && node.data.parent_organization.length > 0 ? (
+        <div className="space-y-1 pt-2">
+          <div className="font-medium">{t("sections.researchCenter")}</div>
+          {node.data.parent_organization.map((term) => (
+            <div key={term.id}>{"title" in term ? term.title : term.id}</div>
+          ))}
+        </div>
+      ) : null}
+
       {node.data.field_funder && node.data.field_funder.length > 0 ? (
         <div className="space-y-1 pt-2">
           <div className="font-medium">{t("sections.fundedBy")}</div>

@@ -88,6 +88,7 @@
       "accessModel": "Modèle d'accès",
       "responsiblePerson": "Personne responsable",
       "fundedBy": "Subventionné par",
+      "researchCenter": "Centre de recherche affilié",
       "contact": "Contact",
       "webProfile": "Profil web",
       "links": "Lien(s)"
@@ -120,6 +121,7 @@
       "adminLocation": "Localisation administrative",
       "responsiblePerson": "Personne responsable",
       "fundedBy": "Subventionné par",
+      "researchCenter": "Centre de recherche affilié",
       "links": "Lien(s)",
       "personLinks": "Liens"
     }

@@ -1,12 +1,13 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 export function SearchBar() {
   const tSearch = useTranslations("search");
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const [inputValue, setInputValue] = useState(query);
@@ -29,6 +30,12 @@ export function SearchBar() {
   }, [query]);
 
   useEffect(() => {
+    // Rien à synchroniser : évite de ré-écrire l'URL (et de redéclencher cet
+    // effet via la nouvelle référence de searchParams que ça provoquerait —
+    // ce qui créait une boucle infinie qui écrasait tout autre changement
+    // d'URL, dont le changement d'onglet).
+    if (inputValue === query) return;
+
     const timeoutId = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
       if (inputValue) {
@@ -37,11 +44,11 @@ export function SearchBar() {
         params.delete("q");
       }
       const qs = params.toString();
-      window.history.replaceState({}, "", `${pathname}${qs ? `?${qs}` : ""}`);
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [inputValue, searchParams, pathname]);
+  }, [inputValue, query, searchParams, pathname, router]);
 
   return (
     <div

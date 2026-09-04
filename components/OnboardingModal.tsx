@@ -145,7 +145,7 @@ export function OnboardingModal() {
             {/* Content */}
             <div className="p-8 flex-1 flex flex-col text-base-content justify-around overflow-y-auto">
               <div className="text-center flex items-center justify-center gap-3 w-full px-12">
-                <span className="text-base-content/60 flex-shrink-0">{currentStepData.icon}</span>
+                <span className="text-base-content/60 shrink-0">{currentStepData.icon}</span>
                 <h3 className="text-xl font-bold">
                   {currentStepData.title}
                 </h3>

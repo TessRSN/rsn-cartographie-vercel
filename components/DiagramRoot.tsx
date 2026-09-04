@@ -399,6 +399,77 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
     return m;
   }, [nodes]);
 
+  // ── Index de recherche : texte normalisé (sans accents, minuscule) par nœud ─
+  // "primary" = champs à fort signal (titre, alias, tags) → priorisés dans le tri.
+  // "secondary" = tout le reste (description, taxonomies traduites, entités liées)
+  // → élargit la couverture de la recherche sans polluer le classement.
+  // Construit une seule fois par changement de données/langue, réutilisé par
+  // le tableau et les cartes pour éviter de dupliquer la logique de recherche.
+  const searchIndex = useMemo(() => {
+    const idx = new Map<string, { primary: string; secondary: string }>();
+    const norm = (s: string) => removeAccents(s.toLowerCase());
+    const resolveTitle = (r: { id: string; title?: string }) =>
+      r.id === "missing" ? null : resolveOrgTitle(r.id, r.title, nodeById);
+
+    nodes.forEach(n => {
+      const d = n.data as GraphNodeData;
+      const primaryParts: string[] = [d.title ?? n.label ?? "", ...(d.tag ?? [])];
+      const secondaryParts: string[] = [];
+
+      if (d.description?.value) secondaryParts.push(d.description.value.replace(/<[^>]+>/g, " "));
+      if ("alternate_name" in d && d.alternate_name) primaryParts.push(...d.alternate_name);
+
+      switch (d.type) {
+        case "node--organization":
+        case "node--government_organization":
+          if (d.schema_organization_type) secondaryParts.push(d.schema_organization_type, translateOrgType(tOrgType, d.schema_organization_type));
+          d.field_couverture_geographique?.forEach(t => secondaryParts.push(t.name, translateValue(tt, t.name)));
+          d.field_funder?.forEach(r => { const rt = resolveTitle(r); if (rt) secondaryParts.push(rt); });
+          break;
+        case "node--person":
+          if (d.field_person_type) secondaryParts.push(d.field_person_type.name, translateValue(tt, d.field_person_type.name));
+          d.field_applied_domain?.forEach(t => secondaryParts.push(t.name, translateValue(tt, t.name)));
+          d.field_digital_domain?.forEach(t => secondaryParts.push(t.name, translateValue(tt, t.name)));
+          if (d.field_axe_si_membre_rsn) secondaryParts.push(d.field_axe_si_membre_rsn.name, translateValue(tt, d.field_axe_si_membre_rsn.name));
+          d.member_of?.forEach(r => { const rt = resolveTitle(r); if (rt) secondaryParts.push(rt); });
+          if (d.email) secondaryParts.push(d.email);
+          break;
+        case "node--dataset":
+        case "node--data_catalog":
+          if (d.field_licence) secondaryParts.push(d.field_licence.name, translateValue(tt, d.field_licence.name));
+          if (d.field_modele_acces) secondaryParts.push(d.field_modele_acces.name, translateValue(tt, d.field_modele_acces.name));
+          d.field_applied_domain?.forEach(t => secondaryParts.push(t.name, translateValue(tt, t.name)));
+          d.author?.forEach(a => { if (a.title) secondaryParts.push(a.title); });
+          d.parent_organization?.forEach(r => { const rt = resolveTitle(r); if (rt) secondaryParts.push(rt); });
+          if (d.email?.schema_email) secondaryParts.push(d.email.schema_email);
+          break;
+        case "node--software_application":
+          d.application_category?.forEach(t => secondaryParts.push(t.name, translateValue(tt, t.name)));
+          if (d.field_licence) secondaryParts.push(d.field_licence.name, translateValue(tt, d.field_licence.name));
+          if (d.field_modele_acces) secondaryParts.push(d.field_modele_acces.name, translateValue(tt, d.field_modele_acces.name));
+          d.author?.forEach(a => { if (a.title) secondaryParts.push(a.title); });
+          d.parent_organization?.forEach(r => { const rt = resolveTitle(r); if (rt) secondaryParts.push(rt); });
+          if (d.schema_email) secondaryParts.push(d.schema_email);
+          break;
+      }
+
+      idx.set(n.id, {
+        primary: norm(primaryParts.filter(Boolean).join(" ")),
+        secondary: norm(secondaryParts.filter(Boolean).join(" ")),
+      });
+    });
+    return idx;
+  }, [nodes, nodeById, tt, tOrgType]);
+
+  /** Recherche un nœud dans l'index : renvoie s'il matche et si le match vient d'un champ prioritaire. */
+  const matchNode = useCallback((id: string, q: string): { match: boolean; primary: boolean } => {
+    const entry = searchIndex.get(id);
+    if (!entry) return { match: false, primary: false };
+    if (entry.primary.includes(q)) return { match: true, primary: true };
+    if (entry.secondary.includes(q)) return { match: true, primary: false };
+    return { match: false, primary: false };
+  }, [searchIndex]);
+
   // ── Options filtres + compteurs (computed from all nodes) ───────────────
   const filterOptions = useMemo(() => {
     const inc = (m: Map<string, number>, k: string) => m.set(k, (m.get(k) ?? 0) + 1);
@@ -489,41 +560,38 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
     return r;
   }, [typeFilteredNodes, fCouverture, fOrgType, fAxeRsn, fDomain, fDigital, fLicence, fAcces, fPersonType]);
 
-  // ── Tableau : recherche textuelle sur les nœuds avancés filtrés + tri A→Z ──
+  // ── Tableau : recherche textuelle (via searchIndex) sur les nœuds filtrés ──
+  // Tri : matches "primary" (titre/alias/tag) avant les matches "secondary"
+  // (description, taxonomies, entités liées), puis A→Z dans chaque groupe.
   const tableNodes = useMemo(() => {
+    const q = removeAccents(searchQuery.toLowerCase().trim());
     let result = advancedFilteredNodes;
-    if (searchQuery.trim()) {
-      const q = removeAccents(searchQuery.toLowerCase().trim());
-      result = result.filter(n => {
-        if (n.data?.tag.some(t => removeAccents(t.toLowerCase()).includes(q))) return true;
-        if (removeAccents((n.data?.title ?? n.label ?? "").toLowerCase()).includes(q)) return true;
-        // Recherche par alias
-        const d = n.data as GraphNodeData;
-        const aliases = "alternate_name" in d ? (d.alternate_name ?? []) : [];
-        if (aliases.some(a => removeAccents(a.toLowerCase()).includes(q))) return true;
-        return false;
-      });
-    }
+    if (q) result = result.filter(n => matchNode(n.id, q).match);
     return [...result].sort((a, b) => {
+      if (q) {
+        const pa = matchNode(a.id, q).primary, pb = matchNode(b.id, q).primary;
+        if (pa !== pb) return pa ? -1 : 1;
+      }
       const titleA = (a.data?.title ?? a.label ?? "").toLowerCase();
       const titleB = (b.data?.title ?? b.label ?? "").toLowerCase();
       return titleA.localeCompare(titleB, "fr");
     });
-  }, [advancedFilteredNodes, searchQuery]);
+  }, [advancedFilteredNodes, searchQuery, matchNode]);
 
-  // ── Cartes : même recherche textuelle que le tableau ─────────────────────
+  // ── Cartes : même recherche + classement par pertinence que le tableau ───
   const cardNodes = useMemo(() => {
-    if (!searchQuery.trim()) return advancedFilteredNodes;
     const q = removeAccents(searchQuery.toLowerCase().trim());
-    return advancedFilteredNodes.filter(n => {
-      if (n.data?.tag.some(t => removeAccents(t.toLowerCase()).includes(q))) return true;
-      if (removeAccents((n.data?.title ?? n.label ?? "").toLowerCase()).includes(q)) return true;
-      const d = n.data as GraphNodeData;
-      const aliases = "alternate_name" in d ? (d.alternate_name ?? []) : [];
-      if (aliases.some(a => removeAccents(a.toLowerCase()).includes(q))) return true;
-      return false;
-    });
-  }, [advancedFilteredNodes, searchQuery]);
+    if (!q) return advancedFilteredNodes;
+    return advancedFilteredNodes
+      .filter(n => matchNode(n.id, q).match)
+      .sort((a, b) => {
+        const pa = matchNode(a.id, q).primary, pb = matchNode(b.id, q).primary;
+        if (pa !== pb) return pa ? -1 : 1;
+        const titleA = (a.data?.title ?? a.label ?? "").toLowerCase();
+        const titleB = (b.data?.title ?? b.label ?? "").toLowerCase();
+        return titleA.localeCompare(titleB, "fr");
+      });
+  }, [advancedFilteredNodes, searchQuery, matchNode]);
 
   const singleTypeKey = fType.size === 1 ? [...fType][0] : undefined;
   const visibleCols: ColKey[] = singleTypeKey ? (COLS_BY_TYPE[singleTypeKey] ?? COLS_BY_TYPE.all) : COLS_BY_TYPE.all;
@@ -632,7 +700,7 @@ export function DiagramRoot({ nodes, edges }: DiagramRootProps) {
               )}
             </div>
           </div>
-          <CardGridView nodes={cardNodes} nodeById={nodeById} />
+          <CardGridView nodes={cardNodes} nodeById={nodeById} preserveOrder={!!searchQuery.trim()} />
         </div>
       )}
 

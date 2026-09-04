@@ -13,11 +13,13 @@ import { Adresse } from "./DetailCard/Adresse";
 interface CardGridViewProps {
   nodes: MyGraphNode[];
   nodeById: Map<string, MyGraphNode>;
+  /** When true, `nodes` is already ordered by search relevance — skip the A→Z re-sort. */
+  preserveOrder?: boolean;
 }
 
-export function CardGridView({ nodes, nodeById }: CardGridViewProps) {
+export function CardGridView({ nodes, nodeById, preserveOrder = false }: CardGridViewProps) {
   const t = useTranslations("gallery");
-  const sortedNodes = [...nodes].sort((a, b) => {
+  const sortedNodes = preserveOrder ? nodes : [...nodes].sort((a, b) => {
     const titleA = (a.data?.title ?? a.label ?? "").toLowerCase();
     const titleB = (b.data?.title ?? b.label ?? "").toLowerCase();
     return titleA.localeCompare(titleB, "fr");
@@ -346,6 +348,16 @@ function ExpandedSection({
           <p className="font-medium mb-1">{tg("sections.responsiblePerson")}</p>
           {(data.author as Array<{ id: string; title?: string }>).map((a) => (
             <p key={a.id}>{resolveTitle(a, nodeById)}</p>
+          ))}
+        </div>
+      )}
+
+      {/* Centre de recherche affilié (software, dataset, catalog) */}
+      {"parent_organization" in data && data.parent_organization && (data.parent_organization as unknown[]).length > 0 && (
+        <div>
+          <p className="font-medium mb-1">{tg("sections.researchCenter")}</p>
+          {(data.parent_organization as Array<{ id: string; title?: string }>).map((o) => (
+            <p key={o.id}>{resolveTitle(o, nodeById)}</p>
           ))}
         </div>
       )}
